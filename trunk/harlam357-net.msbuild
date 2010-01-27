@@ -54,11 +54,11 @@
 
    <Target Name="NUnit">
       <MakeDir Directories=".\artifacts" />
-      <Exec Command="$(NCoverPath) $(NUnitPath) .\Security\Tests\bin\$(Configuration)\harlam357.Security.Tests.dll /xml=.\artifacts\harlam357.$(Framework).Security.Tests.Results.xml //a harlam357.Security //ea $(NCoverExcludeList) //x .\artifacts\harlam357.$(Framework).Security.Tests.Coverage.xml" />
+      <Exec Command="$(NCoverPath) $(NUnitPath) .\Security\Tests\bin\$(Configuration)\harlam357.Security.Tests.dll /xml=.\artifacts\harlam357-$(Framework).Security.Tests.Results.xml //a harlam357.Security //ea $(NCoverExcludeList) //x .\artifacts\harlam357-$(Framework).Security.Tests.Coverage.xml" />
    </Target>
 
    <Target Name="FxCop">
-      <Exec Command="$(FxCopPath) /project:harlam357-$(Framework).FxCop /out:harlam357-$(Framework).FxCop.xml" />
+      <Exec Command="$(FxCopPath) /project:harlam357-$(Framework).FxCop /out:.\artifacts\harlam357-$(Framework).FxCop.xml" />
    </Target>
 
    <Target Name="Zip">
