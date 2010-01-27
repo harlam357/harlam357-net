@@ -121,7 +121,14 @@ namespace harlam357.Windows.Forms
          InitializeComponent();
 
          DoubleBuffered = true;
-         _logic = new ValidatingControlLogic(this, CustomValidation);
+         _logic = new ValidatingControlLogic(this);
+         _logic.CustomValidation += delegate(object sender, ValidatingControlCustomValidationEventArgs e)
+         {
+            if (CustomValidation != null)
+            {
+               CustomValidation(sender, e);
+            }
+         };
          DataBindings.CollectionChanged += _logic.DataBindings_CollectionChanged;
       }
       #endregion

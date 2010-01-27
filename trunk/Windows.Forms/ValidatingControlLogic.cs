@@ -157,10 +157,9 @@ namespace harlam357.Windows.Forms
       #endregion
 
       #region Constructor
-      public ValidatingControlLogic(Control control, EventHandler<ValidatingControlCustomValidationEventArgs> e)
+      public ValidatingControlLogic(Control control)
       {
          _control = control;
-         CustomValidation = e;
       } 
       #endregion
 
