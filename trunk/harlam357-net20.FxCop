@@ -22,9 +22,7 @@
   <TargetFrameworkVersion>2.0</TargetFrameworkVersion>
  </ProjectOptions>
  <Targets>
-  <AssemblyReferenceDirectories>
-   <Directory>$(ProjectDir)/net20/bin/Release/</Directory>
-  </AssemblyReferenceDirectories>
+  <Target Name="$(ProjectDir)/net20/bin/Release/harlam357.Net.dll" Analyze="True" AnalyzeAllChildren="True" />
   <Target Name="$(ProjectDir)/net20/bin/Release/harlam357.Security.dll" Analyze="True" AnalyzeAllChildren="True" />
   <Target Name="$(ProjectDir)/net20/bin/Release/harlam357.Windows.Forms.dll" Analyze="True" AnalyzeAllChildren="True" />
  </Targets>
