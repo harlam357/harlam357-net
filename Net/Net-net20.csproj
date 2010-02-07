@@ -38,6 +38,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\AssemblyVersion.cs">
+      <Link>AssemblyVersion.cs</Link>
+    </Compile>
     <Compile Include="IFtpWebOperation.cs" />
     <Compile Include="IWebOperation.cs" />
     <Compile Include="WebOperation.cs" />
