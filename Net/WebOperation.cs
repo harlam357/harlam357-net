@@ -91,7 +91,7 @@ namespace harlam357.Net
          WebResponse response = _OperationRequest.Request.GetResponse();
          using (Stream responseStream = response.GetResponseStream())
          {
-            totalLength = responseStream.Length;
+            totalLength = response.ContentLength;
             if (AutoSizeBuffer)
             {
                Buffer = CalculateBufferSize(totalLength);
@@ -138,10 +138,10 @@ namespace harlam357.Net
          OperationRequest.Request.Method = GetWebDownloadMethod();
 
          WebResponse response = _OperationRequest.Request.GetResponse();
-         using (Stream responseStream = response.GetResponseStream())
-         {
-            return responseStream.Length;
-         }
+         long length = response.ContentLength;
+         response.Close();
+         
+         return length;
       }
 
       public void Upload(string LocalFilePath)
@@ -302,6 +302,11 @@ namespace harlam357.Net
    
    public class FileWebOperation : WebOperation
    {
+      public FileWebOperation(IWebOperationRequest operationRequest)
+      {
+         OperationRequest = operationRequest;
+      }
+
       internal FileWebOperation(WebRequest webRequest)
       {
          OperationRequest = new WebOperationRequest(webRequest);
@@ -325,6 +330,11 @@ namespace harlam357.Net
 
    public class HttpWebOperation : WebOperation
    {
+      public HttpWebOperation(IWebOperationRequest operationRequest)
+      {
+         OperationRequest = operationRequest;
+      }
+   
       internal HttpWebOperation(WebRequest webRequest)
       {
          OperationRequest = new WebOperationRequest(webRequest);
@@ -351,6 +361,11 @@ namespace harlam357.Net
       public IFtpWebOperationRequest FtpOperationRequest
       {
          get { return (IFtpWebOperationRequest)OperationRequest; }
+      }
+
+      public FtpWebOperation(IFtpWebOperationRequest operationRequest)
+      {
+         OperationRequest = operationRequest;
       }
       
       internal FtpWebOperation(FtpWebRequest webRequest)

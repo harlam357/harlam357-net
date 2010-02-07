@@ -54,6 +54,7 @@
 
    <Target Name="NUnit">
       <MakeDir Directories=".\artifacts" />
+      <Exec Command="$(NCoverPath) $(NUnitPath) .\Net\Tests\bin\$(Configuration)\harlam357.Net.Tests.dll /xml=.\artifacts\harlam357-$(Framework).Net.Tests.Results.xml //a harlam357.Net //ea $(NCoverExcludeList) //x .\artifacts\harlam357-$(Framework).Net.Tests.Coverage.xml" />
       <Exec Command="$(NCoverPath) $(NUnitPath) .\Security\Tests\bin\$(Configuration)\harlam357.Security.Tests.dll /xml=.\artifacts\harlam357-$(Framework).Security.Tests.Results.xml //a harlam357.Security //ea $(NCoverExcludeList) //x .\artifacts\harlam357-$(Framework).Security.Tests.Coverage.xml" />
    </Target>
 

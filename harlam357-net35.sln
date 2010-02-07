@@ -9,6 +9,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Security.Tests", "Security\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Net", "Net\Net.csproj", "{8A712ABF-5B19-457C-A57D-82611CDA310F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Net.Tests", "Net\Tests\Net.Tests.csproj", "{EDACE56F-10A7-46D5-A954-1CBB6068F0F9}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{9CF61524-AA41-40F1-BB73-92BEC2716893}"
+	ProjectSection(SolutionItems) = preProject
+		harlam357-net.msbuild = harlam357-net.msbuild
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -31,6 +38,10 @@ Global
 		{8A712ABF-5B19-457C-A57D-82611CDA310F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8A712ABF-5B19-457C-A57D-82611CDA310F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8A712ABF-5B19-457C-A57D-82611CDA310F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EDACE56F-10A7-46D5-A954-1CBB6068F0F9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EDACE56F-10A7-46D5-A954-1CBB6068F0F9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EDACE56F-10A7-46D5-A954-1CBB6068F0F9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EDACE56F-10A7-46D5-A954-1CBB6068F0F9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
