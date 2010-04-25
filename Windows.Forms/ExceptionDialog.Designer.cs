@@ -44,7 +44,7 @@
          this.exceptionTextBox.ReadOnly = true;
          this.exceptionTextBox.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
          this.exceptionTextBox.Size = new System.Drawing.Size(460, 184);
-         this.exceptionTextBox.TabIndex = 2;
+         this.exceptionTextBox.TabIndex = 5;
          this.exceptionTextBox.Text = "textBoxExceptionText";
          // 
          // btnExit
@@ -52,7 +52,7 @@
          this.btnExit.Location = new System.Drawing.Point(171, 256);
          this.btnExit.Name = "btnExit";
          this.btnExit.Size = new System.Drawing.Size(141, 23);
-         this.btnExit.TabIndex = 9;
+         this.btnExit.TabIndex = 2;
          this.btnExit.Text = "Exit Application";
          this.btnExit.Click += new System.EventHandler(this.btnExit_Click);
          // 
@@ -61,7 +61,7 @@
          this.btnContinue.Location = new System.Drawing.Point(331, 256);
          this.btnContinue.Name = "btnContinue";
          this.btnContinue.Size = new System.Drawing.Size(141, 23);
-         this.btnContinue.TabIndex = 10;
+         this.btnContinue.TabIndex = 3;
          this.btnContinue.Text = "Continue";
          this.btnContinue.Click += new System.EventHandler(this.btnContinue_Click);
          // 
@@ -70,7 +70,7 @@
          this.btnReport.Location = new System.Drawing.Point(12, 256);
          this.btnReport.Name = "btnReport";
          this.btnReport.Size = new System.Drawing.Size(141, 23);
-         this.btnReport.TabIndex = 8;
+         this.btnReport.TabIndex = 1;
          this.btnReport.Text = "Report Exception";
          this.btnReport.Click += new System.EventHandler(this.btnReport_Click);
          // 
@@ -82,7 +82,7 @@
          this.copyErrorCheckBox.Location = new System.Drawing.Point(12, 233);
          this.copyErrorCheckBox.Name = "copyErrorCheckBox";
          this.copyErrorCheckBox.Size = new System.Drawing.Size(158, 17);
-         this.copyErrorCheckBox.TabIndex = 7;
+         this.copyErrorCheckBox.TabIndex = 0;
          this.copyErrorCheckBox.Text = "Copy Error Text to Clipboard";
          // 
          // label1
@@ -90,7 +90,7 @@
          this.label1.Location = new System.Drawing.Point(12, 9);
          this.label1.Name = "label1";
          this.label1.Size = new System.Drawing.Size(460, 28);
-         this.label1.TabIndex = 11;
+         this.label1.TabIndex = 4;
          this.label1.Text = "An Unhandled Exception has occurred.  The exception text and any other messages a" +
              "re found below.  Please choose how you would like to handle the exception.";
          // 
