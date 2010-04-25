@@ -98,6 +98,7 @@
   <PropertyGroup>
     <PostBuildEvent>if not exist ..\..\..\net20\bin\$(ConfigurationName) md ..\..\..\net20\bin\$(ConfigurationName)
 copy /Y $(TargetName).dll ..\..\..\net20\bin\$(ConfigurationName)
-copy /Y $(TargetName).pdb ..\..\..\net20\bin\$(ConfigurationName)</PostBuildEvent>
+copy /Y $(TargetName).pdb ..\..\..\net20\bin\$(ConfigurationName)
+copy /Y $(TargetName).dll.config ..\..\..\net20\bin\$(ConfigurationName)</PostBuildEvent>
   </PropertyGroup>
 </Project>
