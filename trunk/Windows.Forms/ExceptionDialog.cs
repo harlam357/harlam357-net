@@ -67,10 +67,20 @@ namespace harlam357.Windows.Forms
 
       public static void ShowErrorDialog(Exception exception, string message, string reportUrl, bool mustTerminate)
       {
+         ShowErrorDialog(exception, message, reportUrl, _applicationId, mustTerminate);
+      }
+      
+      public static void ShowErrorDialog(Exception exception, string message, string reportUrl, string applicationId)
+      {
+         ShowErrorDialog(exception, message, reportUrl, applicationId, false);
+      }
+
+      public static void ShowErrorDialog(Exception exception, string message, string reportUrl, string applicationId, bool mustTerminate)
+      {
          if (_exceptionLogger != null) _exceptionLogger(exception);
          try
          {
-            using (ExceptionDialog box = new ExceptionDialog(exception, message, reportUrl, mustTerminate))
+            using (ExceptionDialog box = new ExceptionDialog(exception, message, reportUrl, applicationId, mustTerminate))
             {
                box.ShowDialog();
             }
@@ -86,6 +96,7 @@ namespace harlam357.Windows.Forms
       private readonly Exception _exceptionThrown;
       private readonly string _message;
       private readonly string _reportUrl;
+      private readonly string _messageHeader;
 
       public ExceptionDialog()
       {
@@ -104,7 +115,7 @@ namespace harlam357.Windows.Forms
       {
 
       }
-
+      
       /// <summary>
       /// Creates a new ExceptionDialog instance.
       /// </summary>
@@ -114,10 +125,26 @@ namespace harlam357.Windows.Forms
       /// <param name="mustTerminate">If <paramref name="mustTerminate"/> is true, the
       /// continue button is not available.</param>
       public ExceptionDialog(Exception exception, string message, string reportUrl, bool mustTerminate)
+         : this(exception, message, reportUrl, null, mustTerminate)
+      {
+      
+      }
+
+      /// <summary>
+      /// Creates a new ExceptionDialog instance.
+      /// </summary>
+      /// <param name="exception">The exception to display</param>
+      /// <param name="message">An additional message to display</param>
+      /// <param name="reportUrl">Override configured target URL for report button</param>
+      /// <param name="messageHeader">A message header to display</param>
+      /// <param name="mustTerminate">If <paramref name="mustTerminate"/> is true, the
+      /// continue button is not available.</param>
+      public ExceptionDialog(Exception exception, string message, string reportUrl, string messageHeader, bool mustTerminate)
       {
          _exceptionThrown = exception;
          _message = message;
          _reportUrl = reportUrl;
+         _messageHeader = messageHeader;
 
          InitializeComponent();
 
@@ -135,14 +162,16 @@ namespace harlam357.Windows.Forms
       string GetClipboardString()
       {
          StringBuilder sb = new StringBuilder();
-         sb.AppendLine(_applicationId);
-         sb.AppendLine();
-
+         if (_messageHeader != null)
+         {
+            sb.AppendLine(_applicationId);
+            sb.AppendLine();
+         }
          if (_message != null)
          {
             sb.AppendLine(_message);
+            sb.AppendLine();
          }
-         sb.AppendLine();
          sb.AppendLine("Exception thrown:");
          sb.AppendLine(_exceptionThrown.ToString());
          return sb.ToString();
