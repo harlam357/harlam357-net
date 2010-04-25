@@ -28,11 +28,20 @@ namespace harlam357.Windows.Forms
 {
    public partial class ExceptionDialog : Form
    {
+      public delegate void LogException(Exception ex);
+   
       private static string _applicationId;
+      private static LogException _exceptionLogger;
    
       public static void RegisterForUnhandledExceptions(string applicationId)
       {
+         RegisterForUnhandledExceptions(applicationId, null);
+      }
+      
+      public static void RegisterForUnhandledExceptions(string applicationId, LogException exceptionLogger)
+      {
          _applicationId = applicationId;
+         _exceptionLogger = exceptionLogger;
          Application.ThreadException += ShowErrorDialog;
       }
 
@@ -48,6 +57,7 @@ namespace harlam357.Windows.Forms
 
       public static void ShowErrorDialog(Exception exception, string message, bool mustTerminate)
       {
+         if (_exceptionLogger != null) _exceptionLogger(exception);
          try
          {
             using (ExceptionDialog box = new ExceptionDialog(exception, message, mustTerminate))
@@ -57,6 +67,7 @@ namespace harlam357.Windows.Forms
          }
          catch (Exception ex)
          {
+            if (_exceptionLogger != null) _exceptionLogger(exception);
             MessageBox.Show(ex.ToString(), message, MessageBoxButtons.OK, MessageBoxIcon.Error, 
                MessageBoxDefaultButton.Button1, MessageBoxOptions.DefaultDesktopOnly);
          }
@@ -149,6 +160,7 @@ namespace harlam357.Windows.Forms
          }
          catch (Exception ex)
          {
+            if (_exceptionLogger != null) _exceptionLogger(ex);
             MessageBox.Show(ex.ToString(), Text, MessageBoxButtons.OK, MessageBoxIcon.Error,
                MessageBoxDefaultButton.Button1, MessageBoxOptions.DefaultDesktopOnly);
          }
