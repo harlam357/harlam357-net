@@ -29,15 +29,15 @@ namespace harlam357.Windows.Forms
    public partial class ExceptionDialog : Form
    {
       public delegate void LogException(Exception ex);
-   
+
       private static string _applicationId;
       private static LogException _exceptionLogger;
-   
+
       public static void RegisterForUnhandledExceptions(string applicationId)
       {
          RegisterForUnhandledExceptions(applicationId, null);
       }
-      
+
       public static void RegisterForUnhandledExceptions(string applicationId, LogException exceptionLogger)
       {
          _applicationId = applicationId;
@@ -54,13 +54,23 @@ namespace harlam357.Windows.Forms
       {
          ShowErrorDialog(exception, message, false);
       }
-
+      
       public static void ShowErrorDialog(Exception exception, string message, bool mustTerminate)
+      {
+         ShowErrorDialog(exception, message, null, mustTerminate);
+      }
+      
+      public static void ShowErrorDialog(Exception exception, string message, string reportUrl)
+      {
+         ShowErrorDialog(exception, message, reportUrl, false);
+      }
+
+      public static void ShowErrorDialog(Exception exception, string message, string reportUrl, bool mustTerminate)
       {
          if (_exceptionLogger != null) _exceptionLogger(exception);
          try
          {
-            using (ExceptionDialog box = new ExceptionDialog(exception, message, mustTerminate))
+            using (ExceptionDialog box = new ExceptionDialog(exception, message, reportUrl, mustTerminate))
             {
                box.ShowDialog();
             }
@@ -68,62 +78,80 @@ namespace harlam357.Windows.Forms
          catch (Exception ex)
          {
             if (_exceptionLogger != null) _exceptionLogger(exception);
-            MessageBox.Show(ex.ToString(), message, MessageBoxButtons.OK, MessageBoxIcon.Error, 
+            MessageBox.Show(ex.ToString(), message, MessageBoxButtons.OK, MessageBoxIcon.Error,
                MessageBoxDefaultButton.Button1, MessageBoxOptions.DefaultDesktopOnly);
          }
       }
 
       private readonly Exception _exceptionThrown;
       private readonly string _message;
+      private readonly string _reportUrl;
 
       public ExceptionDialog()
       {
          InitializeComponent();
       }
-      
+
       /// <summary>
-		/// Creates a new ExceptionDialog instance.
-		/// </summary>
-		/// <param name="exception">The exception to display</param>
-		/// <param name="message">An additional message to display</param>
-		/// <param name="mustTerminate">If <paramref name="mustTerminate"/> is true, the
-		/// continue button is not available.</param>
-		public ExceptionDialog(Exception exception, string message, bool mustTerminate)
-		{
-			_exceptionThrown = exception;
-			_message = message;
-			
-			InitializeComponent();
-			
-			if (mustTerminate) {
-				btnExit.Visible = false;
-				btnContinue.Text = btnExit.Text;
-				btnContinue.Left -= btnExit.Width - btnContinue.Width;
-				btnContinue.Width = btnExit.Width;
-			}
-         
-			exceptionTextBox.Text = GetClipboardString();
-		}
-		
-		string GetClipboardString()
-		{
-			StringBuilder sb = new StringBuilder();
+      /// Creates a new ExceptionDialog instance.
+      /// </summary>
+      /// <param name="exception">The exception to display</param>
+      /// <param name="message">An additional message to display</param>
+      /// <param name="mustTerminate">If <paramref name="mustTerminate"/> is true, the
+      /// continue button is not available.</param>
+      public ExceptionDialog(Exception exception, string message, bool mustTerminate)
+         : this(exception, message, null, mustTerminate)
+      {
+
+      }
+
+      /// <summary>
+      /// Creates a new ExceptionDialog instance.
+      /// </summary>
+      /// <param name="exception">The exception to display</param>
+      /// <param name="message">An additional message to display</param>
+      /// <param name="reportUrl">Override configured target URL for report button</param>
+      /// <param name="mustTerminate">If <paramref name="mustTerminate"/> is true, the
+      /// continue button is not available.</param>
+      public ExceptionDialog(Exception exception, string message, string reportUrl, bool mustTerminate)
+      {
+         _exceptionThrown = exception;
+         _message = message;
+         _reportUrl = reportUrl;
+
+         InitializeComponent();
+
+         if (mustTerminate)
+         {
+            btnExit.Visible = false;
+            btnContinue.Text = btnExit.Text;
+            btnContinue.Left -= btnExit.Width - btnContinue.Width;
+            btnContinue.Width = btnExit.Width;
+         }
+
+         exceptionTextBox.Text = GetClipboardString();
+      }
+
+      string GetClipboardString()
+      {
+         StringBuilder sb = new StringBuilder();
          sb.AppendLine(_applicationId);
-			sb.AppendLine();
-			
-			if (_message != null) {
-				sb.AppendLine(_message);
-			}
-		   sb.AppendLine();
-			sb.AppendLine("Exception thrown:");
-			sb.AppendLine(_exceptionThrown.ToString());
-			return sb.ToString();
-		}
+         sb.AppendLine();
+
+         if (_message != null)
+         {
+            sb.AppendLine(_message);
+         }
+         sb.AppendLine();
+         sb.AppendLine("Exception thrown:");
+         sb.AppendLine(_exceptionThrown.ToString());
+         return sb.ToString();
+      }
 
       private void btnReport_Click(object sender, EventArgs e)
       {
          CopyInfoToClipboard();
-         string reportUrl = Properties.Settings.Default.ReportUrl;
+         string reportUrl = String.IsNullOrEmpty(_reportUrl) ? Properties.Settings.Default.ReportUrl : _reportUrl;
          if (String.IsNullOrEmpty(reportUrl) == false)
          {
             StartUrl(reportUrl);
@@ -174,8 +202,8 @@ namespace harlam357.Windows.Forms
 
       private void btnExit_Click(object sender, EventArgs e)
       {
-         if (MessageBox.Show("Are you sure you want to exit the application?.", Text, 
-             MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2, 
+         if (MessageBox.Show("Are you sure you want to exit the application?.", Text,
+             MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2,
              MessageBoxOptions.DefaultDesktopOnly) == DialogResult.Yes)
          {
             Application.Exit();
