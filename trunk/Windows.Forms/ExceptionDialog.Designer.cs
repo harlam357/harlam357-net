@@ -28,6 +28,7 @@
       /// </summary>
       private void InitializeComponent()
       {
+         System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ExceptionDialog));
          this.exceptionTextBox = new System.Windows.Forms.TextBox();
          this.btnExit = new System.Windows.Forms.Button();
          this.btnContinue = new System.Windows.Forms.Button();
@@ -38,7 +39,7 @@
          // 
          // exceptionTextBox
          // 
-         this.exceptionTextBox.Location = new System.Drawing.Point(12, 43);
+         this.exceptionTextBox.Location = new System.Drawing.Point(12, 67);
          this.exceptionTextBox.Multiline = true;
          this.exceptionTextBox.Name = "exceptionTextBox";
          this.exceptionTextBox.ReadOnly = true;
@@ -49,7 +50,7 @@
          // 
          // btnExit
          // 
-         this.btnExit.Location = new System.Drawing.Point(171, 256);
+         this.btnExit.Location = new System.Drawing.Point(171, 280);
          this.btnExit.Name = "btnExit";
          this.btnExit.Size = new System.Drawing.Size(141, 23);
          this.btnExit.TabIndex = 2;
@@ -58,7 +59,7 @@
          // 
          // btnContinue
          // 
-         this.btnContinue.Location = new System.Drawing.Point(331, 256);
+         this.btnContinue.Location = new System.Drawing.Point(331, 280);
          this.btnContinue.Name = "btnContinue";
          this.btnContinue.Size = new System.Drawing.Size(141, 23);
          this.btnContinue.TabIndex = 3;
@@ -67,7 +68,7 @@
          // 
          // btnReport
          // 
-         this.btnReport.Location = new System.Drawing.Point(12, 256);
+         this.btnReport.Location = new System.Drawing.Point(12, 280);
          this.btnReport.Name = "btnReport";
          this.btnReport.Size = new System.Drawing.Size(141, 23);
          this.btnReport.TabIndex = 1;
@@ -79,7 +80,7 @@
          this.copyErrorCheckBox.AutoSize = true;
          this.copyErrorCheckBox.Checked = true;
          this.copyErrorCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-         this.copyErrorCheckBox.Location = new System.Drawing.Point(12, 233);
+         this.copyErrorCheckBox.Location = new System.Drawing.Point(12, 257);
          this.copyErrorCheckBox.Name = "copyErrorCheckBox";
          this.copyErrorCheckBox.Size = new System.Drawing.Size(158, 17);
          this.copyErrorCheckBox.TabIndex = 0;
@@ -87,18 +88,17 @@
          // 
          // label1
          // 
-         this.label1.Location = new System.Drawing.Point(12, 9);
+         this.label1.Location = new System.Drawing.Point(12, 12);
          this.label1.Name = "label1";
-         this.label1.Size = new System.Drawing.Size(460, 28);
+         this.label1.Size = new System.Drawing.Size(460, 47);
          this.label1.TabIndex = 4;
-         this.label1.Text = "An Unhandled Exception has occurred.  The exception text and any other messages a" +
-             "re found below.  Please choose how you would like to handle the exception.";
+         this.label1.Text = resources.GetString("label1.Text");
          // 
          // ExceptionDialog
          // 
          this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
          this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-         this.ClientSize = new System.Drawing.Size(485, 289);
+         this.ClientSize = new System.Drawing.Size(485, 311);
          this.Controls.Add(this.label1);
          this.Controls.Add(this.btnExit);
          this.Controls.Add(this.btnContinue);

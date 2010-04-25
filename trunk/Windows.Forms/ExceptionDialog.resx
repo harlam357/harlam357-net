@@ -117,4 +117,7 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="label1.Text" xml:space="preserve">
+    <value>An unhandled exception has occurred.  The exception text and other diagnostic information is found below.  If you choose, you can report this exception to the program author.  Please note the option to copy the error text to the clipboard upon clicking the 'Report Exception' button.</value>
+  </data>
 </root>
