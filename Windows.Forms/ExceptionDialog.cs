@@ -70,17 +70,17 @@ namespace harlam357.Windows.Forms
          ShowErrorDialog(exception, message, reportUrl, _applicationId, mustTerminate);
       }
       
-      public static void ShowErrorDialog(Exception exception, string message, string reportUrl, string applicationId)
+      public static void ShowErrorDialog(Exception exception, string message, string reportUrl, string messageHeader)
       {
-         ShowErrorDialog(exception, message, reportUrl, applicationId, false);
+         ShowErrorDialog(exception, message, reportUrl, messageHeader, false);
       }
 
-      public static void ShowErrorDialog(Exception exception, string message, string reportUrl, string applicationId, bool mustTerminate)
+      public static void ShowErrorDialog(Exception exception, string message, string reportUrl, string messageHeader, bool mustTerminate)
       {
          if (_exceptionLogger != null) _exceptionLogger(exception);
          try
          {
-            using (ExceptionDialog box = new ExceptionDialog(exception, message, reportUrl, applicationId, mustTerminate))
+            using (ExceptionDialog box = new ExceptionDialog(exception, message, reportUrl, messageHeader, mustTerminate))
             {
                box.ShowDialog();
             }
@@ -164,7 +164,7 @@ namespace harlam357.Windows.Forms
          StringBuilder sb = new StringBuilder();
          if (_messageHeader != null)
          {
-            sb.AppendLine(_applicationId);
+            sb.AppendLine(_messageHeader);
             sb.AppendLine();
          }
          if (_message != null)
@@ -172,7 +172,7 @@ namespace harlam357.Windows.Forms
             sb.AppendLine(_message);
             sb.AppendLine();
          }
-         sb.AppendLine("Exception thrown:");
+         sb.AppendLine("Exception Thrown:");
          sb.AppendLine(_exceptionThrown.ToString());
          return sb.ToString();
       }

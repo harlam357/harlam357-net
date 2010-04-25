@@ -110,7 +110,7 @@
          this.Name = "ExceptionDialog";
          this.ShowIcon = false;
          this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-         this.Text = "Unhandled Exception";
+         this.Text = "Exception Reporting";
          this.ResumeLayout(false);
          this.PerformLayout();
 
