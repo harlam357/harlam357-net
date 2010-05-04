@@ -56,7 +56,7 @@ namespace harlam357.Windows.Forms
       {
          if (owner.InvokeRequired)
          {
-            owner.Invoke(new MethodInvoker(() => ShowError(owner, text, caption)));
+            owner.Invoke(new MethodInvoker(() => ShowInformation(owner, text, caption)));
             return;
          }
 
