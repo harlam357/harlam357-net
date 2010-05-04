@@ -29,19 +29,25 @@ namespace harlam357.Net
 
       IWebOperationRequest OperationRequest { get; }
 
+      IWebProxy OperationProxy { get; set; }
+
       WebOperationState State { get; }
+      
+      WebOperationResult Result { get; }
 
       bool AutoSizeBuffer { get; set; }
 
       int Buffer { get; set; }
 
-      void Download(string LocalFilePath);
+      void Download(string localFilePath);
       
       long GetDownloadLength();
       
-      void Upload(string LocalFilePath);
+      void Upload(string localFilePath);
       
       void CheckConnection();
+      
+      void CancelOperation();
    }
 
    public interface IWebOperationRequest

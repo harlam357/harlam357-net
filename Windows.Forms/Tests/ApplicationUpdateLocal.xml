@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ApplicationUpdate xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Version>0.4.10.156</Version>
+  <UpdateDate>2010-03-18T00:00:00</UpdateDate>
+  <UpdateFiles>
+    <ApplicationUpdateFile>
+      <Description>Text File</Description>
+      <HttpAddress>TestFile.txt</HttpAddress>
+      <Size>0</Size>
+      <MD5>a</MD5>
+      <SHA1>b</SHA1>
+      <UpdateType>0</UpdateType>
+    </ApplicationUpdateFile>
+  </UpdateFiles>
+</ApplicationUpdate>
