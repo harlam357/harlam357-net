@@ -19,10 +19,12 @@
 
 using System;
 using System.Globalization;
+using System.IO;
 using System.Net;
 using System.Windows.Forms;
 
 using harlam357.Net;
+using harlam357.Security;
 
 namespace harlam357.Windows.Forms
 {
@@ -31,6 +33,8 @@ namespace harlam357.Windows.Forms
       #region Fields
 
       private IWebOperation _webOperation;
+      private bool _downloadVerified;
+      
       private readonly Form _owner;
       private readonly Action<Exception> _exceptionLogger;
       private readonly ApplicationUpdate _updateData;
@@ -47,11 +51,13 @@ namespace harlam357.Windows.Forms
 
       public string LocalFilePath { get; private set; }
       
-      public WebOperationResult Result
+      public bool UpdateReady
       {
          get
          {
-            return _webOperation != null ? _webOperation.Result : WebOperationResult.Unknown;
+            return (_webOperation != null &&
+                    _webOperation.Result.Equals(WebOperationResult.Completed) &&
+                    _downloadVerified);
          }
       }
       
@@ -149,6 +155,8 @@ namespace harlam357.Windows.Forms
          try
          {
             action.EndInvoke(result);
+            VerifyDownload();
+            _downloadVerified = true;
          }
          catch (Exception ex)
          {
@@ -202,6 +210,68 @@ namespace harlam357.Windows.Forms
       
       #endregion
       
+      public void VerifyDownload()
+      {
+         VerifyDownload(LocalFilePath, SelectedUpdate);
+      }
+      
+      public static void VerifyDownload(string localFilePath, ApplicationUpdateFile selectedUpdate)
+      {
+         Stream stream = null;
+         try
+         {
+            FileInfo fileInfo = new FileInfo(localFilePath);
+            if (selectedUpdate.Size != fileInfo.Length)
+            {
+               throw new IOException(String.Format(CultureInfo.CurrentCulture, 
+                  "File length is '{0}', expected length is '{1}'.", fileInfo.Length, selectedUpdate.Size));
+            }
+         
+            stream = new FileStream(localFilePath, FileMode.Open, FileAccess.Read);
+            if (selectedUpdate.SHA1.Length != 0)
+            {
+               Hash hash = new Hash(Hash.Provider.SHA1);
+               Data hashData = hash.Calculate(ref stream);
+               if (String.Compare(selectedUpdate.SHA1, hashData.Hex, StringComparison.OrdinalIgnoreCase) != 0)
+               {
+                  throw new IOException("SHA1 file hash is not correct.");
+               }
+            }
+            stream.Position = 0;
+            if (selectedUpdate.MD5.Length != 0)
+            {
+               Hash hash = new Hash(Hash.Provider.MD5);
+               Data hashData = hash.Calculate(ref stream);
+               if (String.Compare(selectedUpdate.MD5, hashData.Hex, StringComparison.OrdinalIgnoreCase) != 0)
+               {
+                  throw new IOException("MD5 file hash is not correct.");
+               }
+            }
+         }
+         catch (Exception)
+         {
+            TryToDelete(localFilePath);
+            throw;
+         }
+         finally
+         {
+            if (stream != null)
+            {
+               stream.Dispose();
+            }
+         }
+      }
+
+      private static void TryToDelete(string localFilePath)
+      {
+         try
+         {
+            File.Delete(localFilePath);
+         }
+         catch (Exception)
+         { }
+      }
+
       private void LogException(Exception ex)
       {
          if (_exceptionLogger != null)
