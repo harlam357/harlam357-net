@@ -109,6 +109,10 @@
       <Project>{8A712ABF-5B19-457C-A57D-82611CDA310F}</Project>
       <Name>Net</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Security\Security.csproj">
+      <Project>{43AE939B-0917-4904-82F2-CA52998A15EF}</Project>
+      <Name>Security</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

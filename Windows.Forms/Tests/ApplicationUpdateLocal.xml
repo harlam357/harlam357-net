@@ -6,9 +6,9 @@
     <ApplicationUpdateFile>
       <Description>Text File</Description>
       <HttpAddress>TestFile.txt</HttpAddress>
-      <Size>0</Size>
-      <MD5>a</MD5>
-      <SHA1>b</SHA1>
+      <Size>1972</Size>
+      <MD5>ac27f132e6728e4f8fa3b054013d3456</MD5>
+      <SHA1>94d27a4f4099d41b5b3c0becc47e074dab3a559c</SHA1>
       <UpdateType>0</UpdateType>
     </ApplicationUpdateFile>
   </UpdateFiles>
