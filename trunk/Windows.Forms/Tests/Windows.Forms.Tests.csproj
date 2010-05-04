@@ -50,8 +50,12 @@
     <Compile Include="UpdatePresenterTests.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="ApplicationUpdate.xml" />
-    <Content Include="ApplicationUpdateLocal.xml" />
+    <Content Include="ApplicationUpdate.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="ApplicationUpdateLocal.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="TestFile.txt" />
   </ItemGroup>
   <ItemGroup>
