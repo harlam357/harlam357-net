@@ -9,7 +9,7 @@
 
    <PropertyGroup>
       <Major>1</Major>
-      <Minor>1</Minor>
+      <Minor>2</Minor>
       <Build>0</Build>
       <Revision>0</Revision>
    </PropertyGroup>
@@ -56,6 +56,7 @@
       <MakeDir Directories=".\artifacts" />
       <Exec Command="$(NCoverPath) $(NUnitPath) .\Net\Tests\bin\$(Configuration)\harlam357.Net.Tests.dll /xml=.\artifacts\harlam357-$(Framework).Net.Tests.Results.xml //a harlam357.Net //ea $(NCoverExcludeList) //x .\artifacts\harlam357-$(Framework).Net.Tests.Coverage.xml" />
       <Exec Command="$(NCoverPath) $(NUnitPath) .\Security\Tests\bin\$(Configuration)\harlam357.Security.Tests.dll /xml=.\artifacts\harlam357-$(Framework).Security.Tests.Results.xml //a harlam357.Security //ea $(NCoverExcludeList) //x .\artifacts\harlam357-$(Framework).Security.Tests.Coverage.xml" />
+      <Exec Command="$(NCoverPath) $(NUnitPath) .\Windows.Forms\Tests\bin\$(Configuration)\harlam357.Windows.Forms.Tests.dll /xml=.\artifacts\harlam357-$(Framework).Windows.Forms.Tests.Results.xml //a harlam357.Windows.Forms //ea $(NCoverExcludeList) //x .\artifacts\harlam357-$(Framework).Windows.Forms.Tests.Coverage.xml" />
    </Target>
 
    <Target Name="FxCop">

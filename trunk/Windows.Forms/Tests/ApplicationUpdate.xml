@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ApplicationUpdate xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Version>0.4.10.156</Version>
+  <UpdateDate>2010-03-18T00:00:00</UpdateDate>
+  <UpdateFiles>
+    <ApplicationUpdateFile>
+      <Description>Windows Installer</Description>
+      <HttpAddress>http://hfm-net.googlecode.com/files/HFM Release 0.4.10.156.msi</HttpAddress>
+      <Size>1569792</Size>
+      <MD5>30847cc654974d969f8f5a3f2423040d</MD5>
+      <SHA1>b38dd073546647dcf37d89d62cb63823934c8fce</SHA1>
+      <UpdateType>0</UpdateType>
+    </ApplicationUpdateFile>
+    <ApplicationUpdateFile>
+      <Description>Zip Archive</Description>
+      <HttpAddress>http://hfm-net.googlecode.com/files/HFM Release 0.4.10.156.zip</HttpAddress>
+      <Size>584621</Size>
+      <MD5>d1ea4151b2165c6a7ef3ec519b479464</MD5>
+      <SHA1>4103946141f90105510827a0baf13cb38cb00256</SHA1>
+      <UpdateType>1</UpdateType>
+    </ApplicationUpdateFile>
+  </UpdateFiles>
+</ApplicationUpdate>

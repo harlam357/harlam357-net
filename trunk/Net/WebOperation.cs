@@ -29,7 +29,13 @@ namespace harlam357.Net
    {
       Idle,
       InProgress,
-      Finished
+   }
+   
+   public enum WebOperationResult
+   {
+      Unknown,
+      Completed,
+      Canceled
    }
 
    public abstract class WebOperation : IWebOperation
@@ -38,37 +44,62 @@ namespace harlam357.Net
    
       public event EventHandler<WebOperationProgressEventArgs> WebOperationProgress;
       
-      private IWebOperationRequest _OperationRequest;
+      private IWebOperationRequest _operationRequest;
       public IWebOperationRequest OperationRequest
       {
-         get { return _OperationRequest; }
-         protected set { _OperationRequest = value; }
+         get { return _operationRequest; }
+         protected set { _operationRequest = value; }
+      }
+      
+      public IWebProxy OperationProxy
+      {
+         get { return _operationRequest.Request.Proxy; }
+         set { _operationRequest.Request.Proxy = value; }
       }
 
-      private WebOperationState _State = WebOperationState.Idle;
+      private WebOperationState _state = WebOperationState.Idle;
       public WebOperationState State
       {
-         get { return _State; }
-         protected set { _State = value; }
-      }
-      
-      private bool _AutoSizeBuffer = true;
-      public bool AutoSizeBuffer
-      {
-         get { return _AutoSizeBuffer; }
-         set { _AutoSizeBuffer = value; }
+         get { return _state; }
+         protected set
+         {
+            _state = value;
+            if (_state.Equals(WebOperationState.Idle))
+            {
+               _cancel = false;
+            }
+         }
       }
 
-      private int _Buffer = DefaultBufferSize;
-      public int Buffer
+      private WebOperationResult _result = WebOperationResult.Unknown;
+      public WebOperationResult Result
       {
-         get { return _Buffer; }
-         set { _Buffer = value; }
+         get { return _result; }
+         protected set
+         {
+            _result = value;
+         }
       }
       
-      public void Download(string LocalFilePath)
+      private bool _autoSizeBuffer = true;
+      public bool AutoSizeBuffer
       {
-         ExecuteDownload(LocalFilePath);
+         get { return _autoSizeBuffer; }
+         set { _autoSizeBuffer = value; }
+      }
+
+      private int _buffer = DefaultBufferSize;
+      public int Buffer
+      {
+         get { return _buffer; }
+         set { _buffer = value; }
+      }
+
+      private bool _cancel;
+      
+      public void Download(string localFilePath)
+      {
+         ExecuteDownload(localFilePath);
       }
       
       public long GetDownloadLength()
@@ -76,19 +107,20 @@ namespace harlam357.Net
          return ExecuteGetDownloadLength();
       }
       
-      protected void ExecuteDownload(string LocalFilePath)
+      protected void ExecuteDownload(string localFilePath)
       {
          if (State.Equals(WebOperationState.Idle) == false)
          {
             throw new InvalidOperationException("Web Operation must be Idle.");
          }
 
+         State = WebOperationState.InProgress;
          OperationRequest.Request.Method = GetWebDownloadMethod();
          
          long totalBytesRead = 0;
          long totalLength;
 
-         WebResponse response = _OperationRequest.Request.GetResponse();
+         WebResponse response = _operationRequest.Request.GetResponse();
          using (Stream responseStream = response.GetResponseStream())
          {
             totalLength = response.ContentLength;
@@ -97,18 +129,23 @@ namespace harlam357.Net
                Buffer = CalculateBufferSize(totalLength);
             }
 
-            using (Stream fileStream = File.Create(LocalFilePath))
+            using (Stream fileStream = File.Create(localFilePath))
             {
                byte[] buffer = new byte[Buffer];
                int bytesRead;
 
                do
                {
+                  if (_cancel)
+                  {
+                     Result = WebOperationResult.Canceled;
+                     break;
+                  }
+
                   bytesRead = responseStream.Read(buffer, 0, buffer.Length);
                   fileStream.Write(buffer, 0, bytesRead);
                   
                   totalBytesRead += bytesRead;
-                  State = WebOperationState.InProgress;
                   OnWebOperationProgress(new WebOperationProgressEventArgs(totalBytesRead, totalLength, State));
                }
                while (bytesRead > 0);
@@ -117,8 +154,12 @@ namespace harlam357.Net
 
          if (totalBytesRead == totalLength)
          {
-            State = WebOperationState.Finished;
+            Result = WebOperationResult.Completed;
             OnWebOperationProgress(new WebOperationProgressEventArgs(totalBytesRead, totalLength, State));
+         }
+         else if (_cancel)
+         {
+            File.Delete(localFilePath);
          }
 
          // Close the Response Stream
@@ -135,33 +176,36 @@ namespace harlam357.Net
             throw new InvalidOperationException("Web Operation must be Idle.");
          }
 
+         State = WebOperationState.InProgress;
          OperationRequest.Request.Method = GetWebDownloadMethod();
 
-         WebResponse response = _OperationRequest.Request.GetResponse();
+         WebResponse response = _operationRequest.Request.GetResponse();
          long length = response.ContentLength;
          response.Close();
          
+         State = WebOperationState.Idle;
          return length;
       }
 
-      public void Upload(string LocalFilePath)
+      public void Upload(string localFilePath)
       {
-         ExecuteUpload(LocalFilePath);
+         ExecuteUpload(localFilePath);
       }
 
-      protected void ExecuteUpload(string LocalFilePath)
+      protected void ExecuteUpload(string localFilePath)
       {
          if (State.Equals(WebOperationState.Idle) == false)
          {
             throw new InvalidOperationException("Web Operation must be Idle.");
          }
 
+         State = WebOperationState.InProgress;
          OperationRequest.Request.Method = GetWebUploadMethod();
 
          long totalBytesRead = 0;
          long totalLength;
 
-         using (Stream fileStream = File.OpenRead(LocalFilePath))
+         using (Stream fileStream = File.OpenRead(localFilePath))
          {
             totalLength = fileStream.Length;
             if (AutoSizeBuffer)
@@ -176,11 +220,16 @@ namespace harlam357.Net
 
                do
                {
+                  if (_cancel)
+                  {
+                     Result = WebOperationResult.Canceled;
+                     break;
+                  }
+
                   bytesRead = fileStream.Read(buffer, 0, buffer.Length);
                   requestStream.Write(buffer, 0, bytesRead);
 
                   totalBytesRead += bytesRead;
-                  State = WebOperationState.InProgress;
                   OnWebOperationProgress(new WebOperationProgressEventArgs(totalBytesRead, totalLength, State));
 
                } while (bytesRead > 0);
@@ -189,7 +238,7 @@ namespace harlam357.Net
 
          if (totalBytesRead == totalLength)
          {
-            State = WebOperationState.Finished;
+            Result = WebOperationResult.Completed;
             OnWebOperationProgress(new WebOperationProgressEventArgs(totalBytesRead, totalLength, State));
          }
 
@@ -219,13 +268,12 @@ namespace harlam357.Net
             throw new InvalidOperationException("Web Operation must be Idle.");
          }
 
+         State = WebOperationState.InProgress;
          OperationRequest.Request.Method = GetWebCheckConnectionMethod();
 
          WebResponse response = null;
          try
          {
-            State = WebOperationState.InProgress;
-
             response = OperationRequest.Request.GetResponse();
          }
          finally
@@ -236,6 +284,14 @@ namespace harlam357.Net
             }
 
             State = WebOperationState.Idle;
+         }
+      }
+      
+      public void CancelOperation()
+      {
+         if (State.Equals(WebOperationState.InProgress))
+         {
+            _cancel = true;
          }
       }
 
@@ -275,22 +331,29 @@ namespace harlam357.Net
 
       public static WebOperation Create(string requestUriString)
       {
-         return Create(new Uri(requestUriString));
+         if (requestUriString.Contains("://") == false)
+         {
+            requestUriString = "file://" + requestUriString;
+         }
+         return CreateWebOperation(WebRequest.Create(requestUriString));
       }
       
       public static WebOperation Create(Uri requestUri)
       {
-         WebRequest request = WebRequest.Create(requestUri);
+         return CreateWebOperation(WebRequest.Create(requestUri));
+      }
 
+      private static WebOperation CreateWebOperation(WebRequest request)
+      {
          if (request is FileWebRequest)
          {
             return new FileWebOperation(request);
          }
-         else if (request is HttpWebRequest)
+         if (request is HttpWebRequest)
          {
             return new HttpWebOperation(request);
          }
-         else if (request is FtpWebRequest)
+         if (request is FtpWebRequest)
          {
             return new FtpWebOperation((FtpWebRequest)request);
          }
@@ -393,13 +456,13 @@ namespace harlam357.Net
    {
       public WebOperationRequest(WebRequest request)
       {
-         _Request = request;
+         _request = request;
       }
 
-      private readonly WebRequest _Request;
+      private readonly WebRequest _request;
       public WebRequest Request
       { 
-         get { return _Request; }
+         get { return _request; }
       }
       
       public RequestCachePolicy CachePolicy 
