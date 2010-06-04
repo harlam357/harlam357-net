@@ -24,7 +24,7 @@ using System.Windows.Forms;
 
 namespace harlam357.Windows.Forms
 {
-   public interface IValidatingControl
+   public interface IValidatingControl : IBindableComponent
    {
       /// <summary>
       /// Custom Validation Event
