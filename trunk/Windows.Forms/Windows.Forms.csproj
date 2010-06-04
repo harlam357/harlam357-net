@@ -60,6 +60,9 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
+    <Compile Include="RadioPanel.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="SaveFileView.cs" />
     <Compile Include="UpdateChecker.cs" />
     <Compile Include="UpdateDialog.cs">

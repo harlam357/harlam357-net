@@ -21,6 +21,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
+using System.Globalization;
 using System.Reflection;
 using System.Windows.Forms;
 
@@ -117,7 +118,11 @@ namespace harlam357.Windows.Forms
             }
             return false;
          }
-         set { _ErrorState = value; }
+         set
+         {
+            _ErrorState = value;
+            SetErrorColor(ErrorState);
+         }
       }
 
       private bool ReadOnly
@@ -138,6 +143,11 @@ namespace harlam357.Windows.Forms
             {
                PropertyInfo readOnly = typeof (TextBoxBase).GetProperty("ReadOnly");
                readOnly.SetValue(_control, value, null);
+            }
+            else if (_control is ComboBox)
+            {
+               // simulate the behavior of OnReadOnlyChanged for a ComboBox
+               _control.BackColor = value ? SystemColors.Control : SystemColors.Window;
             }
          }
       }
@@ -166,6 +176,13 @@ namespace harlam357.Windows.Forms
       #region Event Handlers
       public void DataBindings_CollectionChanged(object sender, CollectionChangeEventArgs e)
       {
+         if (_control.Disposing ||
+             _control.IsDisposed ||
+             _control.DataBindings.Count == 0)
+         {
+            return;
+         }
+
          if (_control.Enabled)
          {
             if (_control is TextBoxBase)
@@ -257,93 +274,160 @@ namespace harlam357.Windows.Forms
       /// </summary>
       public void ValidateControlText()
       {
-         Color NewColor = SystemColors.Window;
-         bool NewError = false;
-
-         if (DoValidation() == false)
+         // skip validation on None
+         if (ValidationType.Equals(ValidationType.None))
          {
-            NewColor = ErrorBackColor;
-            NewError = true;
+            return;
          }
 
-         _control.BackColor = NewColor;
-         ErrorState = NewError;
+         ValidationResults validationResults = DoValidation();
+         if (!validationResults.IgnoreResult)
+         {
+            SetErrorState(!validationResults.Valid);
+            SetErrorColor(!validationResults.Valid);
+         }
+      }
+
+      private void SetErrorState(bool errorState)
+      {
+         _ErrorState = errorState;
          foreach (Control ctrl in CompanionControls)
          {
-            ctrl.BackColor = NewColor;
             IValidatingControl validatingControl = ctrl as IValidatingControl;
             if (validatingControl != null)
             {
-               validatingControl.ErrorState = NewError;
+               validatingControl.ErrorState = errorState;
+            }
+            else
+            {
+               SetErrorColor(errorState, ctrl);
             }
          }
       }
 
-      private bool DoValidation()
+      private void SetErrorColor(bool errorState)
+      {
+         SetErrorColor(errorState, _control);
+      }
+
+      private void SetErrorColor(bool errorState, Control control)
+      {
+         if (control.Enabled)
+         {
+            Color NewColor = SystemColors.Window;
+            if (errorState)
+            {
+               NewColor = ErrorBackColor;
+            }
+
+            control.BackColor = NewColor;
+         }
+      }
+
+      private ValidationResults DoValidation()
       {
          switch (ValidationType)
          {
-            case ValidationType.None:
-               return true;
+            // skip validation on None
+            //case ValidationType.None:
+            //   return true;
             case ValidationType.Empty:
-               if (_control.Text.Length != 0)
+               if (_control.Text.Trim().Length != 0)
                {
-                  return true;
+                  return new ValidationResults(true);
                }
-               return false;
+               return new ValidationResults(false);
             case ValidationType.Custom:
                if (CustomValidation == null)
                {
                   // Revert to behavior of ValidationType.Empty
-                  if (_control.Text.Length != 0)
+                  if (_control.Text.Trim().Length != 0)
                   {
-                     return true;
+                     return new ValidationResults(true);
                   }
-                  return false;
+                  return new ValidationResults(false);
                }
                ValidatingControlCustomValidationEventArgs e = 
                   new ValidatingControlCustomValidationEventArgs(_control.Text, ErrorToolTipText);
                CustomValidation(this, e);
                _control.Text = e.ControlText;
                ErrorToolTipText = e.ErrorToolTipText;
-               return e.ValidationResult;
+               return new ValidationResults(e.ValidationResult, e.IgnoreResult);
             default:
-               throw new NotImplementedException();
+               throw new NotImplementedException(String.Format(CultureInfo.CurrentCulture,
+                  "Validation for Type '{0}' is not implemented.", ValidationType));
          }
       }
       #endregion
    }
 
+   internal class ValidationResults
+   {
+      private bool _valid;
+
+      public bool Valid
+      {
+         get { return _valid; }
+         set { _valid = value; }
+      }
+
+      private bool _ignoreResult;
+
+      public bool IgnoreResult
+      {
+         get { return _ignoreResult; }
+         set { _ignoreResult = value; }
+      }
+
+      internal ValidationResults(bool valid)
+      {
+         _valid = valid;
+      }
+
+      internal ValidationResults(bool valid, bool ignoreResult)
+      {
+         _valid = valid;
+         _ignoreResult = ignoreResult;
+      }
+   }
+
    public class ValidatingControlCustomValidationEventArgs : EventArgs
    {
       #region Properties
-      private string _ControlText;
+      private string _controlText;
       public string ControlText
       {
-         get { return _ControlText; }
-         set { _ControlText = value; }
+         get { return _controlText; }
+         set { _controlText = value; }
       }
 
-      private string _ErrorToolTipText;
+      private string _errorToolTipText;
       public string ErrorToolTipText
       {
-         get { return _ErrorToolTipText; }
-         set { _ErrorToolTipText = value; }
+         get { return _errorToolTipText; }
+         set { _errorToolTipText = value; }
       }
 
-      private bool _ValidationResult;
+      private bool _validationResult;
       public bool ValidationResult
       {
-         get { return _ValidationResult; }
-         set { _ValidationResult = value; }
+         get { return _validationResult; }
+         set { _validationResult = value; }
+      }
+
+      private bool _ignoreResult;
+      public bool IgnoreResult
+      {
+         get { return _ignoreResult; }
+         set { _ignoreResult = value; }
       } 
       #endregion
 
       #region Constructor
-      public ValidatingControlCustomValidationEventArgs(string TextValue, string ToolTipTextValue)
+      public ValidatingControlCustomValidationEventArgs(string controlText, string errorToolTipText)
       {
-         ControlText = TextValue;
-         ErrorToolTipText = ToolTipTextValue;
+         ControlText = controlText;
+         ErrorToolTipText = errorToolTipText;
       }
       #endregion
    }
