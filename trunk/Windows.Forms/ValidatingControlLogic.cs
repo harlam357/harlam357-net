@@ -227,7 +227,7 @@ namespace harlam357.Windows.Forms
 
          if (_control.Enabled)
          {
-            ValidationType.Equals(ValidationType.None) == false)
+            if (ValidationType.Equals(ValidationType.None) == false)
             {
                ValidateControlText();
             }
