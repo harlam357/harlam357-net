@@ -75,5 +75,10 @@ namespace harlam357.Windows.Forms
       /// Validate the Control Text Property
       /// </summary>
       void ValidateControlText();
+
+      /// <summary>
+      /// Show or Hide the Configured ToolTip based on Error State
+      /// </summary>
+      void ShowToolTip();
    }
 }
