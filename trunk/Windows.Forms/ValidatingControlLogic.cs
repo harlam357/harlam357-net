@@ -44,67 +44,67 @@ namespace harlam357.Windows.Forms
       #endregion
 
       #region Properties
-      private ToolTip _ErrorToolTip = null;
+      private ToolTip _errorToolTip;
       /// <summary>
       /// Attached ToolTip Instance
       /// </summary>
       public ToolTip ErrorToolTip
       {
-         get { return _ErrorToolTip; }
-         set { _ErrorToolTip = value; }
+         get { return _errorToolTip; }
+         set { _errorToolTip = value; }
       }
 
-      private Point _ErrorToolTipPoint = new Point(10, -20);
+      private Point _errorToolTipPoint = new Point(10, -20);
       /// <summary>
       /// ToolTip Display Point
       /// </summary>
       public Point ErrorToolTipPoint
       {
-         get { return _ErrorToolTipPoint; }
-         set { _ErrorToolTipPoint = value; }
+         get { return _errorToolTipPoint; }
+         set { _errorToolTipPoint = value; }
       }
 
-      private int _ErrorToolTipDuration = 5000;
+      private int _errorToolTipDuration = 5000;
       /// <summary>
       /// ToolTip Display Duration
       /// </summary>
       public int ErrorToolTipDuration
       {
-         get { return _ErrorToolTipDuration; }
-         set { _ErrorToolTipDuration = value; }
+         get { return _errorToolTipDuration; }
+         set { _errorToolTipDuration = value; }
       }
 
-      private string _ErrorToolTipText = String.Empty;
+      private string _errorToolTipText = String.Empty;
       /// <summary>
       /// ToolTip Text for Display
       /// </summary>
       public string ErrorToolTipText
       {
-         get { return _ErrorToolTipText; }
-         set { _ErrorToolTipText = value; }
+         get { return _errorToolTipText; }
+         set { _errorToolTipText = value; }
       }
 
-      private ValidationType _ValidationType = ValidationType.None;
+      private ValidationType _validationType = ValidationType.None;
       /// <summary>
       /// Validation Type
       /// </summary>
       public ValidationType ValidationType
       {
-         get { return _ValidationType; }
-         set { _ValidationType = value; }
+         get { return _validationType; }
+         set { _validationType = value; }
       }
 
-      private Color _ErrorBackColor = Color.Yellow;
+      private Color _errorBackColor = Color.Yellow;
       /// <summary>
       /// Control Error Color
       /// </summary>
       public Color ErrorBackColor
       {
-         get { return _ErrorBackColor; }
-         set { _ErrorBackColor = value; }
+         get { return _errorBackColor; }
+         set { _errorBackColor = value; }
       }
 
-      private bool _ErrorState = false;
+      private bool _errorState;
       /// <summary>
       /// Control Error State
       /// </summary>
@@ -114,14 +114,15 @@ namespace harlam357.Windows.Forms
          {
             if (_control.Enabled)
             {
-               return _ErrorState;
+               return _errorState;
             }
             return false;
          }
          set
          {
-            _ErrorState = value;
+            _errorState = value;
             SetErrorColor(ErrorState);
+            ShowToolTip();
          }
       }
 
@@ -152,13 +153,13 @@ namespace harlam357.Windows.Forms
          }
       }
 
-      private readonly List<Control> _CompanionControls = new List<Control>();
+      private readonly List<Control> _companionControls = new List<Control>();
       /// <summary>
       /// Companion Controls List
       /// </summary>
       public List<Control> CompanionControls
       {
-         get { return _CompanionControls; }
+         get { return _companionControls; }
       }
       #endregion
 
@@ -183,7 +184,8 @@ namespace harlam357.Windows.Forms
             return;
          }
 
-         if (_control.Enabled)
+         if (_control.Enabled &&
+             ValidationType.Equals(ValidationType.None) == false)
          {
             if (_control is TextBoxBase)
             {
@@ -200,7 +202,8 @@ namespace harlam357.Windows.Forms
 
       public void OnValidating(CancelEventArgs e)
       {
-         if (_control.Enabled)
+         if (_control.Enabled &&
+             ValidationType.Equals(ValidationType.None) == false)
          {
             if (_control is TextBoxBase)
             {
@@ -217,23 +220,6 @@ namespace harlam357.Windows.Forms
          }
       }
 
-      private void ShowToolTip()
-      {
-         if (ErrorToolTip != null)
-         {
-            if (ErrorState && ErrorToolTipText.Length != 0)
-            {
-               ErrorToolTip.RemoveAll();
-               ErrorToolTip.Tag = _control.Name;
-               ErrorToolTip.Show(ErrorToolTipText, _control, ErrorToolTipPoint, ErrorToolTipDuration);
-            }
-            else
-            {
-               ErrorToolTip.RemoveAll();
-            }
-         }
-      }
-
       public void OnEnabledChanged(EventArgs e)
       {
          ReadOnly = !_control.Enabled;
@@ -241,7 +227,10 @@ namespace harlam357.Windows.Forms
 
          if (_control.Enabled)
          {
-            ValidateControlText();
+            ValidationType.Equals(ValidationType.None) == false)
+            {
+               ValidateControlText();
+            }
          }
          else
          {
@@ -288,9 +277,32 @@ namespace harlam357.Windows.Forms
          }
       }
 
+      /// <summary>
+      /// Show or Hide the Configured ToolTip based on Error State
+      /// </summary>
+      public void ShowToolTip()
+      {
+         if (ErrorToolTip != null)
+         {
+            if (_control.Enabled)
+            {
+               if (ErrorState && ErrorToolTipText.Length != 0)
+               {
+                  ErrorToolTip.RemoveAll();
+                  ErrorToolTip.Tag = _control.Name;
+                  ErrorToolTip.Show(ErrorToolTipText, _control, ErrorToolTipPoint, ErrorToolTipDuration);
+               }
+               else
+               {
+                  ErrorToolTip.RemoveAll();
+               }
+            }
+         }
+      }
+
       private void SetErrorState(bool errorState)
       {
-         _ErrorState = errorState;
+         _errorState = errorState;
          foreach (Control ctrl in CompanionControls)
          {
             IValidatingControl validatingControl = ctrl as IValidatingControl;
@@ -314,13 +326,13 @@ namespace harlam357.Windows.Forms
       {
          if (control.Enabled)
          {
-            Color NewColor = SystemColors.Window;
+            Color newColor = SystemColors.Window;
             if (errorState)
             {
-               NewColor = ErrorBackColor;
+               newColor = ErrorBackColor;
             }
 
-            control.BackColor = NewColor;
+            control.BackColor = newColor;
          }
       }
 
@@ -338,15 +350,6 @@ namespace harlam357.Windows.Forms
                }
                return new ValidationResults(false);
             case ValidationType.Custom:
-               if (CustomValidation == null)
-               {
-                  // Revert to behavior of ValidationType.Empty
-                  if (_control.Text.Trim().Length != 0)
-                  {
-                     return new ValidationResults(true);
-                  }
-                  return new ValidationResults(false);
-               }
                ValidatingControlCustomValidationEventArgs e = 
                   new ValidatingControlCustomValidationEventArgs(_control.Text, ErrorToolTipText);
                CustomValidation(this, e);

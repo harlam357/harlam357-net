@@ -158,6 +158,11 @@ namespace harlam357.Windows.Forms
       {
          _logic.ValidateControlText();
       }
+
+      public void ShowToolTip()
+      {
+         _logic.ShowToolTip();
+      }
       #endregion
    }
 }
