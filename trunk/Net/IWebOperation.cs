@@ -44,6 +44,8 @@ namespace harlam357.Net
       long GetDownloadLength();
       
       void Upload(string localFilePath);
+
+      void Upload(string localFilePath, int maximumLength);
       
       void CheckConnection();
       

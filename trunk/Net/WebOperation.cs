@@ -189,10 +189,15 @@ namespace harlam357.Net
 
       public void Upload(string localFilePath)
       {
-         ExecuteUpload(localFilePath);
+         ExecuteUpload(localFilePath, -1);
+      }
+      
+      public void Upload(string localFilePath, int maximumLength)
+      {
+         ExecuteUpload(localFilePath, maximumLength);
       }
 
-      protected void ExecuteUpload(string localFilePath)
+      protected void ExecuteUpload(string localFilePath, int maximumLength)
       {
          if (State.Equals(WebOperationState.Idle) == false)
          {
@@ -207,7 +212,23 @@ namespace harlam357.Net
 
          using (Stream fileStream = File.OpenRead(localFilePath))
          {
-            totalLength = fileStream.Length;
+            if (maximumLength < 1)
+            {
+               totalLength = fileStream.Length;
+            }
+            else
+            {
+               if (fileStream.Length < maximumLength)
+               {
+                  totalLength = fileStream.Length;
+               }
+               else
+               {
+                  totalLength = maximumLength;
+                  fileStream.Position = fileStream.Length - maximumLength;   
+               }
+            }
+            
             if (AutoSizeBuffer)
             {
                Buffer = CalculateBufferSize(totalLength);

@@ -89,7 +89,20 @@ namespace harlam357.Net.Tests
          string LocalFilePath = Path.Combine(TestFilesFolder, "test.html");
          web.Upload(LocalFilePath);
 
-         Assert.IsTrue(File.Exists(LocalFilePath));
+         Assert.IsTrue(File.Exists(UploadPath));
+      }
+
+      [Test]
+      public void UploadMaximumLengthTest()
+      {
+         string UploadPath = Path.GetFullPath(Path.Combine(TestFilesWorkFolder, "upload.txt"));
+         WebOperation web = WebOperation.Create(UploadPath);
+         string LocalFilePath = Path.Combine(TestFilesFolder, "FAHlog.txt");
+         web.Upload(LocalFilePath, 102400);
+
+         Assert.IsTrue(File.Exists(UploadPath));
+         FileInfo fi = new FileInfo(UploadPath);
+         Assert.AreEqual(102400, fi.Length);
       }
 
       [Test]
