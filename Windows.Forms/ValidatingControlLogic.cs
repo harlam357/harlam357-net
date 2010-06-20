@@ -122,7 +122,6 @@ namespace harlam357.Windows.Forms
          {
             _errorState = value;
             SetErrorColor(ErrorState);
-            ShowToolTip();
          }
       }
 
