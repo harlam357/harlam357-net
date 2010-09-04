@@ -40,7 +40,7 @@ namespace harlam357.Windows.Forms
       private readonly ApplicationUpdate _updateData;
       private readonly IWebProxy _proxy;
       private readonly IUpdateView _updateView;
-      private readonly ISaveFileView _saveFileView;
+      private readonly ISaveFileDialogView _saveFileView;
       private readonly IMessageBoxView _messageBoxView;
 
       #endregion
@@ -73,13 +73,13 @@ namespace harlam357.Windows.Forms
          _updateData = updateData;
          _proxy = proxy;
          _updateView = new UpdateDialog(updateData, applicationName, applicationVersion);
-         _saveFileView = new SaveFileView();
+         _saveFileView = new SaveFileDialogView();
          _messageBoxView = new MessageBoxView();
          _updateView.AttachPresenter(this);
       }
 
       public UpdatePresenter(Form owner, Action<Exception> exceptionLogger, ApplicationUpdate updateData, 
-                             IWebProxy proxy, IUpdateView updateView, ISaveFileView saveFileView,
+                             IWebProxy proxy, IUpdateView updateView, ISaveFileDialogView saveFileView,
                              IMessageBoxView messageBoxView)
       {
          _owner = owner;
@@ -119,7 +119,7 @@ namespace harlam357.Windows.Forms
       {
          SelectedUpdate = _updateData.UpdateFiles[index];
          _saveFileView.FileName = GetFileNameFromUrl(_updateData.UpdateFiles[index].HttpAddress);
-         if (_saveFileView.ShowView())
+         if (_saveFileView.ShowDialog().Equals(DialogResult.OK))
          {
             LocalFilePath = _saveFileView.FileName;
             return true;
@@ -164,9 +164,20 @@ namespace harlam357.Windows.Forms
             string message = String.Format(CultureInfo.CurrentCulture,
                                            "Download failed with the following error:{0}{0}{1}",
                                            Environment.NewLine, ex.Message);
-            _owner.Invoke(new MethodInvoker(delegate { _messageBoxView.ShowError(_owner, message, _owner.Text); }));
+            ShowErrorMessage(_owner, message, _owner.Text); 
          }
          CloseView();
+      }
+
+      private void ShowErrorMessage(Form owner, string message, string caption)
+      {
+         if (owner.InvokeRequired)
+         {
+            owner.Invoke(new MethodInvoker(delegate { ShowErrorMessage(owner, message, caption); }));
+            return;   
+         }
+
+         _messageBoxView.ShowError(_owner, message, caption);
       }
 
       private void WebOperationProgress(object sender, WebOperationProgressEventArgs e)

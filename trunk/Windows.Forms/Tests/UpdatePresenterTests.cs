@@ -44,8 +44,8 @@ namespace harlam357.Windows.Forms.Tests
       {
          MockRepository mocks = new MockRepository();
          IUpdateView updateView = mocks.DynamicMock<IUpdateView>();
-         ISaveFileView saveFileView = mocks.Stub<ISaveFileView>();
-         Expect.Call(saveFileView.ShowView()).Return(true);
+         ISaveFileDialogView saveFileView = mocks.Stub<ISaveFileDialogView>();
+         Expect.Call(saveFileView.ShowDialog()).Return(DialogResult.OK);
          IMessageBoxView messageBoxView = mocks.DynamicMock<IMessageBoxView>();
 
          mocks.ReplayAll();
@@ -65,8 +65,8 @@ namespace harlam357.Windows.Forms.Tests
       {
          MockRepository mocks = new MockRepository();
          IUpdateView updateView = mocks.DynamicMock<IUpdateView>();
-         ISaveFileView saveFileView = mocks.Stub<ISaveFileView>();
-         Expect.Call(saveFileView.ShowView()).Return(true);
+         ISaveFileDialogView saveFileView = mocks.Stub<ISaveFileDialogView>();
+         Expect.Call(saveFileView.ShowDialog()).Return(DialogResult.OK);
          IMessageBoxView messageBoxView = mocks.DynamicMock<IMessageBoxView>();
          Expect.Call(() => messageBoxView.ShowError(new Form(), "text", "caption")).IgnoreArguments();
 
@@ -87,7 +87,7 @@ namespace harlam357.Windows.Forms.Tests
       {
          MockRepository mocks = new MockRepository();
          IUpdateView updateView = mocks.DynamicMock<IUpdateView>();
-         ISaveFileView saveFileView = mocks.DynamicMock<ISaveFileView>();
+         ISaveFileDialogView saveFileView = mocks.DynamicMock<ISaveFileDialogView>();
          IMessageBoxView messageBoxView = mocks.DynamicMock<IMessageBoxView>();
 
          mocks.ReplayAll();
