@@ -164,7 +164,7 @@ namespace harlam357.Windows.Forms
             string message = String.Format(CultureInfo.CurrentCulture,
                                            "Download failed with the following error:{0}{0}{1}",
                                            Environment.NewLine, ex.Message);
-            _messageBoxView.ShowError(_owner, message, _owner.Text);
+            _owner.Invoke(new MethodInvoker(delegate { _messageBoxView.ShowError(_owner, message, _owner.Text); }));
          }
          CloseView();
       }

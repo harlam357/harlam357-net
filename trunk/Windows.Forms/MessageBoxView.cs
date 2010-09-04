@@ -24,9 +24,11 @@ namespace harlam357.Windows.Forms
    public interface IMessageBoxView
    {
       void ShowError(string text, string caption);
-      void ShowError(Form owner, string text, string caption);
+      void ShowError(IWin32Window owner, string text, string caption);
       void ShowInformation(string text, string caption);
-      void ShowInformation(Form owner, string text, string caption);
+      void ShowInformation(IWin32Window owner, string text, string caption);
+      DialogResult AskYesNoQuestion(string text, string caption);
+      DialogResult AskYesNoQuestion(IWin32Window owner, string text, string caption);
    }
 
    public class MessageBoxView : IMessageBoxView
@@ -35,15 +37,9 @@ namespace harlam357.Windows.Forms
       {
          MessageBox.Show(text, caption, MessageBoxButtons.OK, MessageBoxIcon.Error);
       }
-   
-      public void ShowError(Form owner, string text, string caption)
+
+      public void ShowError(IWin32Window owner, string text, string caption)
       {
-         if (owner.InvokeRequired)
-         {
-            owner.Invoke(new MethodInvoker(() => ShowError(owner, text, caption)));
-            return;
-         }
-      
          MessageBox.Show(owner, text, caption, MessageBoxButtons.OK, MessageBoxIcon.Error);
       }
       
@@ -52,15 +48,19 @@ namespace harlam357.Windows.Forms
          MessageBox.Show(text, caption, MessageBoxButtons.OK, MessageBoxIcon.Information);
       }
 
-      public void ShowInformation(Form owner, string text, string caption)
+      public void ShowInformation(IWin32Window owner, string text, string caption)
       {
-         if (owner.InvokeRequired)
-         {
-            owner.Invoke(new MethodInvoker(() => ShowInformation(owner, text, caption)));
-            return;
-         }
-
          MessageBox.Show(owner, text, caption, MessageBoxButtons.OK, MessageBoxIcon.Information);
+      }
+
+      public DialogResult AskYesNoQuestion(string text, string caption)
+      {
+         return MessageBox.Show(text, caption, MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+      }
+
+      public DialogResult AskYesNoQuestion(IWin32Window owner, string text, string caption)
+      {
+         return MessageBox.Show(owner, text, caption, MessageBoxButtons.YesNo, MessageBoxIcon.Question);
       }
    }
 }
