@@ -105,6 +105,7 @@
          this.Controls.Add(this.btnReport);
          this.Controls.Add(this.copyErrorCheckBox);
          this.Controls.Add(this.exceptionTextBox);
+         this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
          this.MaximizeBox = false;
          this.MinimizeBox = false;
          this.Name = "ExceptionDialog";
