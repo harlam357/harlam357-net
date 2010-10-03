@@ -30,7 +30,9 @@ namespace harlam357.Windows.Forms
    {
       public delegate void LogException(Exception ex);
 
-      private static string _applicationId;
+      private static bool _registered;
+      private static string _applicationIdStatic;
+      private static string _osVersionStatic;
       private static LogException _exceptionLogger;
 
       public static void RegisterForUnhandledExceptions(string applicationId)
@@ -38,49 +40,50 @@ namespace harlam357.Windows.Forms
          RegisterForUnhandledExceptions(applicationId, null);
       }
 
-      public static void RegisterForUnhandledExceptions(string applicationId, LogException exceptionLogger)
+      public static void RegisterForUnhandledExceptions(string applicationId, string osVersion)
       {
-         _applicationId = applicationId;
+         RegisterForUnhandledExceptions(applicationId, osVersion, null);
+      }
+
+      public static void RegisterForUnhandledExceptions(string applicationId, string osVersion, LogException exceptionLogger)
+      {
+         if (_registered)
+         {
+            throw new InvalidOperationException("Exception Dialog is already registered.");
+         }
+         _applicationIdStatic = applicationId;
+         _osVersionStatic = osVersion;
          _exceptionLogger = exceptionLogger;
          Application.ThreadException += ShowErrorDialog;
+         _registered = true;
       }
 
       private static void ShowErrorDialog(object sender, ThreadExceptionEventArgs e)
       {
-         ShowErrorDialog(e.Exception, null);
+         ShowErrorDialog(e.Exception, _applicationIdStatic, _osVersionStatic, null);
       }
 
-      public static void ShowErrorDialog(Exception exception, string message)
+      public static void ShowErrorDialog(Exception exception, string applicationId, string osVersion, string message)
       {
-         ShowErrorDialog(exception, message, false);
-      }
-      
-      public static void ShowErrorDialog(Exception exception, string message, bool mustTerminate)
-      {
-         ShowErrorDialog(exception, message, null, mustTerminate);
-      }
-      
-      public static void ShowErrorDialog(Exception exception, string message, string reportUrl)
-      {
-         ShowErrorDialog(exception, message, reportUrl, false);
+         ShowErrorDialog(exception, applicationId, osVersion, message, false);
       }
 
-      public static void ShowErrorDialog(Exception exception, string message, string reportUrl, bool mustTerminate)
+      public static void ShowErrorDialog(Exception exception, string applicationId, string osVersion, string message, bool mustTerminate)
       {
-         ShowErrorDialog(exception, message, reportUrl, _applicationId, mustTerminate);
-      }
-      
-      public static void ShowErrorDialog(Exception exception, string message, string reportUrl, string messageHeader)
-      {
-         ShowErrorDialog(exception, message, reportUrl, messageHeader, false);
+         ShowErrorDialog(exception, applicationId, osVersion, message, null, mustTerminate);
       }
 
-      public static void ShowErrorDialog(Exception exception, string message, string reportUrl, string messageHeader, bool mustTerminate)
+      public static void ShowErrorDialog(Exception exception, string applicationId, string osVersion, string message, string reportUrl)
+      {
+         ShowErrorDialog(exception, applicationId, osVersion, message, reportUrl, false);
+      }
+
+      public static void ShowErrorDialog(Exception exception, string applicationId, string osVersion, string message, string reportUrl, bool mustTerminate)
       {
          if (_exceptionLogger != null) _exceptionLogger(exception);
          try
          {
-            using (ExceptionDialog box = new ExceptionDialog(exception, message, reportUrl, messageHeader, mustTerminate))
+            using (ExceptionDialog box = new ExceptionDialog(exception, applicationId, osVersion, message, reportUrl, mustTerminate))
             {
                box.ShowDialog();
             }
@@ -94,9 +97,10 @@ namespace harlam357.Windows.Forms
       }
 
       private readonly Exception _exceptionThrown;
+      private readonly string _applicationId;
+      private readonly string _osVersion;
       private readonly string _message;
       private readonly string _reportUrl;
-      private readonly string _messageHeader;
 
       public ExceptionDialog()
       {
@@ -107,44 +111,18 @@ namespace harlam357.Windows.Forms
       /// Creates a new ExceptionDialog instance.
       /// </summary>
       /// <param name="exception">The exception to display</param>
-      /// <param name="message">An additional message to display</param>
-      /// <param name="mustTerminate">If <paramref name="mustTerminate"/> is true, the
-      /// continue button is not available.</param>
-      public ExceptionDialog(Exception exception, string message, bool mustTerminate)
-         : this(exception, message, null, mustTerminate)
-      {
-
-      }
-      
-      /// <summary>
-      /// Creates a new ExceptionDialog instance.
-      /// </summary>
-      /// <param name="exception">The exception to display</param>
+      /// <param name="applicationId">The application name and version to display</param>
+      /// <param name="osVersion">The operating system version to display</param>
       /// <param name="message">An additional message to display</param>
       /// <param name="reportUrl">Override configured target URL for report button</param>
-      /// <param name="mustTerminate">If <paramref name="mustTerminate"/> is true, the
-      /// continue button is not available.</param>
-      public ExceptionDialog(Exception exception, string message, string reportUrl, bool mustTerminate)
-         : this(exception, message, reportUrl, null, mustTerminate)
-      {
-      
-      }
-
-      /// <summary>
-      /// Creates a new ExceptionDialog instance.
-      /// </summary>
-      /// <param name="exception">The exception to display</param>
-      /// <param name="message">An additional message to display</param>
-      /// <param name="reportUrl">Override configured target URL for report button</param>
-      /// <param name="messageHeader">A message header to display</param>
-      /// <param name="mustTerminate">If <paramref name="mustTerminate"/> is true, the
-      /// continue button is not available.</param>
-      public ExceptionDialog(Exception exception, string message, string reportUrl, string messageHeader, bool mustTerminate)
+      /// <param name="mustTerminate">If <paramref name="mustTerminate"/> is true, the continue button is not available.</param>
+      public ExceptionDialog(Exception exception, string applicationId, string osVersion, string message, string reportUrl, bool mustTerminate)
       {
          _exceptionThrown = exception;
+         _applicationId = applicationId;
+         _osVersion = osVersion;
          _message = message;
          _reportUrl = reportUrl;
-         _messageHeader = messageHeader;
 
          InitializeComponent();
 
@@ -162,9 +140,14 @@ namespace harlam357.Windows.Forms
       string GetClipboardString()
       {
          StringBuilder sb = new StringBuilder();
-         if (_messageHeader != null)
+         if (_applicationId != null)
          {
-            sb.AppendLine(_messageHeader);
+            sb.AppendLine(_applicationId);
+            sb.AppendLine();
+         }
+         if (_osVersion != null)
+         {
+            sb.AppendLine(_osVersion);
             sb.AppendLine();
          }
          if (_message != null)
