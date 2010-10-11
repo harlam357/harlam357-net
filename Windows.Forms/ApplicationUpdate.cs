@@ -60,22 +60,22 @@ namespace harlam357.Windows.Forms
       }
    }
    
-   public class ApplicationUpdateSerializer
+   public static class ApplicationUpdateSerializer
    {
       public static void SerializeToXml(ApplicationUpdate update, string filePath)
       {
          using (TextWriter stream = new StreamWriter(filePath, false, Encoding.UTF8))
          {
-            XmlSerializer s = new XmlSerializer(typeof(ApplicationUpdate));
+            var s = new XmlSerializer(typeof(ApplicationUpdate));
             s.Serialize(stream, update);
          }
       }
 
       public static ApplicationUpdate DeserializeFromXml(string filePath)
       {
-         using (FileStream stream = new FileStream(filePath, FileMode.Open, FileAccess.Read))
+         using (var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read))
          {
-            XmlSerializer s = new XmlSerializer(typeof(ApplicationUpdate));
+            var s = new XmlSerializer(typeof(ApplicationUpdate));
             return (ApplicationUpdate)s.Deserialize(stream);
          }
       }

@@ -53,7 +53,6 @@
       <DependentUpon>ExceptionDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="FolderBrowserView.cs" />
-    <Compile Include="IUpdateView.cs" />
     <Compile Include="IValidatingControl.cs" />
     <Compile Include="MessageBoxView.cs" />
     <Compile Include="OpenFileDialogView.cs" />

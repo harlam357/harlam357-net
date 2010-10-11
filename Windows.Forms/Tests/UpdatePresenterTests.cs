@@ -20,101 +20,214 @@
 using System;
 using System.IO;
 using System.Net;
+using System.Threading;
 using System.Windows.Forms;
 
 using NUnit.Framework;
 using Rhino.Mocks;
+
+using harlam357.Net;
 
 namespace harlam357.Windows.Forms.Tests
 {
    [TestFixture]
    public class UpdatePresenterTests
    {
-      private ApplicationUpdate _update;
+      private readonly ApplicationUpdate _update;
+      
+      public UpdatePresenterTests()
+      {
+         var checker = new UpdateChecker();
+         _update = checker.CheckForUpdate("uniqueId", Path.Combine(Environment.CurrentDirectory, "ApplicationUpdateLocal.xml"));
+      }
 
+      private MockRepository _mocks;
+      private IUpdateView _updateView;
+      private ISaveFileDialogView _saveFileView;
+      
       [SetUp]
       public void Init()
       {
-         UpdateChecker checker = new UpdateChecker();
-         _update = checker.CheckForUpdate("uniqueId", Path.Combine(Environment.CurrentDirectory, "ApplicationUpdateLocal.xml"));
+         _mocks = new MockRepository();
+         _updateView = _mocks.DynamicMock<IUpdateView>();
+         _saveFileView = _mocks.DynamicMock<ISaveFileDialogView>();
       }
    
       [Test]
       public void DownloadClickTest()
       {
-         MockRepository mocks = new MockRepository();
-         IUpdateView updateView = mocks.DynamicMock<IUpdateView>();
-         ISaveFileDialogView saveFileView = mocks.Stub<ISaveFileDialogView>();
-         Expect.Call(saveFileView.ShowDialog()).Return(DialogResult.OK);
-         IMessageBoxView messageBoxView = mocks.DynamicMock<IMessageBoxView>();
+         Expect.Call(_saveFileView.ShowDialog()).Return(DialogResult.OK);
+         SetupResult.For(_saveFileView.FileName).Return("TestFileDownloaded.txt");
+      
+         Expect.Call(() => _updateView.SetSelectDownloadLabelText(String.Empty)).IgnoreArguments();
+         Expect.Call(() => _updateView.SetDownloadButtonEnabled(false));
+         Expect.Call(() => _updateView.SetUpdateComboBoxVisible(false));
+         Expect.Call(() => _updateView.SetDownloadProgressValue(0));
+         Expect.Call(() => _updateView.SetDownloadProgressVisisble(true));
+         Expect.Call(_updateView.CloseView);
 
-         mocks.ReplayAll();
+         _mocks.ReplayAll();
 
-         UpdatePresenter presenter = new UpdatePresenter(new Form(), LogException, _update, null, 
-                                                         updateView, saveFileView, messageBoxView);
-         presenter.DownloadClick(0, PerformDownload);
+         // fixup the address to look in the running folder
+         _update.UpdateFiles[0].HttpAddress = Path.Combine(Environment.CurrentDirectory, _update.UpdateFiles[0].HttpAddress);
+         var presenter = new UpdatePresenter(null, _update, null, _updateView, _saveFileView, null);
+
+         Assert.IsNull(presenter.SelectedUpdate);
+         Assert.IsNull(presenter.LocalFilePath);
+         Assert.AreEqual(false, presenter.UpdateReady);
+         
+         var are = new AutoResetEvent(false);
+         presenter.DownloadFinished += delegate { are.Set(); };
+         presenter.DownloadClick(0);
+
+         // Wait until the event handler is invoked
+         if (!(are.WaitOne(5000, false)))
+         {
+            Assert.Fail("Test timed out.");
+         }  
          
          Assert.AreSame(_update.UpdateFiles[0], presenter.SelectedUpdate);
-         Assert.AreEqual("TestFile.txt", presenter.LocalFilePath);
+         Assert.AreEqual("TestFileDownloaded.txt", presenter.LocalFilePath);
+         Assert.AreEqual(true, presenter.UpdateReady);
          
-         mocks.VerifyAll();
-      }
-
-      [Test]
-      public void DownloadClickFailedTest()
-      {
-         MockRepository mocks = new MockRepository();
-         IUpdateView updateView = mocks.DynamicMock<IUpdateView>();
-         ISaveFileDialogView saveFileView = mocks.Stub<ISaveFileDialogView>();
-         Expect.Call(saveFileView.ShowDialog()).Return(DialogResult.OK);
-         IMessageBoxView messageBoxView = mocks.DynamicMock<IMessageBoxView>();
-         Expect.Call(() => messageBoxView.ShowError(new Form(), "text", "caption")).IgnoreArguments();
-
-         mocks.ReplayAll();
-
-         UpdatePresenter presenter = new UpdatePresenter(new Form(), LogException, _update, null,
-                                                         updateView, saveFileView, messageBoxView);
-         presenter.DownloadClick(0, PerformDownloadException);
-
-         Assert.AreSame(_update.UpdateFiles[0], presenter.SelectedUpdate);
-         Assert.AreEqual("TestFile.txt", presenter.LocalFilePath);
-
-         mocks.VerifyAll();
-      }
-
-      [Test]
-      public void PerformDownloadTest()
-      {
-         MockRepository mocks = new MockRepository();
-         IUpdateView updateView = mocks.DynamicMock<IUpdateView>();
-         ISaveFileDialogView saveFileView = mocks.DynamicMock<ISaveFileDialogView>();
-         IMessageBoxView messageBoxView = mocks.DynamicMock<IMessageBoxView>();
-
-         mocks.ReplayAll();
-
-         UpdatePresenter presenter = new UpdatePresenter(new Form(), LogException, _update, null,
-                                                         updateView, saveFileView, messageBoxView);
-         string localFilePath = Path.Combine(Path.GetTempPath(), UpdatePresenter.GetFileNameFromUrl(_update.UpdateFiles[0].HttpAddress));
-         presenter.PerformDownload(Path.GetFullPath(_update.UpdateFiles[0].HttpAddress), localFilePath);
-         
-         mocks.VerifyAll();
-      }
-
-      private static void PerformDownload(string url)
-      {
-
-      }
-
-      private static void PerformDownloadException(string url)
-      {
-         throw new WebException("Download failed.");
-      }
-
-      private static void LogException(Exception ex)
-      {
-
+         _mocks.VerifyAll();
       }
       
+      [Test]
+      public void DownloadClickSaveFileDialogCanceledTest()
+      {
+         Expect.Call(_saveFileView.ShowDialog()).Return(DialogResult.Cancel);
+
+         _mocks.ReplayAll();
+
+         var presenter = new UpdatePresenter(null, _update, null, _updateView, _saveFileView, null);
+
+         Assert.IsNull(presenter.SelectedUpdate);
+         Assert.IsNull(presenter.LocalFilePath);
+         Assert.AreEqual(false, presenter.UpdateReady);                                          
+         
+         presenter.DownloadClick(0);
+
+         Assert.IsNull(presenter.SelectedUpdate);
+         Assert.IsNull(presenter.LocalFilePath);
+         Assert.AreEqual(false, presenter.UpdateReady);       
+         
+         _mocks.VerifyAll(); 
+      }
+
+      [Test]
+      public void DownloadClickCancelDownloadTest()
+      {
+         Expect.Call(_saveFileView.ShowDialog()).Return(DialogResult.OK);
+      
+         Expect.Call(() => _updateView.SetSelectDownloadLabelText(String.Empty)).IgnoreArguments();
+         Expect.Call(() => _updateView.SetDownloadButtonEnabled(false));
+         Expect.Call(() => _updateView.SetUpdateComboBoxVisible(false));
+         Expect.Call(() => _updateView.SetDownloadProgressValue(0));
+         Expect.Call(() => _updateView.SetDownloadProgressVisisble(true));
+
+         var webOperation = _mocks.DynamicMock<IWebOperation>();
+         Expect.Call(() => webOperation.Download(String.Empty)).IgnoreArguments().Do(new Action<string>(DownloadSleep));
+         Expect.Call(webOperation.State).Return(WebOperationState.InProgress);
+         Expect.Call(webOperation.CancelOperation);
+         Expect.Call(webOperation.Result).Return(WebOperationResult.Canceled);
+
+         Expect.Call(() => _updateView.SetSelectDownloadLabelTextDefault());
+         Expect.Call(() => _updateView.SetDownloadButtonEnabled(true));
+         Expect.Call(() => _updateView.SetUpdateComboBoxVisible(true));
+         Expect.Call(() => _updateView.SetDownloadProgressVisisble(false));
+
+         _mocks.ReplayAll();
+
+         var presenter = new UpdatePresenter(null, _update, null, _updateView, _saveFileView, webOperation);
+
+         var are = new AutoResetEvent(false);
+         presenter.DownloadFinished += delegate { are.Set(); };
+         presenter.DownloadClick(0);
+         presenter.CancelClick();
+
+         // Wait until the event handler is invoked
+         if (!(are.WaitOne(5000, false)))
+         {
+            Assert.Fail("Test timed out.");
+         }
+
+         _mocks.VerifyAll();
+      }
+      
+      private static void DownloadSleep(string localFilePath)
+      {
+         Thread.Sleep(1000);
+      }
+
+      [Test]
+      public void DownloadClickDownloadExceptionTest()
+      {
+         Expect.Call(_saveFileView.ShowDialog()).Return(DialogResult.OK);
+
+         Expect.Call(() => _updateView.SetSelectDownloadLabelText(String.Empty)).IgnoreArguments();
+         Expect.Call(() => _updateView.SetDownloadButtonEnabled(false));
+         Expect.Call(() => _updateView.SetUpdateComboBoxVisible(false));
+         Expect.Call(() => _updateView.SetDownloadProgressValue(0));
+         Expect.Call(() => _updateView.SetDownloadProgressVisisble(true));
+
+         var webOperation = _mocks.DynamicMock<IWebOperation>();
+         Expect.Call(() => webOperation.Download(String.Empty)).IgnoreArguments().Do(new Action<string>(DownloadException));
+
+         Expect.Call(() => _updateView.ShowErrorMessage(String.Empty)).IgnoreArguments();
+         Expect.Call(() => _updateView.SetSelectDownloadLabelTextDefault());
+         Expect.Call(() => _updateView.SetDownloadButtonEnabled(true));
+         Expect.Call(() => _updateView.SetUpdateComboBoxVisible(true));
+         Expect.Call(() => _updateView.SetDownloadProgressVisisble(false));
+
+         _mocks.ReplayAll();
+
+         var presenter = new UpdatePresenter(null, _update, null, _updateView, _saveFileView, webOperation);
+
+         var are = new AutoResetEvent(false);
+         presenter.DownloadFinished += delegate { are.Set(); };
+         presenter.DownloadClick(0);
+
+         // Wait until the event handler is invoked
+         if (!(are.WaitOne(5000, false)))
+         {
+            Assert.Fail("Test timed out.");
+         }
+
+         _mocks.VerifyAll();
+      }
+
+      private static void DownloadException(string localFilePath)
+      {
+         throw new WebException("Failed to download " + localFilePath);
+      }
+
+      [Test]
+      public void ShowTest()
+      {
+         Expect.Call(() => _updateView.ShowView(null));
+
+         _mocks.ReplayAll();
+
+         var presenter = new UpdatePresenter(null, _update, null, _updateView, _saveFileView, null);
+         presenter.Show(null);
+
+         _mocks.VerifyAll();
+      }
+
+      [Test]
+      public void CancelTest()
+      {
+         Expect.Call(() => _updateView.CloseView());
+
+         _mocks.ReplayAll();
+
+         var presenter = new UpdatePresenter(null, _update, null, _updateView, _saveFileView, null);
+         presenter.CancelClick();
+
+         _mocks.VerifyAll();
+      }     
+
       [Test]
       public void VerifyDownloadTest()
       {

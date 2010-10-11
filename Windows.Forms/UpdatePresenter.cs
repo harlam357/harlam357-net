@@ -33,62 +33,70 @@ namespace harlam357.Windows.Forms
       #region Fields
 
       private IWebOperation _webOperation;
-      private bool _downloadVerified;
       
-      private readonly Form _owner;
       private readonly Action<Exception> _exceptionLogger;
       private readonly ApplicationUpdate _updateData;
       private readonly IWebProxy _proxy;
       private readonly IUpdateView _updateView;
       private readonly ISaveFileDialogView _saveFileView;
-      private readonly IMessageBoxView _messageBoxView;
 
       #endregion
       
       #region Properties
 
+      /// <summary>
+      /// Update Data Selected by the User
+      /// </summary>
       public ApplicationUpdateFile SelectedUpdate { get; private set; }
 
+      /// <summary>
+      /// Local File Path for File to be Downloaded
+      /// </summary>
       public string LocalFilePath { get; private set; }
+
+      /// <summary>
+      /// Indicates the Update was Downloaded Completely and was Verified
+      /// </summary>
+      public bool UpdateReady { get; private set; }
       
-      public bool UpdateReady
+      #endregion
+
+      /// <summary>
+      /// Raises when the download process is finished, regardless of whether is was successful, errored, or canceled.
+      /// </summary>
+      public event EventHandler DownloadFinished;
+      
+      private void OnDownloadFinished(EventArgs e)
       {
-         get
+         if (DownloadFinished != null)
          {
-            return (_webOperation != null &&
-                    _webOperation.Result.Equals(WebOperationResult.Completed) &&
-                    _downloadVerified);
+            DownloadFinished(this, e);
          }
       }
       
-      #endregion
-      
       #region Constructors
-      
-      public UpdatePresenter(Form owner, Action<Exception> exceptionLogger, ApplicationUpdate updateData, 
+
+      public UpdatePresenter(Action<Exception> exceptionLogger, ApplicationUpdate updateData, 
                              IWebProxy proxy, string applicationName, string applicationVersion)
       {
-         _owner = owner;
          _exceptionLogger = exceptionLogger;
          _updateData = updateData;
          _proxy = proxy;
          _updateView = new UpdateDialog(updateData, applicationName, applicationVersion);
          _saveFileView = new SaveFileDialogView();
-         _messageBoxView = new MessageBoxView();
          _updateView.AttachPresenter(this);
       }
 
-      public UpdatePresenter(Form owner, Action<Exception> exceptionLogger, ApplicationUpdate updateData, 
+      public UpdatePresenter(Action<Exception> exceptionLogger, ApplicationUpdate updateData, 
                              IWebProxy proxy, IUpdateView updateView, ISaveFileDialogView saveFileView,
-                             IMessageBoxView messageBoxView)
+                             IWebOperation webOperation)
       {
-         _owner = owner;
          _exceptionLogger = exceptionLogger;
          _updateData = updateData;
          _proxy = proxy;
          _updateView = updateView;
          _saveFileView = saveFileView;
-         _messageBoxView = messageBoxView;
+         _webOperation = webOperation;
          _updateView.AttachPresenter(this);
       }
       
@@ -106,57 +114,56 @@ namespace harlam357.Windows.Forms
          }
       }
       
-      public void DownloadClick(int index, Action<string> performDownloadAction)
-      {
-         if (ShowSaveFileView(index))
-         {
-            PerformDownloadCallback(performDownloadAction.BeginInvoke(
-               _updateData.UpdateFiles[index].HttpAddress, null, performDownloadAction));
-         }
-      }
-      
       private bool ShowSaveFileView(int index)
       {
-         SelectedUpdate = _updateData.UpdateFiles[index];
          _saveFileView.FileName = GetFileNameFromUrl(_updateData.UpdateFiles[index].HttpAddress);
          if (_saveFileView.ShowDialog().Equals(DialogResult.OK))
          {
+            SelectedUpdate = _updateData.UpdateFiles[index];
             LocalFilePath = _saveFileView.FileName;
             return true;
          }
 
          return false;
       }
-
-      public void PerformDownload(string url)
+      
+      private void PerformDownload(string url)
       {
-         PerformDownload(url, LocalFilePath);
-      }
-
-      public void PerformDownload(string url, string filePath)
-      {
-         // Preform Download
-         _webOperation = WebOperation.Create(url);
+         if (_webOperation == null)
+         {
+            // create
+            _webOperation = WebOperation.Create(url);
+         }
+         // set proxy (if applicable)
          if (_proxy != null) _webOperation.OperationProxy = _proxy;
+         // listen for progress messages
          _webOperation.WebOperationProgress += WebOperationProgress;
-
-         _updateView.SetSelectDownloadLabelText(String.Format(CultureInfo.CurrentCulture, 
-            "Downloading {0}...", GetFileNameFromUrl(url)));
-         _updateView.SetDownloadButtonEnabled(false);
-         _updateView.SetUpdateComboBoxVisible(false);
-         _updateView.SetDownloadProgressVisisble(true);
-
-         _webOperation.Download(filePath);
+         // set the view for download
+         SetViewControlsForDownload(url);
+         // execute the download
+         _webOperation.Download(LocalFilePath);
       }
 
       private void PerformDownloadCallback(IAsyncResult result)
       {
-         Action<string> action = (Action<string>)result.AsyncState;
+         var action = (Action<string>)result.AsyncState;
          try
          {
             action.EndInvoke(result);
-            VerifyDownload();
-            _downloadVerified = true;
+            if (_webOperation.Result.Equals(WebOperationResult.Completed))
+            {
+               // verify, throws exception on error
+               VerifyDownload();
+               // no errors, set ready flag
+               UpdateReady = true;
+               // success, close the view
+               _updateView.CloseView();
+            }
+            // not completed, let the user try again if they wish
+            else
+            {
+               SetViewControlsForUpdateSelection();
+            }
          }
          catch (Exception ex)
          {
@@ -164,20 +171,36 @@ namespace harlam357.Windows.Forms
             string message = String.Format(CultureInfo.CurrentCulture,
                                            "Download failed with the following error:{0}{0}{1}",
                                            Environment.NewLine, ex.Message);
-            ShowErrorMessage(_owner, message, _owner.Text); 
+            _updateView.ShowErrorMessage(message);
+            // download error, let the user try again if they wish
+            SetViewControlsForUpdateSelection();
          }
-         CloseView();
+         finally
+         {
+            // clean up
+            _webOperation.WebOperationProgress -= WebOperationProgress;
+            _webOperation = null;
+            // signal listeners
+            OnDownloadFinished(EventArgs.Empty);
+         }
+      }
+      
+      private void SetViewControlsForDownload(string url)
+      {
+         _updateView.SetSelectDownloadLabelText(String.Format(CultureInfo.CurrentCulture,
+            "Downloading {0}...", GetFileNameFromUrl(url)));
+         _updateView.SetDownloadButtonEnabled(false);
+         _updateView.SetUpdateComboBoxVisible(false);
+         _updateView.SetDownloadProgressValue(0);
+         _updateView.SetDownloadProgressVisisble(true);
       }
 
-      private void ShowErrorMessage(Form owner, string message, string caption)
+      private void SetViewControlsForUpdateSelection()
       {
-         if (owner.InvokeRequired)
-         {
-            owner.Invoke(new MethodInvoker(delegate { ShowErrorMessage(owner, message, caption); }));
-            return;   
-         }
-
-         _messageBoxView.ShowError(_owner, message, caption);
+         _updateView.SetSelectDownloadLabelTextDefault();
+         _updateView.SetDownloadButtonEnabled(true);
+         _updateView.SetUpdateComboBoxVisible(true);
+         _updateView.SetDownloadProgressVisisble(false);
       }
 
       private void WebOperationProgress(object sender, WebOperationProgressEventArgs e)
@@ -186,7 +209,7 @@ namespace harlam357.Windows.Forms
          _updateView.SetDownloadProgressValue(percent);
       }
 
-      public static string GetFileNameFromUrl(string url)
+      private static string GetFileNameFromUrl(string url)
       {
          return url.Substring(url.LastIndexOf('/') + 1).Replace("%20", " ");
       }
@@ -197,26 +220,26 @@ namespace harlam357.Windows.Forms
       
       public void CancelClick()
       {
-         if (_webOperation != null)
+         // if download is in progress then the 
+         if (_webOperation != null &&
+             _webOperation.State.Equals(WebOperationState.InProgress))
          {
             _webOperation.WebOperationProgress -= WebOperationProgress;
             _webOperation.CancelOperation();
          }
-         CloseView();
+         else
+         {
+            _updateView.CloseView();
+         }
       }
       
       #endregion
       
-      #region Show and Close
+      #region Show
 
-      public void ShowView()
+      public void Show(IWin32Window owner)
       {
-         _updateView.ShowView(_owner);
-      }
-
-      private void CloseView()
-      {
-         _updateView.CloseView();
+         _updateView.ShowView(owner);
       }
       
       #endregion
@@ -273,11 +296,11 @@ namespace harlam357.Windows.Forms
          }
       }
 
-      private static void TryToDelete(string localFilePath)
+      private static void TryToDelete(string filePath)
       {
          try
          {
-            File.Delete(localFilePath);
+            File.Delete(filePath);
          }
          catch (Exception)
          { }

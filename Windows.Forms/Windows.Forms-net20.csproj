@@ -51,7 +51,6 @@
     <Compile Include="ExceptionDialog.Designer.cs">
       <DependentUpon>ExceptionDialog.cs</DependentUpon>
     </Compile>
-    <Compile Include="IUpdateView.cs" />
     <Compile Include="IValidatingControl.cs" />
     <Compile Include="MessageBoxView.cs" />
     <Compile Include="OpenFileDialogView.cs" />
