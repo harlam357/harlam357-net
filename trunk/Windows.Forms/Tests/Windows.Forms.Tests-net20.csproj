@@ -50,6 +50,10 @@
     <Compile Include="UpdatePresenterTests.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\Net\Net-net20.csproj">
+      <Project>{8A712ABF-5B19-457C-A57D-82611CDA310F}</Project>
+      <Name>Net-net20</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Windows.Forms-net20.csproj">
       <Project>{2ABB418B-E601-43E9-BF7A-820C4D438548}</Project>
       <Name>Windows.Forms-net20</Name>
