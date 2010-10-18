@@ -70,11 +70,6 @@ namespace harlam357.Windows.Forms
    public interface IProgressDialogView : IWin32Window
    {
       /// <summary>
-      /// Dialog Text
-      /// </summary>
-      string Text { get; set; }
-   
-      /// <summary>
       /// Window that owns this dialog
       /// </summary>
       IWin32Window OwnerWindow { set; }
