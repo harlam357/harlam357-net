@@ -18,6 +18,7 @@
  */
 
 using System;
+using System.Diagnostics;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -132,7 +133,7 @@ namespace harlam357.Windows.Forms
       }
 
       /// <summary>
-      /// Update Progress Bar Value
+      /// Update Progress Bar Value (safe to be called from a worker thread)
       /// </summary>
       public void UpdateProgress(int progress)
       {
@@ -146,7 +147,7 @@ namespace harlam357.Windows.Forms
       }
 
       /// <summary>
-      /// Update Text Message Value
+      /// Update Text Message Value (safe to be called from a worker thread)
       /// </summary>
       public void UpdateMessage(string message)
       {
@@ -194,6 +195,16 @@ namespace harlam357.Windows.Forms
          Close();
       }
 
+      private void ProcessCancelButtonClick(object sender, EventArgs e)
+      {
+         Debug.Assert(_processRunner.SupportsCancellation);
+
+         if (_processRunner.Processing)
+         {
+            _processRunner.Cancel();
+         }
+      }
+
       /// <summary>
       /// Handles the Dialog's FormClosing Event
       /// </summary>
@@ -215,7 +226,7 @@ namespace harlam357.Windows.Forms
       }
 
       /// <summary>
-      /// Close the Dialog (safe to be called from worker thread)
+      /// Close the Dialog (safe to be called from a worker thread)
       /// </summary>
       public new void Close()
       {
@@ -230,7 +241,7 @@ namespace harlam357.Windows.Forms
       
       private void SetCancellationControls(bool enabled)
       {
-         CancelButton.Visible = enabled;
+         ProcessCancelButton.Visible = enabled;
          Size = enabled ? _baseSize : new Size(_baseSize.Width, _baseSize.Height - 30);
       }
    }

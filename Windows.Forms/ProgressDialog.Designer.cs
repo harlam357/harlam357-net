@@ -30,7 +30,7 @@
       {
          this.progressBar = new System.Windows.Forms.ProgressBar();
          this.messageLabel = new System.Windows.Forms.Label();
-         this.CancelButton = new System.Windows.Forms.Button();
+         this.ProcessCancelButton = new System.Windows.Forms.Button();
          this.SuspendLayout();
          // 
          // progressBar
@@ -49,21 +49,22 @@
          this.messageLabel.Text = "messageLabel";
          this.messageLabel.TextAlign = System.Drawing.ContentAlignment.TopCenter;
          // 
-         // CancelButton
+         // ProcessCancelButton
          // 
-         this.CancelButton.Location = new System.Drawing.Point(129, 63);
-         this.CancelButton.Name = "CancelButton";
-         this.CancelButton.Size = new System.Drawing.Size(72, 23);
-         this.CancelButton.TabIndex = 2;
-         this.CancelButton.Text = "Cancel";
-         this.CancelButton.UseVisualStyleBackColor = true;
+         this.ProcessCancelButton.Location = new System.Drawing.Point(129, 63);
+         this.ProcessCancelButton.Name = "ProcessCancelButton";
+         this.ProcessCancelButton.Size = new System.Drawing.Size(72, 23);
+         this.ProcessCancelButton.TabIndex = 2;
+         this.ProcessCancelButton.Text = "Cancel";
+         this.ProcessCancelButton.UseVisualStyleBackColor = true;
+         this.ProcessCancelButton.Click += new System.EventHandler(this.ProcessCancelButtonClick);
          // 
          // ProgressDialog
          // 
          this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
          this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
          this.ClientSize = new System.Drawing.Size(330, 95);
-         this.Controls.Add(this.CancelButton);
+         this.Controls.Add(this.ProcessCancelButton);
          this.Controls.Add(this.messageLabel);
          this.Controls.Add(this.progressBar);
          this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
@@ -81,6 +82,6 @@
 
       private System.Windows.Forms.ProgressBar progressBar;
       private System.Windows.Forms.Label messageLabel;
-      private System.Windows.Forms.Button CancelButton;
+      private System.Windows.Forms.Button ProcessCancelButton;
    }
 }
