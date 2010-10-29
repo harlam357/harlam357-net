@@ -126,8 +126,7 @@ namespace harlam357.Windows.Forms
          // 
          this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
          this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-         this.ClientSize = new System.Drawing.Size(291, 215);
-         this.ControlBox = false;
+         this.ClientSize = new System.Drawing.Size(287, 211);
          this.Controls.Add(this.btnCancel);
          this.Controls.Add(this.btnDownload);
          this.Controls.Add(this.cboUpdateFiles);
