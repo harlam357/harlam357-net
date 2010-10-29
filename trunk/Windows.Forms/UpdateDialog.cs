@@ -74,6 +74,11 @@ namespace harlam357.Windows.Forms
       
       private void UpdateDialog_Load(object sender, EventArgs e)
       {
+         // some how leaving the ControlBox enabled in
+         // the Designer allows the Form to scale when
+         // run under a higher DPI setting, just turn
+         // it off once the Form is loaded
+         ControlBox = false;
          LayoutUpdateData();
       }
 
