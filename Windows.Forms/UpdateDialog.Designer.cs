@@ -73,7 +73,7 @@ namespace harlam357.Windows.Forms
          // 
          this.lblSelectDownload.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
                      | System.Windows.Forms.AnchorStyles.Right)));
-         this.lblSelectDownload.Location = new System.Drawing.Point(12, 113);
+         this.lblSelectDownload.Location = new System.Drawing.Point(10, 113);
          this.lblSelectDownload.Name = "lblSelectDownload";
          this.lblSelectDownload.Size = new System.Drawing.Size(267, 18);
          this.lblSelectDownload.TabIndex = 3;
@@ -86,14 +86,14 @@ namespace harlam357.Windows.Forms
                      | System.Windows.Forms.AnchorStyles.Right)));
          this.cboUpdateFiles.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
          this.cboUpdateFiles.FormattingEnabled = true;
-         this.cboUpdateFiles.Location = new System.Drawing.Point(46, 134);
+         this.cboUpdateFiles.Location = new System.Drawing.Point(44, 134);
          this.cboUpdateFiles.Name = "cboUpdateFiles";
          this.cboUpdateFiles.Size = new System.Drawing.Size(199, 21);
          this.cboUpdateFiles.TabIndex = 4;
          // 
          // btnDownload
          // 
-         this.btnDownload.Location = new System.Drawing.Point(65, 176);
+         this.btnDownload.Location = new System.Drawing.Point(63, 176);
          this.btnDownload.Name = "btnDownload";
          this.btnDownload.Size = new System.Drawing.Size(75, 23);
          this.btnDownload.TabIndex = 5;
@@ -103,7 +103,7 @@ namespace harlam357.Windows.Forms
          // 
          // btnCancel
          // 
-         this.btnCancel.Location = new System.Drawing.Point(151, 176);
+         this.btnCancel.Location = new System.Drawing.Point(149, 176);
          this.btnCancel.Name = "btnCancel";
          this.btnCancel.Size = new System.Drawing.Size(75, 23);
          this.btnCancel.TabIndex = 6;
@@ -115,7 +115,7 @@ namespace harlam357.Windows.Forms
          // 
          this.progressDownload.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
                      | System.Windows.Forms.AnchorStyles.Right)));
-         this.progressDownload.Location = new System.Drawing.Point(12, 132);
+         this.progressDownload.Location = new System.Drawing.Point(10, 132);
          this.progressDownload.Name = "progressDownload";
          this.progressDownload.Size = new System.Drawing.Size(267, 25);
          this.progressDownload.Step = 1;
