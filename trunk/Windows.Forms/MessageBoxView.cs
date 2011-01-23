@@ -1,6 +1,6 @@
 ﻿/*
  * harlam357.Net - Message Box View
- * Copyright (C) 2010 Ryan Harlamert (harlam357)
+ * Copyright (C) 2010-2011 Ryan Harlamert (harlam357)
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
