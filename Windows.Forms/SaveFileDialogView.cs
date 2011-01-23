@@ -1,6 +1,6 @@
 ﻿/*
  * harlam357.Net - Save File Dialog View
- * Copyright (C) 2010 Ryan Harlamert (harlam357)
+ * Copyright (C) 2010-2011 Ryan Harlamert (harlam357)
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -21,62 +21,17 @@ using System.Windows.Forms;
 
 namespace harlam357.Windows.Forms
 {
-   public interface ISaveFileDialogView
+   public interface ISaveFileDialogView : IFileDialogView
    {
-      string DefaultExt { get; set; }
-
-      string FileName { get; set; }
-
-      string InitialDirectory { get; set; }
-
-      string Filter { get; set; }
-
-      DialogResult ShowDialog();
-
-      DialogResult ShowDialog(IWin32Window owner);
+      
    }
 
-   public class SaveFileDialogView : ISaveFileDialogView
+   public class SaveFileDialogView : FileDialogView, ISaveFileDialogView
    {
-      private readonly SaveFileDialog _dialog;
-
-      public string DefaultExt
-      {
-         get { return _dialog.DefaultExt; }
-         set { _dialog.DefaultExt = value; }
-      }
-
-      public string FileName
-      {
-         get { return _dialog.FileName; }
-         set { _dialog.FileName = value; }
-      }
-
-      public string InitialDirectory
-      {
-         get { return _dialog.InitialDirectory; }
-         set { _dialog.InitialDirectory = value; }
-      }
-
-      public string Filter
-      {
-         get { return _dialog.Filter; }
-         set { _dialog.Filter = value; }
-      }
-   
       public SaveFileDialogView()
+         : base(new SaveFileDialog())
       {
-         _dialog = new SaveFileDialog();
-      }
-      
-      public DialogResult ShowDialog()
-      {
-         return _dialog.ShowDialog();
-      }
-
-      public DialogResult ShowDialog(IWin32Window owner)
-      {
-         return _dialog.ShowDialog(owner);
+         
       }
    }
 }

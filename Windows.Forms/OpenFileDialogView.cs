@@ -21,62 +21,17 @@ using System.Windows.Forms;
 
 namespace harlam357.Windows.Forms
 {
-   public interface IOpenFileDialogView
+   public interface IOpenFileDialogView : IFileDialogView
    {
-      string DefaultExt { get; set; }
-   
-      string FileName { get; set; }
       
-      string InitialDirectory { get; set; }
-      
-      string Filter { get; set; }
-
-      DialogResult ShowDialog();
-
-      DialogResult ShowDialog(IWin32Window owner);
    }
 
-   public class OpenFileDialogView : IOpenFileDialogView
+   public class OpenFileDialogView : FileDialogView, IOpenFileDialogView
    {
-      private readonly OpenFileDialog _dialog;
-
-      public string DefaultExt
-      {
-         get { return _dialog.DefaultExt; }
-         set { _dialog.DefaultExt = value; }
-      }
-   
-      public string FileName
-      {
-         get { return _dialog.FileName; }
-         set { _dialog.FileName = value; }
-      }
-      
-      public string InitialDirectory
-      {
-         get { return _dialog.InitialDirectory; }
-         set { _dialog.InitialDirectory = value; }
-      }
-
-      public string Filter
-      {
-         get { return _dialog.Filter; }
-         set { _dialog.Filter = value; }
-      }
-   
       public OpenFileDialogView()
+         : base(new OpenFileDialog())
       {
-         _dialog = new OpenFileDialog();
-      }
-      
-      public DialogResult ShowDialog()
-      {
-         return _dialog.ShowDialog();
-      }
-
-      public DialogResult ShowDialog(IWin32Window owner)
-      {
-         return _dialog.ShowDialog(owner);
+         
       }
    }
 }
