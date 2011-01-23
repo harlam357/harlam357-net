@@ -29,6 +29,8 @@ namespace harlam357.Windows.Forms
       void ShowInformation(IWin32Window owner, string text, string caption);
       DialogResult AskYesNoQuestion(string text, string caption);
       DialogResult AskYesNoQuestion(IWin32Window owner, string text, string caption);
+      DialogResult AskYesNoCancelQuestion(string text, string caption);
+      DialogResult AskYesNoCancelQuestion(IWin32Window owner, string text, string caption);
    }
 
    public class MessageBoxView : IMessageBoxView
@@ -61,6 +63,16 @@ namespace harlam357.Windows.Forms
       public DialogResult AskYesNoQuestion(IWin32Window owner, string text, string caption)
       {
          return MessageBox.Show(owner, text, caption, MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+      }
+
+      public DialogResult AskYesNoCancelQuestion(string text, string caption)
+      {
+         return MessageBox.Show(text, caption, MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
+      }
+
+      public DialogResult AskYesNoCancelQuestion(IWin32Window owner, string text, string caption)
+      {
+         return MessageBox.Show(owner, text, caption, MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
       }
    }
 }
