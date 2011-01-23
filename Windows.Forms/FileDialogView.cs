@@ -31,6 +31,8 @@ namespace harlam357.Windows.Forms
 
       string Filter { get; set; }
 
+      int FilterIndex { get; }
+
       bool RestoreDirectory { get; set; }
 
       DialogResult ShowDialog();
@@ -74,6 +76,11 @@ namespace harlam357.Windows.Forms
       {
          get { return _dialog.Filter; }
          set { _dialog.Filter = value; }
+      }
+
+      public int FilterIndex
+      {
+         get { return _dialog.FilterIndex; }
       }
 
       public bool RestoreDirectory
