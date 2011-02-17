@@ -13,6 +13,9 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
+[assembly: AssemblyCompany("harlam357")]
+[assembly: AssemblyProduct("harlam357-net")]
+[assembly: AssemblyCopyright("Copyright © Ryan Harlamert 2009-2011.")]
 [assembly: AssemblyVersion("1.5.0.0")]
 [assembly: AssemblyFileVersion("1.5.0.0")]
 

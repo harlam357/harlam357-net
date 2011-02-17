@@ -1,23 +1,4 @@
-﻿/*
- * harlam357.Net.Tests - Assembly Configuration
- * Copyright (C) 2009-2010 Ryan Harlamert (harlam357)
- * 
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- * 
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
- */
-
-using System;
+﻿using System;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Resources;
@@ -28,9 +9,6 @@ using System.Resources;
 [assembly: AssemblyTitle("harlam357.Net.Tests")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("harlam357")]
-[assembly: AssemblyProduct("harlam357-net")]
-[assembly: AssemblyCopyright("Copyright © Ryan Harlamert 2009-2010.")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -44,4 +22,3 @@ using System.Resources;
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
 [assembly: Guid("2a9f999d-0f83-4a44-b8e4-d8e3b333bf06")]
-

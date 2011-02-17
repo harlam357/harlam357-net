@@ -9,9 +9,6 @@ using System.Resources;
 [assembly: AssemblyTitle("harlam357.Security.Tests")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("harlam357")]
-[assembly: AssemblyProduct("harlam357-net")]
-[assembly: AssemblyCopyright("Copyright © Ryan Harlamert 2009-2010.")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -25,4 +22,3 @@ using System.Resources;
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
 [assembly: Guid("FC94C286-0B44-48E7-B406-79ACFDD81045")]
-
