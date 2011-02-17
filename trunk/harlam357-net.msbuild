@@ -4,35 +4,16 @@
 
    <PropertyGroup>
       <Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
-      <Framework Condition=" '$(Framework)' == '' ">net35</Framework>
    </PropertyGroup>
 
    <PropertyGroup>
       <Major>1</Major>
-      <Minor>2</Minor>
+      <Minor>5</Minor>
       <Build>0</Build>
       <Revision>0</Revision>
    </PropertyGroup>
 
-   <PropertyGroup>
-      <NUnitPath>&quot;$(ProgramFiles)\NUnit 2.4.8\bin\nunit-console-x86.exe&quot;</NUnitPath>
-      <NCoverPath>&quot;$(ProgramFiles)\NCover\NCover.Console.exe&quot;</NCoverPath>
-      <NCoverExcludeList>System.Runtime.CompilerServices.CompilerGeneratedAttribute</NCoverExcludeList>
-      <NCoverExpPath>&quot;$(ProgramFiles)\NCoverExplorer\NCoverExplorer.Console.exe&quot;</NCoverExpPath>
-      <FxCopPath>&quot;$(ProgramFiles)\Microsoft FxCop 1.36\FxCopCmd.exe&quot;</FxCopPath>
-   </PropertyGroup>
-
-   <ItemGroup>
-      <ZipFiles Include=".\$(Framework)\bin\$(Configuration)\*.*" />
-   </ItemGroup>
-
-   <Target Name="Version">
-      <SvnVersion LocalPath="." ToolPath="$(ProgramFiles)\CollabNet Subversion Client">
-         <Output TaskParameter="Revision" PropertyName="Revision" />
-      </SvnVersion>
-
-      <Message Text="Version: $(Major).$(Minor).$(Build).$(Revision)"/>
-
+   <Target Name="AssemblyVersion" DependsOnTargets="Version">
       <AssemblyInfo CodeLanguage="CS"
         OutputFile="AssemblyVersion.cs"
         AssemblyVersion="$(Major).$(Minor).$(Build).$(Revision)"
@@ -40,36 +21,63 @@
         Condition="$(Revision) != '0' "/>
    </Target>
 
-   <Target Name="Compile" DependsOnTargets="Version">
-      <MSBuild Projects=".\harlam357-$(Framework).sln"
+   <Target Name="Version">
+      <SvnVersion LocalPath="." ToolPath="$(ProgramFiles)\CollabNet\Subversion Client">
+         <Output TaskParameter="Revision" PropertyName="Revision" />
+      </SvnVersion>
+
+      <Message Text="Version: $(Major).$(Minor).$(Build).$(Revision)"/>
+   </Target>
+
+   <Target Name="Build" DependsOnTargets="Compile">
+      <Message Text="harlam357-net Build Complete"/>
+   </Target>
+
+   <Target Name="Compile" DependsOnTargets="AssemblyVersion">
+      <MSBuild Projects="harlam357-net.sln"
                Targets="Rebuild"
                Properties="Configuration=$(Configuration)" />
 
       <CallTarget Targets="NUnit" />
    </Target>
 
-   <Target Name="Build" DependsOnTargets="Compile">
-      <Message Text="harlam357-$(Framework) Build Complete"/>
-   </Target>
+   <PropertyGroup>
+      <NCoverPath>&quot;.\tools\NCover\NCover.Console.exe&quot;</NCoverPath>
+      <NCoverExcludeList>System.Runtime.CompilerServices.CompilerGeneratedAttribute</NCoverExcludeList>
+      <NCoverExpPath>&quot;.\tools\NCoverExplorer\NCoverExplorer.Console.exe&quot;</NCoverExpPath>
+      <NUnitPath>&quot;.\lib\NUnit\bin\net-2.0\nunit-console-x86.exe&quot;</NUnitPath>
+      <FxCopPath>&quot;$(ProgramFiles)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\FxCopCmd.exe&quot;</FxCopPath>
+   </PropertyGroup>
+
+   <PropertyGroup>
+      <ArtifactsPath>.\Artifacts</ArtifactsPath>
+      <ArtifactsBin>.\Artifacts\bin\$(Configuration)</ArtifactsBin>
+      <ArtifactsPackages>.\Artifacts\Packages</ArtifactsPackages>
+   </PropertyGroup>
 
    <Target Name="NUnit">
-      <MakeDir Directories=".\artifacts" />
-      <Exec Command="$(NCoverPath) $(NUnitPath) .\Net\Tests\bin\$(Configuration)\harlam357.Net.Tests.dll /xml=.\artifacts\harlam357-$(Framework).Net.Tests.Results.xml //a harlam357.Net //ea $(NCoverExcludeList) //x .\artifacts\harlam357-$(Framework).Net.Tests.Coverage.xml" />
-      <Exec Command="$(NCoverPath) $(NUnitPath) .\Security\Tests\bin\$(Configuration)\harlam357.Security.Tests.dll /xml=.\artifacts\harlam357-$(Framework).Security.Tests.Results.xml //a harlam357.Security //ea $(NCoverExcludeList) //x .\artifacts\harlam357-$(Framework).Security.Tests.Coverage.xml" />
-      <Exec Command="$(NCoverPath) $(NUnitPath) .\Windows.Forms\Tests\bin\$(Configuration)\harlam357.Windows.Forms.Tests.dll /xml=.\artifacts\harlam357-$(Framework).Windows.Forms.Tests.Results.xml //a harlam357.Windows.Forms //ea $(NCoverExcludeList) //x .\artifacts\harlam357-$(Framework).Windows.Forms.Tests.Coverage.xml" />
+      <Exec Command="$(NCoverPath) $(NUnitPath) .\Net\Tests\bin\$(Configuration)\harlam357.Net.Tests.dll /xml=$(ArtifactsPath)\harlam357.Net.Tests.Results.xml //reg //a harlam357.Net //ea $(NCoverExcludeList) //x $(ArtifactsPath)\harlam357.Net.Tests.Coverage.xml" />
+      <Exec Command="$(NCoverPath) $(NUnitPath) .\Security\Tests\bin\$(Configuration)\harlam357.Security.Tests.dll /xml=$(ArtifactsPath)\harlam357.Security.Tests.Results.xml //reg //a harlam357.Security //ea $(NCoverExcludeList) //x $(ArtifactsPath)\harlam357.Security.Tests.Coverage.xml" />
+      <Exec Command="$(NCoverPath) $(NUnitPath) .\Windows.Forms\Tests\bin\$(Configuration)\harlam357.Windows.Forms.Tests.dll /xml=$(ArtifactsPath)\harlam357.Windows.Forms.Tests.Results.xml //reg //a harlam357.Windows.Forms //ea $(NCoverExcludeList) //x $(ArtifactsPath)\harlam357.Windows.Forms.Tests.Coverage.xml" />
+      <Exec Command="$(NCoverExpPath) $(ArtifactsPath)\*.Tests.Coverage.xml /s:$(ArtifactsPath)\Coverage.xml" />
    </Target>
 
    <Target Name="FxCop">
-      <Exec Command="$(FxCopPath) /project:harlam357-$(Framework).FxCop /out:.\artifacts\harlam357-$(Framework).FxCop.xml" />
+      <Exec Command="$(FxCopPath) /f:$(ArtifactsBin)\harlam357.Net.dll /f:$(ArtifactsBin)\harlam357.Security.dll /f:$(ArtifactsBin)\harlam357.Windows.Forms.dll /out:.\Artifacts\FxCopReport.xml" />
    </Target>
 
-   <Target Name="Zip">
+   <ItemGroup>
+      <ZipFiles Include="$(ArtifactsBin)\**\*.*" />
+   </ItemGroup>
+
+   <Target Name="BuildZip" DependsOnTargets="Version">
+      <MakeDir Directories="$(ArtifactsPackages)" />
       <Zip Files="@(ZipFiles)"
-           WorkingDirectory=".\$(Framework)\bin\$(Configuration)"
-           ZipFileName=".\$(Framework)\harlam357-net $(Configuration)-$(Framework) $(Major).$(Minor).$(Build).$(Revision).zip" />
+           WorkingDirectory="$(ArtifactsBin)"
+           ZipFileName="$(ArtifactsPackages)\harlam357-net $(Configuration) $(Major).$(Minor).$(Build).$(Revision).zip" />
    </Target>
 
-   <Target Name ="CopyTargets" Condition="'$(TargetDestination)' != ''">
-      <Copy SourceFiles=".\$(Framework)\harlam357-net $(Configuration)-$(Framework) $(Major).$(Minor).$(Build).$(Revision).zip" DestinationFolder="$(TargetDestination)" />
+   <Target Name ="CopyPackages" Condition="'$(PackageDestination)' != ''" DependsOnTargets="Version">
+      <Copy SourceFiles="$(ArtifactsPackages)\harlam357-net $(Configuration) $(Major).$(Minor).$(Build).$(Revision).zip" DestinationFolder="$(PackageDestination)" />
    </Target>
 </Project>

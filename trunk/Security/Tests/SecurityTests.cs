@@ -204,49 +204,45 @@ namespace harlam357.Security.Tests
 
       private static string SymmetricFilePrivate(Encryption.Symmetric.Provider p, string fileName, string key)
       {
-         string EncryptedFilePath = Path.GetFileNameWithoutExtension(fileName) + ".encrypted";
-         string DecryptedFilePath = Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(fileName)) + "-decrypted" + Path.GetExtension(fileName);
+         string encryptedFilePath = Path.GetFileNameWithoutExtension(fileName) + ".encrypted";
+         string decryptedFilePath = Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(fileName)) + "-decrypted" + Path.GetExtension(fileName);
 
          //-- encrypt the file to memory
-         Encryption.Symmetric sym = new Encryption.Symmetric(p);
+         var sym = new Encryption.Symmetric(p);
          sym.Key = new Data(key);
          Data encryptedData;
 
-         StreamReader sr = null;
-         using (sr = new StreamReader(fileName))
+         using (var fs = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.Read))
          {
-            encryptedData = sym.Encrypt(sr.BaseStream);
+            encryptedData = sym.Encrypt(fs);
          }
 
          //-- write encrypted data to a new binary file
-         StreamWriter sw = new StreamWriter(EncryptedFilePath);
-         BinaryWriter bw = new BinaryWriter(sw.BaseStream);
-         bw.Write(encryptedData.Bytes);
-         bw.Close();
+         using (var fs = new FileStream(encryptedFilePath, FileMode.Create, FileAccess.Write, FileShare.None))
+         using (var bw = new BinaryWriter(fs))
+         {
+            bw.Write(encryptedData.Bytes);
+         }
 
          //-- decrypt this binary file
-         Data decryptedData;
-         Encryption.Symmetric sym2 = new Encryption.Symmetric(p);
+         var sym2 = new Encryption.Symmetric(p);
          sym2.Key = new Data(key);
-         try
+         Data decryptedData;
+
+         using (var fs = new FileStream(encryptedFilePath, FileMode.Open, FileAccess.Read, FileShare.Read))
          {
-            sr = new StreamReader(EncryptedFilePath);
-            decryptedData = sym.Decrypt(sr.BaseStream);
-         }
-         finally
-         {
-            if ((sr != null)) sr.Close();
-            //File.Delete(EncryptedFilePath);
+            decryptedData = sym.Decrypt(fs);
          }
 
          //-- write decrypted data to a new binary file
-         sw = new StreamWriter(DecryptedFilePath);
-         bw = new BinaryWriter(sw.BaseStream);
-         bw.Write(decryptedData.Bytes);
-         bw.Close();
+         using (var fs = new FileStream(decryptedFilePath, FileMode.Create, FileAccess.Write, FileShare.None))
+         using (var bw = new BinaryWriter(fs))
+         {
+            bw.Write(decryptedData.Bytes);
+         }
 
          //-- get the MD5 hash of the returned data
-         Hash h = new Hash(Hash.Provider.MD5);
+         var h = new Hash(Hash.Provider.MD5);
          return h.Calculate(decryptedData).ToHex();
       }
 
