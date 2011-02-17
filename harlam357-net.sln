@@ -1,6 +1,11 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 10.00
-# Visual Studio 2008
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{9CF61524-AA41-40F1-BB73-92BEC2716893}"
+	ProjectSection(SolutionItems) = preProject
+		harlam357-net.msbuild = harlam357-net.msbuild
+	EndProjectSection
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Security", "Security\Security.csproj", "{43AE939B-0917-4904-82F2-CA52998A15EF}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Windows.Forms", "Windows.Forms\Windows.Forms.csproj", "{2ABB418B-E601-43E9-BF7A-820C4D438548}"
@@ -10,11 +15,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Net", "Net\Net.csproj", "{8A712ABF-5B19-457C-A57D-82611CDA310F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Net.Tests", "Net\Tests\Net.Tests.csproj", "{EDACE56F-10A7-46D5-A954-1CBB6068F0F9}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{9CF61524-AA41-40F1-BB73-92BEC2716893}"
-	ProjectSection(SolutionItems) = preProject
-		harlam357-net.msbuild = harlam357-net.msbuild
-	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Windows.Forms.Tests", "Windows.Forms\Tests\Windows.Forms.Tests.csproj", "{5FADA4AC-2F97-4B95-9084-E5006CAAB7C5}"
 EndProject
