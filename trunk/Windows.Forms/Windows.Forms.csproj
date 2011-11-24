@@ -75,6 +75,9 @@
       <Link>Properties\AssemblyVersion.cs</Link>
     </Compile>
     <Compile Include="ApplicationUpdate.cs" />
+    <Compile Include="BindableToolStripStatusLabel.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="ClipboardWrapper.cs" />
     <Compile Include="ExceptionDialog.cs">
       <SubType>Form</SubType>
