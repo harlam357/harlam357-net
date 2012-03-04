@@ -1,6 +1,6 @@
 ﻿/*
  * harlam357.Net - Progress Dialog
- * Copyright (C) 2010 Ryan Harlamert (harlam357)
+ * Copyright (C) 2010-2012 Ryan Harlamert (harlam357)
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -158,16 +158,36 @@ namespace harlam357.Windows.Forms
       /// <summary>
       /// Show the Dialog and execute the Progress Process asynchronously
       /// </summary>
-      public virtual void Process()
+      public void Process()
       {
          if (OwnerWindow == null) throw new InvalidOperationException("OwnerWindow property must not be null.");
          if (ProcessRunner == null) throw new InvalidOperationException("ProcessRunner property must not be null.");
 
          ProcessRunner.ProgressChanged += ProcessRunnerProgressChanged;
          ProcessRunner.ProcessFinished += ProcessRunnerProcessFinished;
-         var process = new MethodInvoker(ProcessRunner.Process);
-         process.BeginInvoke(null, null);
+         var process = new Action(ProcessRunner.Process);
+         process.BeginInvoke(EndProcess, process);
          ShowDialog(OwnerWindow);
+      }
+
+      private void EndProcess(IAsyncResult result)
+      {
+         try
+         {
+            var process = (Action)result.AsyncState;
+            process.EndInvoke(result);
+         }
+         catch (Exception ex)
+         {
+            MessageBox.Show(ex.Message);
+         }
+         finally
+         {
+            ProcessRunner.ProgressChanged -= ProcessRunnerProgressChanged;
+            ProcessRunner.ProcessFinished -= ProcessRunnerProcessFinished;
+
+            Close();
+         }
       }
 
       /// <summary>
@@ -184,10 +204,7 @@ namespace harlam357.Windows.Forms
       /// </summary>
       protected virtual void ProcessRunnerProcessFinished(object sender, EventArgs e)
       {
-         ProcessRunner.ProgressChanged -= ProcessRunnerProgressChanged;
-         ProcessRunner.ProcessFinished -= ProcessRunnerProcessFinished;
-      
-         Close();
+         
       }
 
       private void ProcessCancelButtonClick(object sender, EventArgs e)
