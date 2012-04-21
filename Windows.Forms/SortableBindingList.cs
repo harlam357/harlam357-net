@@ -188,6 +188,17 @@ namespace harlam357.Windows.Forms
       /// <param name="direction">One of the <see cref="T:System.ComponentModel.ListSortDirection"/> values.</param>
       protected override void ApplySortCore(PropertyDescriptor property, ListSortDirection direction)
       {
+         ApplySortCoreInternal(property, direction, true);
+      }
+
+      /// <summary>
+      /// Sorts the items and optionally fires the ListChanged event.
+      /// </summary>
+      /// <param name="property">A <see cref="T:System.ComponentModel.PropertyDescriptor"/> that specifies the property to sort on.</param>
+      /// <param name="direction">One of the <see cref="T:System.ComponentModel.ListSortDirection"/> values.</param>
+      /// <param name="fireListChanged">true to fire the ListChanged event; otherwise, false.</param>
+      protected virtual void ApplySortCoreInternal(PropertyDescriptor property, ListSortDirection direction, bool fireListChanged)
+      {
          var items = Items as List<T>;
          if ((null != items) && (null != property))
          {
@@ -208,7 +219,10 @@ namespace harlam357.Windows.Forms
             IsSorted = true;
 
             OnSorted(new SortedEventArgs(property.Name, direction));
-            OnListChanged(new ListChangedEventArgs(ListChangedType.Reset, -1));
+            if (fireListChanged)
+            {
+               OnListChanged(new ListChangedEventArgs(ListChangedType.Reset, -1));
+            }
          }
          else
          {
