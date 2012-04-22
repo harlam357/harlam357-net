@@ -331,7 +331,7 @@ namespace harlam357.Windows.Forms
          ClearItems();
          foreach (var item in _originalList)
          {
-            Items.Add(item);
+            Add(item);
          }
          if (IsSortedCore)
          {
@@ -385,9 +385,14 @@ namespace harlam357.Windows.Forms
                      ApplyFilter(value);
                      // Set the filter value
                      _filter = value;
+                     // Clear the filter error
+                     FilterError = null;
                   }
                   catch (Exception ex)
                   {
+                     ResetList();
+                     // Set the filter value
+                     _filter = null;
                      // Set the filter error
                      FilterError = ex.Message;
                   }
@@ -410,6 +415,10 @@ namespace harlam357.Windows.Forms
          foreach (T item in results)
          {
             Add(item);
+         }
+         if (IsSortedCore)
+         {
+            ApplySortCoreInternal(true);
          }
       }
 
