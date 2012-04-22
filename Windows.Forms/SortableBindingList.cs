@@ -27,6 +27,8 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
+using System.Linq.Dynamic;
 using System.Windows.Forms;
 
 namespace harlam357.Windows.Forms
@@ -48,6 +50,29 @@ namespace harlam357.Windows.Forms
       /// <param name="e">A <see cref="T:System.ComponentModel.ListChangedEventArgs"/> that contains the event data.</param>
       protected override void OnListChanged(ListChangedEventArgs e)
       {
+         // If the list is reset, check for a filter. If a filter 
+         // is applied don't allow items to be added to the list.
+         if (e.ListChangedType == ListChangedType.Reset)
+         {
+            AllowNew = String.IsNullOrEmpty(Filter);
+         }
+         // Add the new item to the original list.
+         if (e.ListChangedType == ListChangedType.ItemAdded)
+         {
+            _originalList.Add(this[e.NewIndex]);
+            if (!String.IsNullOrEmpty(Filter))
+            {
+               string cachedFilter = Filter;
+               Filter = "";
+               Filter = cachedFilter;
+            }
+         }
+         // Remove the new item from the original list.
+         if (e.ListChangedType == ListChangedType.ItemDeleted)
+         {
+            _originalList.RemoveAt(e.NewIndex);
+         }
+
          if (_syncObject == null)
          {
             base.OnListChanged(e);
@@ -64,6 +89,7 @@ namespace harlam357.Windows.Forms
 
       private PropertyDescriptorCollection _shape;
       private readonly ISynchronizeInvoke _syncObject;
+      private readonly List<T> _originalList = new List<T>();
 
       #endregion
       
@@ -152,24 +178,22 @@ namespace harlam357.Windows.Forms
          get { return IsSorted; }
       }
 
-      protected PropertyDescriptor SortProperty { get; set; }
       /// <summary>
       /// Gets the property descriptor that is used for sorting the list if sorting is implemented in a derived class; otherwise, returns null. 
       /// </summary>
       /// <returns>The <see cref="T:System.ComponentModel.PropertyDescriptor"/> used for sorting the list.</returns>
       protected override PropertyDescriptor SortPropertyCore
       {
-         get { return SortProperty; }
+         get { return SortComparer.Property; }
       }
 
-      protected ListSortDirection SortDirection { get; set; }
       /// <summary>
       /// Gets the direction the list is sorted.
       /// </summary>
       /// <returns>One of the <see cref="T:System.ComponentModel.ListSortDirection"/> values. The default is <see cref="F:System.ComponentModel.ListSortDirection.Ascending"/>.</returns>
       protected override ListSortDirection SortDirectionCore
       {
-         get { return SortDirection; }
+         get { return SortComparer.Direction; }
       }
 
       /// <summary>
@@ -188,37 +212,42 @@ namespace harlam357.Windows.Forms
       /// <param name="direction">One of the <see cref="T:System.ComponentModel.ListSortDirection"/> values.</param>
       protected override void ApplySortCore(PropertyDescriptor property, ListSortDirection direction)
       {
-         ApplySortCoreInternal(property, direction, true);
+         if (property != null)
+         {
+            /* Set the sort property and direction (in the comparer) */
+            SortComparer.SetSortProperties(property, direction);
+
+            ApplySortCoreInternal(true);
+         }
       }
 
       /// <summary>
       /// Sorts the items and optionally fires the ListChanged event.
       /// </summary>
-      /// <param name="property">A <see cref="T:System.ComponentModel.PropertyDescriptor"/> that specifies the property to sort on.</param>
-      /// <param name="direction">One of the <see cref="T:System.ComponentModel.ListSortDirection"/> values.</param>
       /// <param name="fireListChanged">true to fire the ListChanged event; otherwise, false.</param>
-      protected virtual void ApplySortCoreInternal(PropertyDescriptor property, ListSortDirection direction, bool fireListChanged)
+      protected virtual void ApplySortCoreInternal(bool fireListChanged)
       {
          var items = Items as List<T>;
-         if ((null != items) && (null != property))
+         if (items != null)
          {
-            if (!SortComparer.SupportsSorting)
-            {
-               throw new InvalidOperationException("SortComparer must support sorting.");
-            }
-
-            /* Set the sort property and direction */
-            SortProperty = property;
-            SortDirection = direction;
-            /* Set the sort property and direction (in the comparer) */
-            SortComparer.SetSortProperties(property, direction);
             /* Execute the sort */
             items.Sort(SortComparer);
 
             /* Set sorted */
             IsSorted = true;
 
-            OnSorted(new SortedEventArgs(property.Name, direction));
+            if (SortComparer.SortMode.Equals(SortMode.Simple))
+            {
+               OnSorted(new SortedEventArgs(SortComparer.Property.Name, SortComparer.Direction));
+            }
+            else if (SortComparer.SortMode.Equals(SortMode.Advanced))
+            {
+               if (SortComparer.SortDescriptions.Count != 0)
+               {
+                  ListSortDescription sort = SortComparer.SortDescriptions[0];
+                  OnSorted(new SortedEventArgs(sort.PropertyDescriptor.Name, sort.SortDirection));
+               }
+            }
             if (fireListChanged)
             {
                OnListChanged(new ListChangedEventArgs(ListChangedType.Reset, -1));
@@ -268,7 +297,10 @@ namespace harlam357.Windows.Forms
       /// Gets the collection of sort descriptions currently applied to the data source.
       /// </summary>
       /// <returns>The <see cref="T:System.ComponentModel.ListSortDescriptionCollection"/> currently applied to the data source.</returns>
-      public ListSortDescriptionCollection SortDescriptions { get; protected set; }
+      public ListSortDescriptionCollection SortDescriptions
+      {
+         get { return SortComparer.SortDescriptions; }
+      }
 
       /// <summary>
       /// Gets a value indicating whether the data source supports advanced sorting. 
@@ -285,34 +317,25 @@ namespace harlam357.Windows.Forms
       /// <param name="sorts">The <see cref="T:System.ComponentModel.ListSortDescriptionCollection"/> containing the sorts to apply to the data source.</param>
       public virtual void ApplySort(ListSortDescriptionCollection sorts)
       {
-         var items = Items as List<T>;
-         if ((null != items) && (null != sorts))
+         if (sorts != null)
          {
-            if (!SortComparer.SupportsAdvancedSorting)
-            {
-               throw new InvalidOperationException("SortComparer must support advanced sorting.");
-            }
-
-            /* Set the sort descriptions */
-            SortDescriptions = sorts;
             /* Set the sort descriptions (in the comparer) */
             SortComparer.SetSortProperties(sorts);
-            /* Execute the sort */
-            items.Sort(SortComparer);
 
-            /* Set sorted */
-            IsSorted = true;
-
-            if (sorts.Count != 0)
-            {
-               OnSorted(new SortedEventArgs(sorts[0].PropertyDescriptor.Name, sorts[0].SortDirection));
-            }
-            OnListChanged(new ListChangedEventArgs(ListChangedType.Reset, -1));
+            ApplySortCoreInternal(true);
          }
-         else
+      }
+
+      private void ResetList()
+      {
+         ClearItems();
+         foreach (var item in _originalList)
          {
-            /* Set sorted */
-            IsSorted = false;
+            Items.Add(item);
+         }
+         if (IsSortedCore)
+         {
+            ApplySortCoreInternal(true);
          }
       }
 
@@ -322,17 +345,72 @@ namespace harlam357.Windows.Forms
       /// <returns>true if the data source supports filtering; otherwise, false.</returns>
       public virtual bool SupportsFiltering
       {
-         get { return false; }
+         get { return true; }
       }
 
+      /// <summary>
+      /// Gets the error message from the last filter attempt.
+      /// </summary>
+      public string FilterError { get; private set; }
+
+      private string _filter;
       /// <summary>
       /// Gets or sets the filter to be used to exclude items from the collection of items returned by the data source
       /// </summary>
       /// <returns>The string used to filter items out in the item collection returned by the data source.</returns>
       public virtual string Filter
       {
-         get { throw new NotSupportedException(); }
-         set { throw new NotSupportedException(); }
+         get { return _filter; }
+         set
+         {
+            if (_filter == value) return;
+
+            // Turn off list-changed events.
+            RaiseListChangedEvents = false;
+            try
+            {
+               // If the value is null or empty, reset list.
+               if (String.IsNullOrEmpty(value))
+               {
+                  ResetList();
+                  // Set the filter value
+                  _filter = value;
+                  // Clear the filter error
+                  FilterError = null;
+               }
+               else
+               {
+                  try
+                  {
+                     ApplyFilter(value);
+                     // Set the filter value
+                     _filter = value;
+                  }
+                  catch (Exception ex)
+                  {
+                     // Set the filter error
+                     FilterError = ex.Message;
+                  }
+               }
+            }
+            finally 
+            {
+               // Turn on list changed events.
+               RaiseListChangedEvents = true;
+               OnListChanged(new ListChangedEventArgs(ListChangedType.Reset, -1));
+            }
+         }
+      }
+
+      private void ApplyFilter(string filter)
+      {
+         var results = _originalList.AsQueryable().Where(filter).ToList();
+
+         ClearItems();
+         foreach (T item in results)
+         {
+            Add(item);
+         }
       }
 
       /// <summary>
@@ -340,7 +418,7 @@ namespace harlam357.Windows.Forms
       /// </summary>
       public virtual void RemoveFilter()
       {
-         throw new NotSupportedException();
+         Filter = null;
       }
 
       #endregion
@@ -375,10 +453,36 @@ namespace harlam357.Windows.Forms
       #endregion
    }
 
+   public enum SortMode
+   {
+      None,
+      Simple,
+      Advanced
+   }
+
    public class SortComparer<T> : IComparer<T>
    {
       // The following code contains code implemented by Rockford Lhotka:
       // http://msdn.microsoft.com/library/default.asp?url=/library/en-us/dnadvnet/html/vbnet01272004.asp
+
+      /// <summary>
+      /// Gets a value indicating the active sorting mode.
+      /// </summary>
+      public SortMode SortMode
+      {
+         get
+         {
+            if (Property != null)
+            {
+               return SortMode.Simple;
+            }
+            if (SortDescriptions != null)
+            {
+               return SortMode.Advanced;
+            }
+            return SortMode.None;
+         }
+      }
 
       /// <summary>
       /// Gets a value indicating whether the comparer supports simple sorting.

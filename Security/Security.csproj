@@ -41,6 +41,8 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <DocumentationFile>bin\Debug\harlam357.Security.xml</DocumentationFile>
+    <NoWarn>1591</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -50,6 +52,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <DocumentationFile>bin\Release\harlam357.Security.xml</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup>
     <SignAssembly>true</SignAssembly>
@@ -123,6 +126,7 @@
   <PropertyGroup>
     <PostBuildEvent>if not exist ..\..\..\Artifacts\bin\$(ConfigurationName) md ..\..\..\Artifacts\bin\$(ConfigurationName)
 copy /Y $(TargetName).dll ..\..\..\Artifacts\bin\$(ConfigurationName)
-copy /Y $(TargetName).pdb ..\..\..\Artifacts\bin\$(ConfigurationName)</PostBuildEvent>
+copy /Y $(TargetName).pdb ..\..\..\Artifacts\bin\$(ConfigurationName)
+copy /Y $(TargetName).xml ..\..\..\Artifacts\bin\$(ConfigurationName)</PostBuildEvent>
   </PropertyGroup>
 </Project>
