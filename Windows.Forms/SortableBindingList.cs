@@ -50,6 +50,12 @@ namespace harlam357.Windows.Forms
       /// <param name="e">A <see cref="T:System.ComponentModel.ListChangedEventArgs"/> that contains the event data.</param>
       protected override void OnListChanged(ListChangedEventArgs e)
       {
+         if (_syncObject != null && _syncObject.InvokeRequired)
+         {
+            _syncObject.Invoke(new Action<ListChangedEventArgs>(OnListChanged), new object[] { e });
+            return;
+         }
+
          // If the list is reset, check for a filter. If a filter 
          // is applied don't allow items to be added to the list.
          if (e.ListChangedType == ListChangedType.Reset)
@@ -73,14 +79,7 @@ namespace harlam357.Windows.Forms
             _originalList.RemoveAt(e.NewIndex);
          }
 
-         if (_syncObject == null)
-         {
-            base.OnListChanged(e);
-         }
-         else
-         {
-            _syncObject.Invoke(new Action<ListChangedEventArgs>(base.OnListChanged), new object[] { e });
-         }
+         base.OnListChanged(e);
       }
 
       #endregion
