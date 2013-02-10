@@ -80,6 +80,11 @@ namespace harlam357.Windows.Forms
       IProgressProcessRunner ProcessRunner { get; set; }
       
       /// <summary>
+      /// Gets or sets the text associated with this control.
+      /// </summary>
+      string Text { get; set; }
+      
+      /// <summary>
       /// Update Progress Bar Value
       /// </summary>
       void UpdateProgress(int progress);
