@@ -1,6 +1,6 @@
 ﻿/*
- * harlam357.Net - Progress Dialog
- * Copyright (C) 2010-2012 Ryan Harlamert (harlam357)
+ * harlam357.Windows.Forms - Progress Dialog
+ * Copyright (C) 2010-2013 Ryan Harlamert (harlam357)
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -25,57 +25,67 @@ using System.Windows.Forms;
 namespace harlam357.Windows.Forms
 {
    /// <summary>
-   /// Defines the Progress Process Class Interface
+   /// Represents an object that runs a process and reports progress.
    /// </summary>
    public interface IProgressProcessRunner
    {
       /// <summary>
-      /// Raised on Progress Process Changed
+      /// Occurs when the runner's progress has changed.
       /// </summary>
       event EventHandler<ProgressEventArgs> ProgressChanged;
       /// <summary>
-      /// Raised on Progress Process Finished
+      /// Occurs when the runner's process has finished.
       /// </summary>
       event EventHandler ProcessFinished;
 
       /// <summary>
-      /// Exception returned from Progress Process
+      /// Gets the exception that resulted from executing the runner or null if no exception occurred.
       /// </summary>
       Exception Exception { get; }
       
       /// <summary>
-      /// Defines if this Progress Process supports being cancelled
+      /// Gets a value that defines if this runner supports being cancelled.
       /// </summary>
       bool SupportsCancellation { get; }
       
       /// <summary>
-      /// Flag denoting if the Progress Process is in progress
+      /// Gets a value that reports if the runner is currently processing.
       /// </summary>
       bool Processing { get; }
    
       /// <summary>
-      /// Execute the Progress Process
+      /// Executes the runner.
       /// </summary>
       void Process();
       
       /// <summary>
-      /// Cancel the Progress Process
+      /// Cancels the runner.
       /// </summary>
       void Cancel();
    }
    
    /// <summary>
-   /// Defines the Progress Dialog View Interface
+   /// Represents a view interface for a modal dialog that runs a process asynchronously and reports progress.
    /// </summary>
    public interface IProgressDialogView : IWin32Window
    {
       /// <summary>
-      /// Window that owns this dialog
+      /// Gets or sets the window that owns this view.
       /// </summary>
-      IWin32Window OwnerWindow { set; }
+      IWin32Window OwnerWindow { get; set; }
+
+      /// <summary>
+      /// Gets or sets the icon for the form.
+      /// </summary>
+      Icon Icon { get; set; }
+
+      /// <summary>
+      /// Gets or sets the starting position of the form at run time.
+      /// </summary>
+      FormStartPosition StartPosition { get; set; }
       
       /// <summary>
-      /// Progress Process Class to execute
+      /// Gets or sets the progress process runner that executes when the Process method is called.
       /// </summary>
       IProgressProcessRunner ProcessRunner { get; set; }
       
@@ -85,17 +95,17 @@ namespace harlam357.Windows.Forms
       string Text { get; set; }
       
       /// <summary>
-      /// Update Progress Bar Value
+      /// Updates the progress bar value.
       /// </summary>
       void UpdateProgress(int progress);
       
       /// <summary>
-      /// Update Text Message Value
+      /// Updates the text message value.
       /// </summary>
       void UpdateMessage(string message);
 
       /// <summary>
-      /// Show the Dialog and execute the Progress Process
+      /// Shows the modal dialog and executes the IProgressProcessRunner instance assigned to the ProcessRunner property.
       /// </summary>
       void Process();
    }
@@ -108,13 +118,13 @@ namespace harlam357.Windows.Forms
       private readonly Size _baseSize;
 
       /// <summary>
-      /// Window that owns this dialog
+      /// Gets or sets the window that owns this view.
       /// </summary>
       public IWin32Window OwnerWindow { get; set; }
 
       private IProgressProcessRunner _processRunner;
       /// <summary>
-      /// Progress Process Class to execute
+      /// Gets or sets the progress process runner that executes when the Process method is called.
       /// </summary>
       public IProgressProcessRunner ProcessRunner
       {
@@ -126,6 +136,9 @@ namespace harlam357.Windows.Forms
          }
       }
 
+      /// <summary>
+      /// Initializes a new instance of the ProgressDialog class.
+      /// </summary>
       public ProgressDialog()
       {
          InitializeComponent();
@@ -133,7 +146,7 @@ namespace harlam357.Windows.Forms
       }
 
       /// <summary>
-      /// Update Progress Bar Value (safe to be called from a worker thread)
+      /// Updates the progress bar value.
       /// </summary>
       public void UpdateProgress(int progress)
       {
@@ -147,7 +160,7 @@ namespace harlam357.Windows.Forms
       }
 
       /// <summary>
-      /// Update Text Message Value (safe to be called from a worker thread)
+      /// Updates the text message value.
       /// </summary>
       public void UpdateMessage(string message)
       {
@@ -161,11 +174,11 @@ namespace harlam357.Windows.Forms
       }
 
       /// <summary>
-      /// Show the Dialog and execute the Progress Process asynchronously
+      /// Shows the modal dialog and executes the IProgressProcessRunner instance assigned to the ProcessRunner property.
       /// </summary>
+      /// <exception cref="T:System.InvalidOperationException">The ProcessRunner property is null.</exception>
       public void Process()
       {
-         if (OwnerWindow == null) throw new InvalidOperationException("OwnerWindow property must not be null.");
          if (ProcessRunner == null) throw new InvalidOperationException("ProcessRunner property must not be null.");
 
          ProcessRunner.ProgressChanged += ProcessRunnerProgressChanged;
@@ -196,7 +209,7 @@ namespace harlam357.Windows.Forms
       }
 
       /// <summary>
-      /// Handles the given ProcessRunner's Progress Changed Event
+      /// Handles the runner's ProgressChanged event.
       /// </summary>
       protected virtual void ProcessRunnerProgressChanged(object sender, ProgressEventArgs e)
       {
@@ -205,7 +218,7 @@ namespace harlam357.Windows.Forms
       }
 
       /// <summary>
-      /// Handles the given ProcessRunner's Process Finished Event
+      /// Handles the runner's ProcessFinished event.
       /// </summary>
       protected virtual void ProcessRunnerProcessFinished(object sender, EventArgs e)
       {
@@ -223,11 +236,13 @@ namespace harlam357.Windows.Forms
       }
 
       /// <summary>
-      /// Handles the Dialog's FormClosing Event
+      /// Raises the <see cref="E:System.Windows.Forms.Form.FormClosing"/> event.
       /// </summary>
-      /// <remarks>If the ProcessRunner is Processing this event will be cancelled.
-      /// If the ProcessRunner supports cancellation then the Cancel() method will be 
-      /// called and the dialog will be closed when the ProcessRunner is finished.</remarks>
+      /// <param name="e">A <see cref="T:System.Windows.Forms.FormClosingEventArgs"/> that contains the event data.</param>
+      /// <remarks>
+      /// If the runner is processing and runner does not support cancellation then this event will be cancelled.
+      /// If the runner supports cancellation then the Cancel method will be called and the dialog will be closed when the runner is finished.
+      /// </remarks>
       protected override void OnFormClosing(FormClosingEventArgs e)
       {
          if (_processRunner.Processing)
@@ -243,7 +258,7 @@ namespace harlam357.Windows.Forms
       }
 
       /// <summary>
-      /// Close the Dialog (safe to be called from a worker thread)
+      /// Closes the dialog.
       /// </summary>
       public new void Close()
       {
@@ -264,19 +279,24 @@ namespace harlam357.Windows.Forms
    }
 
    /// <summary>
-   /// Progress Process Event Arguments
+   /// Provides data for the event that is raised when the progress process runner's progress value has changed.
    /// </summary>
    public class ProgressEventArgs : EventArgs
    {
       /// <summary>
-      /// Progress Bar Value
+      /// Gets the progress value.
       /// </summary>
       public int Progress { get; private set; }
       /// <summary>
-      /// Text Message Value
+      /// Gets the text message value.
       /// </summary>
       public string Message { get; private set; }
 
+      /// <summary>
+      /// Initializes a new instance of the ProgressEventArgs class with progress and text message values.
+      /// </summary>
+      /// <param name="progress">The progress value.</param>
+      /// <param name="message">The text message value.</param>
       public ProgressEventArgs(int progress, string message)
       {
          Progress = progress;
