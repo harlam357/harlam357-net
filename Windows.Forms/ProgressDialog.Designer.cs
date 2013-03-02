@@ -46,7 +46,6 @@
          this.messageLabel.Name = "messageLabel";
          this.messageLabel.Size = new System.Drawing.Size(306, 13);
          this.messageLabel.TabIndex = 1;
-         this.messageLabel.Text = "messageLabel";
          this.messageLabel.TextAlign = System.Drawing.ContentAlignment.TopCenter;
          // 
          // ProcessCancelButton
