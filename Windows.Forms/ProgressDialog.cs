@@ -65,6 +65,97 @@ namespace harlam357.Windows.Forms
    }
    
    /// <summary>
+   /// Represents an object that runs a process and reports progress.
+   /// </summary>
+   public abstract class ProgressProcessRunnerBase : IProgressProcessRunner
+   {
+      /// <summary>
+      /// Occurs when the runner's progress has changed.
+      /// </summary>
+      public event EventHandler<ProgressEventArgs> ProgressChanged;
+
+      protected virtual void OnProgressChanged(ProgressEventArgs e)
+      {
+         var handler = ProgressChanged;
+         if (handler != null)
+         {
+            handler(this, e);
+         }
+      }
+
+      /// <summary>
+      /// Occurs when the runner's process has finished.
+      /// </summary>
+      public event EventHandler ProcessFinished;
+
+      protected virtual void OnProcessFinished(EventArgs e)
+      {
+         var handler = ProcessFinished;
+         if (handler != null)
+         {
+            handler(this, e);
+         }
+      }
+
+      /// <summary>
+      /// Gets the exception that resulted from executing the runner or null if no exception occurred.
+      /// </summary>
+      public Exception Exception { get; private set; }
+
+      /// <summary>
+      /// Gets a value that defines if this runner supports being cancelled.
+      /// </summary>
+      public abstract bool SupportsCancellation { get; }
+
+      private bool _processing;
+
+      /// <summary>
+      /// Gets a value that reports if the runner is currently processing.
+      /// </summary>
+      public bool Processing
+      {
+         get { return _processing; }
+         private set
+         {
+            CancelToken = false;
+            _processing = value;
+         }
+      }
+
+      /// <summary>
+      /// Executes the runner.
+      /// </summary>
+      public void Process()
+      {
+         Processing = true;
+         try
+         {
+            ProcessInternal();
+         }
+         catch (Exception ex)
+         {
+            Exception = ex;
+         }
+         finally
+         {
+            Processing = false;
+            OnProcessFinished(EventArgs.Empty);
+         }
+      }
+
+      protected abstract void ProcessInternal();
+
+      protected bool CancelToken { get; set; }
+      /// <summary>
+      /// Cancels the runner.
+      /// </summary>
+      public void Cancel()
+      {
+         CancelToken = true;
+      }
+   }
+   
+   /// <summary>
    /// Represents a view interface for a modal dialog that runs a process asynchronously and reports progress.
    /// </summary>
    public interface IProgressDialogView : IWin32Window
