@@ -69,53 +69,76 @@ namespace harlam357.Windows.Forms
    /// </summary>
    public abstract class ProgressProcessRunnerBase : IProgressProcessRunner
    {
+      private EventHandler<ProgressEventArgs> _progressChanged;
       /// <summary>
       /// Occurs when the runner's progress has changed.
       /// </summary>
-      public event EventHandler<ProgressEventArgs> ProgressChanged;
+      event EventHandler<ProgressEventArgs> IProgressProcessRunner.ProgressChanged
+      {
+         add { _progressChanged += value; }
+         remove { _progressChanged -= value; }
+      }
 
       protected virtual void OnProgressChanged(ProgressEventArgs e)
       {
-         var handler = ProgressChanged;
+         var handler = _progressChanged;
          if (handler != null)
          {
             handler(this, e);
          }
       }
 
+      private EventHandler _processFinished;
       /// <summary>
       /// Occurs when the runner's process has finished.
       /// </summary>
-      public event EventHandler ProcessFinished;
+      event EventHandler IProgressProcessRunner.ProcessFinished
+      {
+         add { _processFinished += value; }
+         remove { _processFinished -= value; }
+      }
 
       protected virtual void OnProcessFinished(EventArgs e)
       {
-         var handler = ProcessFinished;
+         var handler = _processFinished;
          if (handler != null)
          {
             handler(this, e);
          }
       }
 
+      private Exception _exception;
       /// <summary>
       /// Gets the exception that resulted from executing the runner or null if no exception occurred.
       /// </summary>
-      public Exception Exception { get; private set; }
+      Exception IProgressProcessRunner.Exception
+      {
+         get { return _exception; }
+      }
 
       /// <summary>
       /// Gets a value that defines if this runner supports being cancelled.
       /// </summary>
-      public abstract bool SupportsCancellation { get; }
+      bool IProgressProcessRunner.SupportsCancellation
+      {
+         get { return SupportsCancellationInternal; }
+      }
+
+      protected abstract bool SupportsCancellationInternal { get; }
+
+      bool IProgressProcessRunner.Processing
+      {
+         get { return Processing; }
+      }
 
       private bool _processing;
-
       /// <summary>
       /// Gets a value that reports if the runner is currently processing.
       /// </summary>
-      public bool Processing
+      private bool Processing
       {
          get { return _processing; }
-         private set
+         set
          {
             CancelToken = false;
             _processing = value;
@@ -125,7 +148,7 @@ namespace harlam357.Windows.Forms
       /// <summary>
       /// Executes the runner.
       /// </summary>
-      public void Process()
+      void IProgressProcessRunner.Process()
       {
          Processing = true;
          try
@@ -134,7 +157,7 @@ namespace harlam357.Windows.Forms
          }
          catch (Exception ex)
          {
-            Exception = ex;
+            _exception = ex;
          }
          finally
          {
@@ -149,7 +172,7 @@ namespace harlam357.Windows.Forms
       /// <summary>
       /// Cancels the runner.
       /// </summary>
-      public void Cancel()
+      void IProgressProcessRunner.Cancel()
       {
          CancelToken = true;
       }
