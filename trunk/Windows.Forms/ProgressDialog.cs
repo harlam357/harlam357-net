@@ -286,10 +286,6 @@ namespace harlam357.Windows.Forms
             var process = (Action)result.AsyncState;
             process.EndInvoke(result);
          }
-         catch (Exception ex)
-         {
-            MessageBox.Show(ex.Message);
-         }
          finally
          {
             ProcessRunner.ProgressChanged -= ProcessRunnerProgressChanged;
