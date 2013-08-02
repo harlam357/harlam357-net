@@ -1,6 +1,6 @@
 /*
  * harlam357.Net - Sortable Binding List
- * Copyright (C) 2010-2012 Ryan Harlamert (harlam357)
+ * Copyright (C) 2010-2013 Ryan Harlamert (harlam357)
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -33,15 +33,30 @@ using System.Windows.Forms;
 
 namespace harlam357.Windows.Forms
 {
+   /// <summary>
+   /// Provides a generic collection that supports data binding, sorting, and filtering.
+   /// </summary>
+   /// <typeparam name="T">The type of elements in the list.</typeparam>
    public class SortableBindingList<T> : BindingList<T>, IBindingListView, ITypedList
    {
       #region Events
 
+      /// <summary>
+      /// Occurs when the SortableBindingList completes a sorting operation.
+      /// </summary>
       public event EventHandler<SortedEventArgs> Sorted;
 
+      /// <summary>
+      /// Raises the Sorted event.
+      /// </summary>
+      /// <param name="e">A SortedEventArgs that contains the event data.</param>
       protected virtual void OnSorted(SortedEventArgs e)
       {
-         if (Sorted != null) Sorted(this, e);
+         var handler = Sorted;
+         if (handler != null)
+         {
+            handler(this, e);
+         }
       }
 
       /// <summary>
@@ -55,6 +70,8 @@ namespace harlam357.Windows.Forms
             _syncObject.Invoke(new Action<ListChangedEventArgs>(OnListChanged), new object[] { e });
             return;
          }
+
+         if (e == null) return;
 
          // If the list is reset, check for a filter. If a filter 
          // is applied don't allow items to be added to the list.
@@ -94,6 +111,9 @@ namespace harlam357.Windows.Forms
       
       #region Constructor
 
+      /// <summary>
+      /// Initializes a new instance of the SortableBindingList class.
+      /// </summary>
       public SortableBindingList()
       {
          /* Default to non-sorted columns */
@@ -103,6 +123,9 @@ namespace harlam357.Windows.Forms
          _shape = GetShape();
       }
 
+      /// <summary>
+      /// Initializes a new instance of the SortableBindingList class with a list of items.
+      /// </summary>
       public SortableBindingList(IList<T> list)
          : base(list)
       {
@@ -113,6 +136,9 @@ namespace harlam357.Windows.Forms
          _shape = GetShape();
       }
 
+      /// <summary>
+      /// Initializes a new instance of the SortableBindingList class with a synchronization object.
+      /// </summary>
       public SortableBindingList(ISynchronizeInvoke syncObject)
       {
          /* Default to non-sorted columns */
@@ -129,7 +155,9 @@ namespace harlam357.Windows.Forms
       #region SortableBindingList<T> Column Sorting API
 
       private bool _sortColumns;
-
+      /// <summary>
+      /// Gets or sets a value indicating if the columns are to be sorted.
+      /// </summary>
       public bool SortColumns
       {
          get { return _sortColumns; }
@@ -167,6 +195,9 @@ namespace harlam357.Windows.Forms
 
       #region BindingList<T> Sorting Overrides
 
+      /// <summary>
+      /// Gets or sets a value indicating whether the list is sorted. 
+      /// </summary>
       protected bool IsSorted { get; set; }
       /// <summary>
       /// Gets a value indicating whether the list is sorted. 
@@ -207,14 +238,14 @@ namespace harlam357.Windows.Forms
       /// <summary>
       /// Sorts the items if overridden in a derived class; otherwise, throws a <see cref="T:System.NotSupportedException"/>.
       /// </summary>
-      /// <param name="property">A <see cref="T:System.ComponentModel.PropertyDescriptor"/> that specifies the property to sort on.</param>
+      /// <param name="prop">A <see cref="T:System.ComponentModel.PropertyDescriptor"/> that specifies the property to sort on.</param>
       /// <param name="direction">One of the <see cref="T:System.ComponentModel.ListSortDirection"/> values.</param>
-      protected override void ApplySortCore(PropertyDescriptor property, ListSortDirection direction)
+      protected override void ApplySortCore(PropertyDescriptor prop, ListSortDirection direction)
       {
-         if (property != null)
+         if (prop != null)
          {
             /* Set the sort property and direction (in the comparer) */
-            SortComparer.SetSortProperties(property, direction);
+            SortComparer.SetSortProperties(prop, direction);
 
             ApplySortCoreInternal(true);
          }
@@ -277,15 +308,8 @@ namespace harlam357.Windows.Forms
       /// </summary>
       public SortComparer<T> SortComparer
       {
-         get { return _sortComparer ?? DefaultSortComparer; }
+         get { return _sortComparer ?? (_sortComparer = new SortComparer<T>()); }
          set { _sortComparer = value; }
-      }
-
-      private SortComparer<T> _defaultSortComparer;
-
-      private SortComparer<T> DefaultSortComparer
-      {
-         get { return _defaultSortComparer ?? (_defaultSortComparer = new SortComparer<T>()); }
       }
 
       #endregion
@@ -432,20 +456,21 @@ namespace harlam357.Windows.Forms
       #endregion
 
       #region ITypedList Implementation
-
+      #pragma warning disable 1591
+      
       public PropertyDescriptorCollection GetItemProperties(PropertyDescriptor[] listAccessors)
       {
          PropertyDescriptorCollection pdc;
 
-         if (null == listAccessors)
+         if (listAccessors != null && listAccessors.Length > 0)
          {
-            /* Return properties in sort order */
-            pdc = _shape;
+            // Return child list shape.
+            pdc = ListBindingHelper.GetListItemProperties(listAccessors[0].PropertyType);
          }
          else
          {
-            /* Return child list shape */
-            pdc = ListBindingHelper.GetListItemProperties(listAccessors[0].PropertyType);
+            // Return properties in sort order.
+            pdc = _shape;
          }
 
          return pdc;
@@ -458,16 +483,33 @@ namespace harlam357.Windows.Forms
          return typeof(T).Name;
       }
 
+      #pragma warning restore 1591
       #endregion
    }
 
+   /// <summary>
+   /// Specifies the sorting mode.
+   /// </summary>
    public enum SortMode
    {
+      /// <summary>
+      /// No sorting.
+      /// </summary>
       None,
+      /// <summary>
+      /// Simple, single property sorting.
+      /// </summary>
       Simple,
+      /// <summary>
+      /// Advanced, multi property sorting.
+      /// </summary>
       Advanced
    }
 
+   /// <summary>
+   /// Represents a comparer for the SortableBindingList that supports comparing one or more properties of two objects.
+   /// </summary>
+   /// <typeparam name="T">The type of objects to compare.</typeparam>
    public class SortComparer<T> : IComparer<T>
    {
       // The following code contains code implemented by Rockford Lhotka:
@@ -524,7 +566,7 @@ namespace harlam357.Windows.Forms
       public ListSortDescriptionCollection SortDescriptions { get; private set; }
 
       /// <summary>
-      /// Set the sorting properties.
+      /// Sets the sorting properties.
       /// </summary>
       /// <param name="property">Property descriptor for a simple sort.</param>
       /// <param name="direction">Sort direction for a simple sort.</param>
@@ -536,7 +578,7 @@ namespace harlam357.Windows.Forms
       }
 
       /// <summary>
-      /// Set the sorting properties.
+      /// Sets the sorting properties.
       /// </summary>
       /// <param name="sortDescriptions">Sort description collection for an advanced sort.</param>
       public void SetSortProperties(ListSortDescriptionCollection sortDescriptions)
@@ -548,18 +590,18 @@ namespace harlam357.Windows.Forms
       /// <summary>
       /// Compares two objects and returns a value indicating whether one is less than, equal to, or greater than the other.
       /// </summary>
-      /// <param name="xVal">The first object to compare.</param>
-      /// <param name="yVal">The second object to compare.</param>
-      public int Compare(T xVal, T yVal)
+      /// <param name="x">The first object to compare.</param>
+      /// <param name="y">The second object to compare.</param>
+      public int Compare(T x, T y)
       {
          /* Knowing how to sort is dependent on what sorting properties are set */
          if (SupportsSorting && Property != null)
          {
-            return CompareInternal(xVal, yVal);
+            return CompareInternal(x, y);
          }
          if (SupportsAdvancedSorting && SortDescriptions != null)
          {
-            return RecursiveCompareInternal(xVal, yVal, 0);
+            return RecursiveCompareInternal(x, y, 0);
          }
 
          return 0;
@@ -570,13 +612,13 @@ namespace harlam357.Windows.Forms
       /// <summary>
       /// Single property compare method.
       /// </summary>
-      /// <param name="xVal">The first object to compare.</param>
-      /// <param name="yVal">The second object to compare.</param>
-      protected virtual int CompareInternal(T xVal, T yVal)
+      /// <param name="x">The first object to compare.</param>
+      /// <param name="y">The second object to compare.</param>
+      protected virtual int CompareInternal(T x, T y)
       {
          /* Get property values */
-         object xValue = GetPropertyValue(xVal, Property);
-         object yValue = GetPropertyValue(yVal, Property);
+         object xValue = GetPropertyValue(x, Property);
+         object yValue = GetPropertyValue(y, Property);
 
          /* Determine sort order */
          if (Direction == ListSortDirection.Ascending)
@@ -590,10 +632,10 @@ namespace harlam357.Windows.Forms
       /// <summary>
       /// Multiple property compare method.
       /// </summary>
-      /// <param name="xVal">The first object to compare.</param>
-      /// <param name="yVal">The second object to compare.</param>
+      /// <param name="x">The first object to compare.</param>
+      /// <param name="y">The second object to compare.</param>
       /// <param name="index">Zero based index of SortDescriptions collection.</param>
-      protected virtual int RecursiveCompareInternal(T xVal, T yVal, int index)
+      protected virtual int RecursiveCompareInternal(T x, T y, int index)
       {
          if (index >= SortDescriptions.Count)
          {
@@ -602,8 +644,8 @@ namespace harlam357.Windows.Forms
 
          /* Get property values */
          ListSortDescription listSortDesc = SortDescriptions[index];
-         object xValue = listSortDesc.PropertyDescriptor.GetValue(xVal);
-         object yValue = listSortDesc.PropertyDescriptor.GetValue(yVal);
+         object xValue = listSortDesc.PropertyDescriptor.GetValue(x);
+         object yValue = listSortDesc.PropertyDescriptor.GetValue(y);
 
          int result;
          /* Determine sort order */
@@ -619,7 +661,7 @@ namespace harlam357.Windows.Forms
          /* If the properties are equal, compare the next property */
          if (result == 0)
          {
-            return RecursiveCompareInternal(xVal, yVal, ++index);
+            return RecursiveCompareInternal(x, y, ++index);
          }
 
          return result;
@@ -634,20 +676,35 @@ namespace harlam357.Windows.Forms
       {
          int result;
 
-         if (xValue is IComparable)
+         if (xValue == null && yValue == null)
          {
-            /* If values implement IComparer */
+            result = 0;
+         }
+         else if (xValue == null)
+         {
+            result = -1;
+         }
+         else if (yValue == null)
+         {
+            result = 1;
+         }
+         else if (xValue is IComparable)
+         {
+            /* If values implement IComparable */
             result = ((IComparable)xValue).CompareTo(yValue);
          }
          else if (xValue.Equals(yValue))
          {
-            /* If values don't implement IComparer but are equivalent */
+            /* If values don't implement IComparable but are equivalent */
             result = 0;
          }
          else
          {
-            /* Values don't implement IComparer and are not equivalent, so compare as string values */
-            result = xValue.ToString().CompareTo(yValue.ToString());
+            /* Values don't implement IComparable and are not equivalent, so compare as string values */
+            // old comparison
+            //result = xValue.ToString().CompareTo(yValue.ToString());
+            // use Ordinal rules instead
+            result = String.CompareOrdinal(xValue.ToString(), yValue.ToString());
          }
 
          return result;
@@ -669,32 +726,44 @@ namespace harlam357.Windows.Forms
       /// Get the property value from the object.
       /// </summary>
       /// <param name="value">Object instance.</param>
-      /// <param name="property">The property descriptor.</param>
+      /// <param name="propertyDescriptor">The property descriptor.</param>
       /// <returns>The property value.</returns>
-      protected virtual object GetPropertyValue(T value, PropertyDescriptor property)
+      protected virtual object GetPropertyValue(T value, PropertyDescriptor propertyDescriptor)
       {
-         return property.GetValue(value);
+         return propertyDescriptor == null ? null : propertyDescriptor.GetValue(value);
       }
 
       #endregion
    }
 
+   /// <summary>
+   /// Provides data for the SortableBindingList.Sorted event.
+   /// </summary>
    public class SortedEventArgs : EventArgs
    {
       private readonly string _name;
-
+      /// <summary>
+      /// Gets the name of the property used to perform the sort (or the most significant in the case of an Advanced sort).
+      /// </summary>
       public string Name
       {
          get { return _name; }
       }
 
       private readonly ListSortDirection _direction;
-
+      /// <summary>
+      /// Gets the current sort direction.
+      /// </summary>
       public ListSortDirection Direction
       {
          get { return _direction; }
       }
 
+      /// <summary>
+      /// Initalizes a new instance of the SortedEventArgs class.
+      /// </summary>
+      /// <param name="name">The sorted property name.</param>
+      /// <param name="direction">The sort direction.</param>
       public SortedEventArgs(string name, ListSortDirection direction)
       {
          _name = name;
