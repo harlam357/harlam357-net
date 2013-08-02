@@ -88,7 +88,8 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="TestFiles\test.html" />
+    <Content Include="TestFiles\NetTest.html" />
+    <Content Include="TestFiles\NetTest.txt" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">

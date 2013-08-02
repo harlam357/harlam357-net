@@ -1,6 +1,6 @@
 ﻿/*
  * harlam357.Net - Application Update Presenter Tests
- * Copyright (C) 2010 Ryan Harlamert (harlam357)
+ * Copyright (C) 2010-2013 Ryan Harlamert (harlam357)
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -54,23 +54,25 @@ namespace harlam357.Windows.Forms.Tests
       }
    
       [Test]
-      public void DownloadClickTest()
+      public void DownloadClick_Test()
       {
-         Expect.Call(_saveFileView.ShowDialog()).Return(DialogResult.OK);
-         SetupResult.For(_saveFileView.FileName).Return("TestFileDownloaded.txt");
-      
-         Expect.Call(() => _updateView.SetSelectDownloadLabelText(String.Empty)).IgnoreArguments();
-         Expect.Call(() => _updateView.SetDownloadButtonEnabled(false));
-         Expect.Call(() => _updateView.SetUpdateComboBoxVisible(false));
-         Expect.Call(() => _updateView.SetDownloadProgressValue(0));
-         Expect.Call(() => _updateView.SetDownloadProgressVisisble(true));
-         Expect.Call(_updateView.CloseView);
+         var updateView = MockRepository.GenerateMock<IUpdateView>();
+         var saveFileView = MockRepository.GenerateMock<ISaveFileDialogView>();
 
-         _mocks.ReplayAll();
+         string localFilePath = Path.Combine(Environment.CurrentDirectory, "TestFileDownloaded.txt");
+         saveFileView.Expect(x => x.ShowDialog()).Return(DialogResult.OK);
+         saveFileView.Stub(x => x.FileName).Return(localFilePath);
+
+         updateView.Expect(x => x.SetSelectDownloadLabelText(String.Empty)).IgnoreArguments();
+         updateView.Expect(x => x.SetDownloadButtonEnabled(false));
+         updateView.Expect(x => x.SetUpdateComboBoxVisible(false));
+         updateView.Expect(x => x.SetDownloadProgressValue(0));
+         updateView.Expect(x => x.SetDownloadProgressVisisble(true));
+         updateView.Expect(x => x.CloseView());
 
          // fixup the address to look in the running folder
          _update.UpdateFiles[0].HttpAddress = Path.Combine(Environment.CurrentDirectory, _update.UpdateFiles[0].HttpAddress);
-         var presenter = new UpdatePresenter(null, _update, null, _updateView, _saveFileView, null);
+         var presenter = new UpdatePresenter(null, _update, null, updateView, saveFileView, null);
 
          Assert.IsNull(presenter.SelectedUpdate);
          Assert.IsNull(presenter.LocalFilePath);
@@ -87,14 +89,15 @@ namespace harlam357.Windows.Forms.Tests
          }  
          
          Assert.AreSame(_update.UpdateFiles[0], presenter.SelectedUpdate);
-         Assert.AreEqual("TestFileDownloaded.txt", presenter.LocalFilePath);
+         Assert.AreEqual(localFilePath, presenter.LocalFilePath);
          Assert.AreEqual(true, presenter.UpdateReady);
          
-         _mocks.VerifyAll();
+         updateView.VerifyAllExpectations();
+         saveFileView.VerifyAllExpectations();
       }
       
       [Test]
-      public void DownloadClickSaveFileDialogCanceledTest()
+      public void DownloadClick_SaveFileDialogCanceled_Test()
       {
          Expect.Call(_saveFileView.ShowDialog()).Return(DialogResult.Cancel);
 
@@ -116,7 +119,7 @@ namespace harlam357.Windows.Forms.Tests
       }
 
       [Test]
-      public void DownloadClickCancelDownloadTest()
+      public void DownloadClick_CancelDownload_Test()
       {
          Expect.Call(_saveFileView.ShowDialog()).Return(DialogResult.OK);
       
@@ -129,7 +132,7 @@ namespace harlam357.Windows.Forms.Tests
          var webOperation = _mocks.DynamicMock<IWebOperation>();
          Expect.Call(() => webOperation.Download(String.Empty)).IgnoreArguments().Do(new Action<string>(DownloadSleep));
          Expect.Call(webOperation.State).Return(WebOperationState.InProgress);
-         Expect.Call(webOperation.CancelOperation);
+         Expect.Call(webOperation.Cancel);
          Expect.Call(webOperation.Result).Return(WebOperationResult.Canceled);
 
          Expect.Call(() => _updateView.SetSelectDownloadLabelTextDefault());
@@ -161,7 +164,7 @@ namespace harlam357.Windows.Forms.Tests
       }
 
       [Test]
-      public void DownloadClickDownloadExceptionTest()
+      public void DownloadClick_DownloadException_Test()
       {
          Expect.Call(_saveFileView.ShowDialog()).Return(DialogResult.OK);
 
@@ -203,7 +206,7 @@ namespace harlam357.Windows.Forms.Tests
       }
 
       [Test]
-      public void ShowTest()
+      public void Show_Test()
       {
          Expect.Call(() => _updateView.ShowView(null));
 
@@ -216,7 +219,7 @@ namespace harlam357.Windows.Forms.Tests
       }
 
       [Test]
-      public void CancelTest()
+      public void Cancel_Test()
       {
          Expect.Call(() => _updateView.CloseView());
 
@@ -229,7 +232,7 @@ namespace harlam357.Windows.Forms.Tests
       }     
 
       [Test]
-      public void VerifyDownloadTest()
+      public void VerifyDownload_Test()
       {
          UpdatePresenter.VerifyDownload("..\\..\\TestFile.txt", _update.UpdateFiles[0]);
       }
