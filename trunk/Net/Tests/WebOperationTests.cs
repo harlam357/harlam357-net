@@ -1,6 +1,6 @@
 ﻿/*
  * harlam357.Net - Web Operation Class Tests
- * Copyright (C) 2009-2010 Ryan Harlamert (harlam357)
+ * Copyright (C) 2009-2013 Ryan Harlamert (harlam357)
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -21,176 +21,449 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Net;
-using System.Net.Cache;
 
 using NUnit.Framework;
-using Rhino.Mocks;
 
 namespace harlam357.Net.Tests
 {
    [TestFixture]
    public class WebOperationTests
    {
-      private readonly string TestFilesFolder = String.Format(CultureInfo.InvariantCulture, "..{0}..{0}TestFiles", Path.DirectorySeparatorChar);
-      private readonly string TestFilesWorkFolder = String.Format(CultureInfo.InvariantCulture, "..{0}..{0}TestFiles{0}Work", Path.DirectorySeparatorChar);
-      
-      private MockRepository mocks;
+      private static string TestFilesFolder
+      {
+         get { return Path.GetFullPath(String.Format(CultureInfo.InvariantCulture, "..{0}..{0}TestFiles", Path.DirectorySeparatorChar)); }
+      }
+
+      private static string TestFilesWorkFolder
+      {
+         get { return Path.GetFullPath(String.Format(CultureInfo.InvariantCulture, "..{0}..{0}TestFiles{0}Work", Path.DirectorySeparatorChar)); }
+      }
 
       [SetUp]
-      public void Init()
+      public static void Init()
       {
-         DirectoryInfo di = new DirectoryInfo(TestFilesWorkFolder);
-         if (di.Exists)
-         {
-            di.Delete(true);
-         }
-
+         var di = new DirectoryInfo(TestFilesWorkFolder);
          di.Create();
-
-         mocks = new MockRepository();
       }
 
-      [TearDown]
-      public void CleanUp()
-      {
-         DirectoryInfo di = new DirectoryInfo(TestFilesWorkFolder);
-         if (di.Exists)
-         {
-            di.Delete(true);
-         }
-      }
-   
       [Test]
-      public void DownloadTest()
+      public void WebOperation_WebRequest_Test()
       {
-         WebOperation web = WebOperation.Create(Path.GetFullPath(Path.Combine(TestFilesFolder, "test.html")));
-         web.AutoSizeBuffer = true;
-         web.Buffer = 2048;
-         web.OperationRequest.CachePolicy = new RequestCachePolicy(RequestCacheLevel.NoCacheNoStore);
-         web.OperationRequest.Timeout = 10000;
-         
-         string tempPath = Path.Combine(Path.GetTempPath(), "downloadtest.html");
+         WebOperation web = WebOperation.Create(Path.Combine(TestFilesFolder, "NetTest.html"));
+         Assert.IsNotNull(web.WebRequest);
+         //var webRequest = MockRepository.GenerateMock<IWebRequest>();
+         //web.WebRequest = webRequest;
+         //Assert.AreSame(webRequest, web.WebRequest);
+      }
+
+      [Test]
+      public void WebOperation_State_Test()
+      {
+         WebOperation web = WebOperation.Create(Path.Combine(TestFilesFolder, "NetTest.html"));
          Assert.AreEqual(WebOperationState.Idle, web.State);
-         web.Download(tempPath);
-         Assert.AreEqual(WebOperationState.Idle, web.State);
-         Assert.IsTrue(File.Exists(tempPath));
-         
+      }
+
+      [Test]
+      public void WebOperation_Result_Test()
+      {
+         WebOperation web = WebOperation.Create(Path.Combine(TestFilesFolder, "NetTest.html"));
+         Assert.AreEqual(WebOperationResult.None, web.Result);
+      }
+
+      [Test]
+      public void WebOperation_AutoSizeBuffer_Test()
+      {
+         WebOperation web = WebOperation.Create(Path.Combine(TestFilesFolder, "NetTest.html"));
          Assert.AreEqual(true, web.AutoSizeBuffer);
+         web.AutoSizeBuffer = false;
+         Assert.AreEqual(false, web.AutoSizeBuffer);
+      }
+
+      [Test]
+      public void WebOperation_Buffer_Test()
+      {
+         WebOperation web = WebOperation.Create(Path.Combine(TestFilesFolder, "NetTest.html"));
          Assert.AreEqual(1024, web.Buffer);
-         Assert.AreEqual(RequestCacheLevel.NoCacheNoStore, web.OperationRequest.CachePolicy.Level);
-         Assert.AreEqual(10000, web.OperationRequest.Timeout);
+         web.Buffer = 2048;
+         Assert.AreEqual(2048, web.Buffer);
       }
 
       [Test]
-      public void UploadTest()
+      public void WebOperation_Download_Test()
       {
-         string UploadPath = Path.GetFullPath(Path.Combine(TestFilesWorkFolder, "upload.html"));
-         WebOperation web = WebOperation.Create(UploadPath);
-         string LocalFilePath = Path.Combine(TestFilesFolder, "test.html");
-         web.Upload(LocalFilePath);
+         WebOperation web = WebOperation.Create(Path.Combine(TestFilesFolder, "NetTest.html"));
+         Assert.AreEqual(WebOperationState.Idle, web.State);
+         Assert.AreEqual(WebOperationResult.None, web.Result);
 
-         Assert.IsTrue(File.Exists(UploadPath));
+         string fileName = Path.Combine(TestFilesWorkFolder, "downloadtest.html");
+         int count = 0;
+         web.ProgressChanged += (s, e) =>
+                                {
+                                   if (count == 0)
+                                   {
+                                      // try and execute another download while the first is in progress
+                                      // the call will simply return performing no additional action
+                                      web.Download(fileName);
+                                   }
+                                   if (count < 2)
+                                   {
+                                      Assert.AreEqual(139, e.Length);
+                                      Assert.AreEqual(139, e.TotalLength);
+                                      Assert.AreEqual(WebOperationState.InProgress, e.State);
+                                      Assert.AreEqual(WebOperationResult.None, e.Result);
+                                      Assert.AreEqual(WebOperationState.InProgress, web.State);
+                                      Assert.AreEqual(WebOperationResult.None, web.Result);
+                                   }
+                                   if (count == 2)
+                                   {
+                                      Assert.AreEqual(139, e.Length);
+                                      Assert.AreEqual(139, e.TotalLength);
+                                      Assert.AreEqual(WebOperationState.Idle, e.State);
+                                      Assert.AreEqual(WebOperationResult.Completed, e.Result);
+                                      Assert.AreEqual(WebOperationState.Idle, web.State);
+                                      Assert.AreEqual(WebOperationResult.Completed, web.Result);
+                                   }
+                                   count++;
+                                };
+
+         // Act - execute the first download
+         web.Download(fileName);
+         // Assert
+         Assert.AreEqual(WebOperationState.Idle, web.State);
+         Assert.AreEqual(WebOperationResult.Completed, web.Result);
+         // file should be on disk
+         Assert.IsTrue(File.Exists(fileName));
       }
 
       [Test]
-      public void UploadMaximumLengthTest()
+      public void WebOperation_Download_Cancel_Test()
       {
-         string UploadPath = Path.GetFullPath(Path.Combine(TestFilesWorkFolder, "upload.txt"));
-         WebOperation web = WebOperation.Create(UploadPath);
-         string LocalFilePath = Path.Combine(TestFilesFolder, "FAHlog.txt");
-         web.Upload(LocalFilePath, 102400);
+         WebOperation web = WebOperation.Create(Path.Combine(TestFilesFolder, "NetTest.html"));
+         Assert.AreEqual(WebOperationState.Idle, web.State);
+         Assert.AreEqual(WebOperationResult.None, web.Result);
 
-         Assert.IsTrue(File.Exists(UploadPath));
-         FileInfo fi = new FileInfo(UploadPath);
-         Assert.AreEqual(102400, fi.Length);
+         string fileName = Path.Combine(TestFilesWorkFolder, "downloadtest.html");
+         int count = 0;
+         web.ProgressChanged += (s, e) =>
+                                {
+                                   if (count == 0)
+                                   {
+                                      Assert.AreEqual(139, e.Length);
+                                      Assert.AreEqual(139, e.TotalLength);
+                                      Assert.AreEqual(WebOperationState.InProgress, e.State);
+                                      Assert.AreEqual(WebOperationResult.None, e.Result);
+                                      Assert.AreEqual(WebOperationState.InProgress, web.State);
+                                      Assert.AreEqual(WebOperationResult.None, web.Result);
+                                      // cancel the download while in progress
+                                      web.Cancel();
+                                   }
+                                   if (count == 1)
+                                   {
+                                      Assert.AreEqual(139, e.Length);
+                                      Assert.AreEqual(139, e.TotalLength);
+                                      Assert.AreEqual(WebOperationState.Idle, e.State);
+                                      Assert.AreEqual(WebOperationResult.Canceled, e.Result);
+                                      Assert.AreEqual(WebOperationState.Idle, web.State);
+                                      Assert.AreEqual(WebOperationResult.Canceled, web.Result);
+                                   }
+                                   count++;
+                                };
+
+         // Act
+         web.Download(fileName);
+         // Assert
+         Assert.AreEqual(WebOperationState.Idle, web.State);
+         Assert.AreEqual(WebOperationResult.Canceled, web.Result);
+         // file should NOT be on disk
+         Assert.IsFalse(File.Exists(fileName));
       }
 
+      //[Test]
+      //public void WebOperation_Download_Expectations_Test()
+      //{
+      //   var request = MockRepository.GenerateMock<IWebRequest>();
+      //   var response = MockRepository.GenerateMock<IWebResponse>();
+      //   request.Expect(x => x.GetResponse()).Return(response);
+      //
+      //   var web = WebOperation.Create("NetTest.html");
+      //   web.WebRequest = request;
+      //   using (var stream = new FileStream("NetTest.html", FileMode.Open, FileAccess.Read))
+      //   {
+      //      response.Expect(x => x.GetResponseStream()).Return(stream);
+      //      web.Download(Path.Combine(TestFilesWorkFolder, "downloadtest.html"));
+      //   }
+      //
+      //   Assert.IsTrue(File.Exists(Path.Combine(TestFilesWorkFolder, "downloadtest.html")));
+      //
+      //   request.VerifyAllExpectations();
+      //   response.VerifyAllExpectations();
+      //}
+
       [Test]
-      public void GetDownloadLengthTest()
+      public void WebOperation_GetDownloadLength_Test()
       {
-         WebOperation web = WebOperation.Create(Path.GetFullPath(Path.Combine(TestFilesFolder, "test.html")));
+         WebOperation web = WebOperation.Create(Path.Combine(TestFilesFolder, "NetTest.html"));
+         Assert.AreEqual(WebOperationState.Idle, web.State);
+         Assert.AreEqual(WebOperationResult.None, web.Result);
+
+         int count = 0;
+         web.ProgressChanged += (s, e) =>
+                                {
+                                   if (count == 0)
+                                   {
+                                      Assert.AreEqual(0, e.Length);
+                                      Assert.AreEqual(0, e.TotalLength);
+                                      Assert.AreEqual(WebOperationState.InProgress, e.State);
+                                      Assert.AreEqual(WebOperationResult.None, e.Result);
+                                      Assert.AreEqual(WebOperationState.InProgress, web.State);
+                                      Assert.AreEqual(WebOperationResult.None, web.Result);
+                                      // try and execute another download length get while the first is in progress
+                                      // the call will simply return performing no additional action
+                                      Assert.AreEqual(0, web.GetDownloadLength());
+                                   }
+                                   if (count == 1)
+                                   {
+                                      Assert.AreEqual(0, e.Length);
+                                      Assert.AreEqual(139, e.TotalLength);
+                                      Assert.AreEqual(WebOperationState.Idle, e.State);
+                                      Assert.AreEqual(WebOperationResult.Completed, e.Result);
+                                      Assert.AreEqual(WebOperationState.Idle, web.State);
+                                      Assert.AreEqual(WebOperationResult.Completed, web.Result);
+                                   }
+                                   count++;
+                                };
+
+         // Act - execute the first download length get
          Assert.AreEqual(139, web.GetDownloadLength());
+         // Assert
+         Assert.AreEqual(WebOperationState.Idle, web.State);
+         Assert.AreEqual(WebOperationResult.Completed, web.Result);
       }
 
       [Test]
-      public void CheckConnectionTest()
+      public void WebOperation_Upload_Test()
       {
-         WebOperation web = WebOperation.Create(Path.GetFullPath(Path.Combine(TestFilesFolder, "test.html")));
+         string requestUriString = Path.Combine(TestFilesWorkFolder, "upload.html");
+         WebOperation web = WebOperation.Create(requestUriString);
+         Assert.AreEqual(WebOperationState.Idle, web.State);
+         Assert.AreEqual(WebOperationResult.None, web.Result);
+
+         string fileName = Path.Combine(TestFilesFolder, "NetTest.html");
+         int count = 0;
+         web.ProgressChanged += (s, e) =>
+                                {
+                                   if (count == 0)
+                                   {
+                                      // try and execute another upload while the first is in progress
+                                      // the call will simply return performing no additional action
+                                      web.Upload(fileName);
+                                   }
+                                   if (count < 2)
+                                   {
+                                      Assert.AreEqual(139, e.Length);
+                                      Assert.AreEqual(139, e.TotalLength);
+                                      Assert.AreEqual(WebOperationState.InProgress, e.State);
+                                      Assert.AreEqual(WebOperationResult.None, e.Result);
+                                      Assert.AreEqual(WebOperationState.InProgress, web.State);
+                                      Assert.AreEqual(WebOperationResult.None, web.Result);
+                                   }
+                                   if (count == 2)
+                                   {
+                                      Assert.AreEqual(139, e.Length);
+                                      Assert.AreEqual(139, e.TotalLength);
+                                      Assert.AreEqual(WebOperationState.Idle, e.State);
+                                      Assert.AreEqual(WebOperationResult.Completed, e.Result);
+                                      Assert.AreEqual(WebOperationState.Idle, web.State);
+                                      Assert.AreEqual(WebOperationResult.Completed, web.Result);
+                                   }
+                                   count++;
+                                };
+
+         // Act - execute the first upload
+         web.Upload(fileName);
+         // Assert
+         Assert.AreEqual(WebOperationState.Idle, web.State);
+         Assert.AreEqual(WebOperationResult.Completed, web.Result);
+         // file should be at the target location
+         Assert.IsTrue(File.Exists(requestUriString));
+      }
+
+      [Test]
+      public void WebOperation_Upload_Cancel_Test()
+      {
+         string requestUriString = Path.Combine(TestFilesWorkFolder, "upload.html");
+         WebOperation web = WebOperation.Create(requestUriString);
+         Assert.AreEqual(WebOperationState.Idle, web.State);
+         Assert.AreEqual(WebOperationResult.None, web.Result);
+
+         string fileName = Path.Combine(TestFilesFolder, "NetTest.html");
+         int count = 0;
+         web.ProgressChanged += (s, e) =>
+                                {
+                                   if (count == 0)
+                                   {
+                                      Assert.AreEqual(139, e.Length);
+                                      Assert.AreEqual(139, e.TotalLength);
+                                      Assert.AreEqual(WebOperationState.InProgress, e.State);
+                                      Assert.AreEqual(WebOperationResult.None, e.Result);
+                                      Assert.AreEqual(WebOperationState.InProgress, web.State);
+                                      Assert.AreEqual(WebOperationResult.None, web.Result);
+                                      // cancel the upload while in progress
+                                      web.Cancel();
+                                   }
+                                   if (count == 1)
+                                   {
+                                      Assert.AreEqual(139, e.Length);
+                                      Assert.AreEqual(139, e.TotalLength);
+                                      Assert.AreEqual(WebOperationState.Idle, e.State);
+                                      Assert.AreEqual(WebOperationResult.Canceled, e.Result);
+                                      Assert.AreEqual(WebOperationState.Idle, web.State);
+                                      Assert.AreEqual(WebOperationResult.Canceled, web.Result);
+                                   }
+                                   count++;
+                                };
+
+         // Act
+         web.Upload(fileName);
+         // Assert
+         Assert.AreEqual(WebOperationState.Idle, web.State);
+         Assert.AreEqual(WebOperationResult.Canceled, web.Result);
+         // file should NOT be at the target location
+         Assert.IsFalse(File.Exists(requestUriString));
+      }
+
+      [Test]
+      public void WebOperation_Upload_MaximumLength_Test1()
+      {
+         string requestUriString = Path.Combine(TestFilesWorkFolder, "upload.txt");
+         WebOperation web = WebOperation.Create(requestUriString);
+         string fileName = Path.Combine(TestFilesFolder, "NetTest.txt");
+         // Act - LESS than max file size
+         web.Upload(fileName, 2048);
+         // Assert
+         // file should be at the target location
+         Assert.IsTrue(File.Exists(requestUriString));
+         var fi = new FileInfo(requestUriString);
+         Assert.AreEqual(2048, fi.Length);
+      }
+
+      [Test]
+      public void WebOperation_Upload_MaximumLength_Test2()
+      {
+         string requestUriString = Path.Combine(TestFilesWorkFolder, "upload.txt");
+         WebOperation web = WebOperation.Create(requestUriString);
+         string fileName = Path.Combine(TestFilesFolder, "NetTest.txt");
+         // Act - GREATER than max file size
+         web.Upload(fileName, 8192);
+         // Assert
+         // file should be at the target location
+         Assert.IsTrue(File.Exists(requestUriString));
+         var fi = new FileInfo(requestUriString);
+         Assert.AreEqual(4096, fi.Length);
+      }
+
+      //[Test]
+      //public void WebOperation_Upload_Expectations_Test()
+      //{
+      //   var request = MockRepository.GenerateMock<IWebRequest>();
+      //   var response = MockRepository.GenerateMock<IWebResponse>();
+      //   request.Expect(x => x.GetResponse()).Return(response);
+      //
+      //   var web = WebOperation.Create(Path.Combine(TestFilesWorkFolder, "upload.html"));
+      //   web.WebRequest = request;
+      //   using (var stream = new FileStream(Path.Combine(TestFilesWorkFolder, "upload.html"), FileMode.Create, FileAccess.Write))
+      //   {
+      //      request.Expect(x => x.GetRequestStream()).Return(stream);
+      //      web.Upload("NetTest.html");
+      //   }
+      //
+      //   Assert.IsTrue(File.Exists(Path.Combine(TestFilesWorkFolder, "upload.html")));
+      //
+      //   request.VerifyAllExpectations();
+      //   response.VerifyAllExpectations();
+      //}
+
+      [Test]
+      public void WebOperation_CheckConnection_File_Test()
+      {
+         WebOperation web = WebOperation.Create(Path.Combine(TestFilesFolder, "NetTest.html"));
+         int count = 0;
+         web.ProgressChanged += (s, e) =>
+                                {
+                                   if (count == 0)
+                                   {
+                                      Assert.AreEqual(0, e.Length);
+                                      Assert.AreEqual(0, e.TotalLength);
+                                      Assert.AreEqual(WebOperationState.InProgress, e.State);
+                                      Assert.AreEqual(WebOperationResult.None, e.Result);
+                                      Assert.AreEqual(WebOperationState.InProgress, web.State);
+                                      Assert.AreEqual(WebOperationResult.None, web.Result);
+                                      // try and execute another connection check while the first is in progress
+                                      // the call will simply return performing no additional action
+                                      web.CheckConnection();
+                                   }
+                                   if (count == 1)
+                                   {
+                                      Assert.AreEqual(0, e.Length);
+                                      Assert.AreEqual(0, e.TotalLength);
+                                      Assert.AreEqual(WebOperationState.Idle, e.State);
+                                      Assert.AreEqual(WebOperationResult.Completed, e.Result);
+                                      Assert.AreEqual(WebOperationState.Idle, web.State);
+                                      Assert.AreEqual(WebOperationResult.Completed, web.Result);
+                                   }
+                                   count++;
+                                };
+         // Act - execute the connection check
          web.CheckConnection();
-
-         web = WebOperation.Create(Path.GetFullPath(Path.Combine(TestFilesFolder, "not_found.html")));
-
-         try
-         {
-            web.CheckConnection();
-            Assert.Fail();
-         }
-         catch (WebException)
-         { }
-
-         web = WebOperation.Create("ftp://a1g.gfdasfsafasdfasfsdafasdfasdf.c1321");
-
-         try
-         {
-            web.CheckConnection();
-            Assert.Fail();
-         }
-         catch (WebException)
-         { }
-
-         web = WebOperation.Create("http://a1g.gfdasfsafasdfasfsdafasdfasdf.c1321");
-
-         try
-         {
-            web.CheckConnection();
-            Assert.Fail();
-         }
-         catch (WebException)
-         { }
       }
-      
+
       [Test]
-      public void WebOperationDownload()
+      [ExpectedException(typeof(WebException))]
+      public void WebOperation_CheckConnection_File_NotExist_Test()
       {
-         WebRequest Request = mocks.DynamicMock<WebRequest>();
-         WebResponse Response = mocks.DynamicMock<WebResponse>();
-         FileWebOperation web = new FileWebOperation(new WebOperationRequest(Request));
-
-         Expect.Call(Request.GetResponse()).Return(Response);
-
-         using (FileStream stream = new FileStream(Path.Combine(TestFilesFolder, "test.html"), FileMode.Open))
-         {
-            Expect.Call(Response.GetResponseStream()).Return(stream);
-            mocks.ReplayAll();
-
-            web.Download(Path.Combine(TestFilesWorkFolder, "downloadtest.html"));
-
-            mocks.VerifyAll();
-         }
-
-         Assert.IsTrue(File.Exists(Path.Combine(TestFilesWorkFolder, "downloadtest.html")));
+         WebOperation web = WebOperation.Create(Path.GetFullPath("not_found.html"));
+         int count = 0;
+         web.ProgressChanged += (s, e) =>
+                                {
+                                   if (count == 0)
+                                   {
+                                      Assert.AreEqual(0, e.Length);
+                                      Assert.AreEqual(0, e.TotalLength);
+                                      Assert.AreEqual(WebOperationState.InProgress, e.State);
+                                      Assert.AreEqual(WebOperationResult.None, e.Result);
+                                      Assert.AreEqual(WebOperationState.InProgress, web.State);
+                                      Assert.AreEqual(WebOperationResult.None, web.Result);
+                                   }
+                                   if (count == 1)
+                                   {
+                                      Assert.AreEqual(0, e.Length);
+                                      Assert.AreEqual(0, e.TotalLength);
+                                      Assert.AreEqual(WebOperationState.Idle, e.State);
+                                      Assert.AreEqual(WebOperationResult.None, e.Result);
+                                      Assert.AreEqual(WebOperationState.Idle, web.State);
+                                      Assert.AreEqual(WebOperationResult.None, web.Result);
+                                   }
+                                   count++;
+                                };
+         // Act - execute the connection check
+         web.CheckConnection();
       }
-      
+
       [Test]
-      public void WebOperationUpload()
+      [ExpectedException(typeof(WebException))]
+      public void WebOperation_CheckConnection_Ftp_NotExist_Test()
       {
-         WebRequest Request = mocks.DynamicMock<WebRequest>();
-         WebResponse Response = mocks.DynamicMock<WebResponse>();
-         FileWebOperation web = new FileWebOperation(new WebOperationRequest(Request));
+         WebOperation web = WebOperation.Create("ftp://a1g.gfdasfsafasdfasfsdafasdfasdf.c1321");
+         web.CheckConnection();
+      }
 
-         Expect.Call(Request.GetResponse()).Return(Response);
-
-         using (FileStream stream = new FileStream(Path.Combine(TestFilesWorkFolder, "upload.html"), FileMode.Create))
-         {
-            Expect.Call(Request.GetRequestStream()).Return(stream);
-            mocks.ReplayAll();
-
-            web.Upload(Path.Combine(TestFilesFolder, "test.html"));
-
-            mocks.VerifyAll();
-         }
-
-         Assert.IsTrue(File.Exists(Path.Combine(TestFilesWorkFolder, "upload.html")));
+      // ignore because some ISPs return a web page when an invalid web address is given
+      [Test, Ignore]
+      [ExpectedException(typeof(WebException))]
+      public void WebOperation_CheckConnection_Http_NotExist_Test()
+      {
+         WebOperation web = WebOperation.Create("http://a1g.gfdasfsafasdfasfsdafasdfasdf.c1321");
+         web.CheckConnection();
       }
    }
 }

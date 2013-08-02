@@ -1,6 +1,6 @@
 ﻿/*
  * harlam357.Net - Application Update Presenter
- * Copyright (C) 2010 Ryan Harlamert (harlam357)
+ * Copyright (C) 2010-2013 Ryan Harlamert (harlam357)
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -135,9 +135,9 @@ namespace harlam357.Windows.Forms
             _webOperation = WebOperation.Create(url);
          }
          // set proxy (if applicable)
-         if (_proxy != null) _webOperation.OperationProxy = _proxy;
+         if (_proxy != null) _webOperation.WebRequest.Proxy = _proxy;
          // listen for progress messages
-         _webOperation.WebOperationProgress += WebOperationProgress;
+         _webOperation.ProgressChanged += WebOperationProgressChanged;
          // set the view for download
          SetViewControlsForDownload(url);
          // execute the download
@@ -178,7 +178,7 @@ namespace harlam357.Windows.Forms
          finally
          {
             // clean up
-            _webOperation.WebOperationProgress -= WebOperationProgress;
+            _webOperation.ProgressChanged -= WebOperationProgressChanged;
             _webOperation = null;
             // signal listeners
             OnDownloadFinished(EventArgs.Empty);
@@ -203,7 +203,7 @@ namespace harlam357.Windows.Forms
          _updateView.SetDownloadProgressVisisble(false);
       }
 
-      private void WebOperationProgress(object sender, WebOperationProgressEventArgs e)
+      private void WebOperationProgressChanged(object sender, WebOperationProgressChangedEventArgs e)
       {
          int percent = (int)(((double)e.Length / e.TotalLength) * 100);
          _updateView.SetDownloadProgressValue(percent);
@@ -224,8 +224,8 @@ namespace harlam357.Windows.Forms
          if (_webOperation != null &&
              _webOperation.State.Equals(WebOperationState.InProgress))
          {
-            _webOperation.WebOperationProgress -= WebOperationProgress;
-            _webOperation.CancelOperation();
+            _webOperation.ProgressChanged -= WebOperationProgressChanged;
+            _webOperation.Cancel();
          }
          else
          {

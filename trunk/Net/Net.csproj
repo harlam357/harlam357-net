@@ -75,11 +75,12 @@
     <Compile Include="..\AssemblyVersion.cs">
       <Link>Properties\AssemblyVersion.cs</Link>
     </Compile>
-    <Compile Include="IFtpWebOperation.cs" />
-    <Compile Include="IWebOperation.cs" />
+    <Compile Include="FtpWebRequestAdapter.cs" />
+    <Compile Include="FtpWebResponseAdapter.cs" />
     <Compile Include="WebOperation.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="WebOperationProgressEventArgs.cs" />
+    <Compile Include="WebRequestAdapter.cs" />
+    <Compile Include="WebResponseAdapter.cs" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
