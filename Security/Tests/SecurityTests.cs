@@ -14,88 +14,100 @@ using System.Text;
 
 using NUnit.Framework;
 
-using harlam357.Security;
+using harlam357.Security.Cryptography;
 
 namespace harlam357.Security.Tests
 {
+   /// <summary>
+   /// unit tests for the Encryption class to verify correct operation
+   /// </summary>
+   /// <remarks>
+   ///   Jeff Atwood
+   ///   http://www.codinghorror.com/
+   /// </remarks>
    [TestFixture]
    public class SecurityTests
    {
-      private string _TargetString;
-      private string _TargetString2;
+      private string _targetString;
+      private string _targetString2;
 
-      [TestFixtureSetUp]
+      [SetUp]
       public void Setup()
       {
-         _TargetString = "The instinct of nearly all societies is to lock up anybody who is truly free. " + 
+         _targetString = "The instinct of nearly all societies is to lock up anybody who is truly free. " + 
             "First, society begins by trying to beat you up. If this fails, they try to poison you. " + 
             "If this fails too, they finish by loading honors on your head." +
             " - Jean Cocteau (1889-1963)";
 
-         _TargetString2 = "Everything should be made as simple as possible, but not simpler. - Albert Einstein";
+         _targetString2 = "Everything should be made as simple as possible, but not simpler. - Albert Einstein";
       }
 
       #region Hash Tests
+
       [Test, Category("Hash")]
-      public void SaltedHashes()
+      public void Hash_Salted_Test()
       {
-         Assert.AreEqual("6CD9DD96", DoSaltedHash(Hash.Provider.CRC32, new Data("Shazam!")).ToHex());
-         Assert.AreEqual("4F7FA9C182C5FA60F9197F4830296685", DoSaltedHash(Hash.Provider.MD5, new Data("SnapCracklePop")).ToHex());
-         Assert.AreEqual("3DC330B4E4E61C8DF039EAE93EC16412E22425FB", DoSaltedHash(Hash.Provider.SHA1, new Data("全球最大的華文新聞網站", Encoding.Unicode)).ToHex());
-         Assert.AreEqual("EFAE307AEE511D6078FDF0D4372F4D0C8135170C5F7626CB19B04BFDBABBBDB2", DoSaltedHash(Hash.Provider.SHA256, new Data("!@#$%^&*()_-+=", Encoding.ASCII)).ToHex());
-         Assert.AreEqual("582B31C13EF16D706EC2514FDA08316A369DF1F130D34A0A2A16B065D82662A1101EA01110AB7C8F9022A1CEA76FD6B9", DoSaltedHash(Hash.Provider.SHA384, new Data("supercalifragilisticexpialidocious", Encoding.ASCII)).ToHex());
-         Assert.AreEqual("44FAA06E8E80666408304E3458621769699A76B591C6389F958C0DDA1D80A82965D169E8AA7D3C1A0637BCB7B0F45D420389C629D19E255D64A923F6C4F87FD8", DoSaltedHash(Hash.Provider.SHA512, new Data("42", Encoding.ASCII)).ToHex());
+         Assert.AreEqual("6CD9DD96", DoSaltedHash(HashProvider.CRC32, new Data("Shazam!")).Hex);
+         Assert.AreEqual("4F7FA9C182C5FA60F9197F4830296685", DoSaltedHash(HashProvider.MD5, new Data("SnapCracklePop")).Hex);
+         Assert.AreEqual("3DC330B4E4E61C8DF039EAE93EC16412E22425FB", DoSaltedHash(HashProvider.SHA1, new Data("全球最大的華文新聞網站", Encoding.Unicode)).Hex);
+         Assert.AreEqual("EFAE307AEE511D6078FDF0D4372F4D0C8135170C5F7626CB19B04BFDBABBBDB2", DoSaltedHash(HashProvider.SHA256, new Data("!@#$%^&*()_-+=", Encoding.ASCII)).Hex);
+         Assert.AreEqual("582B31C13EF16D706EC2514FDA08316A369DF1F130D34A0A2A16B065D82662A1101EA01110AB7C8F9022A1CEA76FD6B9", DoSaltedHash(HashProvider.SHA384, new Data("supercalifragilisticexpialidocious", Encoding.ASCII)).Hex);
+         Assert.AreEqual("44FAA06E8E80666408304E3458621769699A76B591C6389F958C0DDA1D80A82965D169E8AA7D3C1A0637BCB7B0F45D420389C629D19E255D64A923F6C4F87FD8", DoSaltedHash(HashProvider.SHA512, new Data("42", Encoding.ASCII)).Hex);
       }
 
       [Test, Category("Hash")]
-      public void HashFile()
+      public void Hash_File_Test()
       {
          string hashHex;
 
-         Hash h1 = new Hash(Hash.Provider.CRC32);
-         using (StreamReader sr = new StreamReader("gettysburg.txt"))
+         using (var h1 = new Hash(HashProvider.CRC32))
+         using (var stream = File.OpenRead("gettysburg.txt"))
          {
-            Stream baseStream = sr.BaseStream;
-            hashHex = h1.Calculate(ref baseStream).ToHex();
+            hashHex = h1.Calculate(stream).Hex;
          }
          Assert.AreEqual(hashHex, "E37F6423");
 
-         Hash h2 = new Hash(Hash.Provider.MD5);
-         using (StreamReader sr = new StreamReader("sample.doc"))
+         using (var h2 = new Hash(HashProvider.MD5))
+         using (var stream = File.OpenRead("sample.doc"))
          {
-            Stream baseStream = sr.BaseStream;
-            hashHex = h2.Calculate(ref baseStream).ToHex();
+            hashHex = h2.Calculate(stream).Hex;
          }
          Assert.AreEqual(hashHex, "4F32AB797F0FCC782AAC0B4F4E5B1693");
       }
 
       [Test, Category("Hash")]
-      public void Hashes()
+      public void Hash_Test()
       {
-         Assert.AreEqual("AA692113", DoHash(Hash.Provider.CRC32).ToHex());
-         Assert.AreEqual("44D36517B0CCE797FF57118ABE264FD9", DoHash(Hash.Provider.MD5).ToHex());
-         Assert.AreEqual("9E93AB42BCC8F738C7FBB6CCA27A902DC663DBE1", DoHash(Hash.Provider.SHA1).ToHex());
-         Assert.AreEqual("40AF07ABFE970590B2C313619983651B1E7B2F8C2D855C6FD4266DAFD7A5E670", DoHash(Hash.Provider.SHA256).ToHex());
-         Assert.AreEqual("9FC0AFB3DA61201937C95B133AB397FE62C329D6061A8768DA2B9D09923F07624869D01CD76826E1152DAB7BFAA30915", DoHash(Hash.Provider.SHA384).ToHex());
-         Assert.AreEqual("2E7D4B051DD528F3E9339E0927930007426F4968B5A4A08349472784272F17DA5C532EDCFFE14934988503F77DEF4AB58EB05394838C825632D04A10F42A753B", DoHash(Hash.Provider.SHA512).ToHex());
+         Assert.AreEqual("AA692113", DoHash(HashProvider.CRC32).Hex);
+         Assert.AreEqual("44D36517B0CCE797FF57118ABE264FD9", DoHash(HashProvider.MD5).Hex);
+         Assert.AreEqual("9E93AB42BCC8F738C7FBB6CCA27A902DC663DBE1", DoHash(HashProvider.SHA1).Hex);
+         Assert.AreEqual("40AF07ABFE970590B2C313619983651B1E7B2F8C2D855C6FD4266DAFD7A5E670", DoHash(HashProvider.SHA256).Hex);
+         Assert.AreEqual("9FC0AFB3DA61201937C95B133AB397FE62C329D6061A8768DA2B9D09923F07624869D01CD76826E1152DAB7BFAA30915", DoHash(HashProvider.SHA384).Hex);
+         Assert.AreEqual("2E7D4B051DD528F3E9339E0927930007426F4968B5A4A08349472784272F17DA5C532EDCFFE14934988503F77DEF4AB58EB05394838C825632D04A10F42A753B", DoHash(HashProvider.SHA512).Hex);
       }
 
-      private Data DoSaltedHash(Hash.Provider p, Data salt)
+      private Data DoSaltedHash(HashProvider p, Data salt)
       {
-         Hash h = new Hash(p);
-         return h.Calculate(new Data(_TargetString), salt);
+         using (var h = new Hash(p))
+         {
+            return h.Calculate(new Data(_targetString), salt);
+         }
       }
 
-      private Data DoHash(Hash.Provider p)
+      private Data DoHash(HashProvider p)
       {
-         Hash h = new Hash(p);
-         return h.Calculate(new Data(_TargetString));
+         using (var h = new Hash(p))
+         {
+            return h.Calculate(new Data(_targetString));
+         }
       } 
+
       #endregion
 
       #region Asymmetric Tests
+
       [Test, Category("Asymmetric")]
-      public void Asymmetric()
+      public void Asymmetric_Test()
       {
          string secret = "Pack my box with five dozen liquor jugs.";
          Assert.AreEqual(secret, AsymmetricNewKey(secret));
@@ -106,7 +118,7 @@ namespace harlam357.Security.Tests
          Assert.AreEqual(secret, AsymmetricXmlKey(secret));
       }
 
-      private static string AsymmetricXmlKey(string secret)
+      private string AsymmetricXmlKey(string secret)
       {
          string publicKeyXml = "<RSAKeyValue>" + "<Modulus>0D59Km2Eo9oopcm7Y2wOXx0TRRXQFybl9HHe/ve47Qcf2EoKbs9nkuMmhCJlJzrq6ZJzgQSEbpVyaWn8OHq0I50rQ13dJsALEquhlfwVWw6Hit7qRvveKlOAGfj8xdkaXJLYS1tA06tKHfYxgt6ysMBZd0DIedYoE1fe3VlLZyE=</Modulus>" + "<Exponent>AQAB</Exponent>" + "</RSAKeyValue>";
 
@@ -114,8 +126,8 @@ namespace harlam357.Security.Tests
 
          Data encryptedData;
          Data decryptedData;
-         Encryption.Asymmetric asym = new Encryption.Asymmetric();
-         Encryption.Asymmetric asym2 = new Encryption.Asymmetric();
+         Asymmetric asym = new Asymmetric();
+         Asymmetric asym2 = new Asymmetric();
 
          encryptedData = asym.Encrypt(new Data(secret), publicKeyXml);
          decryptedData = asym2.Decrypt(encryptedData, privateKeyXml);
@@ -123,12 +135,12 @@ namespace harlam357.Security.Tests
          return decryptedData.ToString();
       }
 
-      private static string AsymmetricConfigKey(string secret)
+      private string AsymmetricConfigKey(string secret)
       {
          Data encryptedData;
          Data decryptedData;
-         Encryption.Asymmetric asym = new Encryption.Asymmetric();
-         Encryption.Asymmetric asym2 = new Encryption.Asymmetric();
+         Asymmetric asym = new Asymmetric();
+         Asymmetric asym2 = new Asymmetric();
 
          encryptedData = asym.Encrypt(new Data(secret));
          decryptedData = asym2.Decrypt(encryptedData);
@@ -136,136 +148,141 @@ namespace harlam357.Security.Tests
          return decryptedData.ToString();
       }
 
-      private static string AsymmetricNewKey(string secret)
+      private string AsymmetricNewKey(string secret)
       {
          return AsymmetricNewKey(secret, 0);
       }
 
-      private static string AsymmetricNewKey(string secret, int keysize)
+      private string AsymmetricNewKey(string secret, int keysize)
       {
-         Encryption.Asymmetric.PublicKey pubkey = new Encryption.Asymmetric.PublicKey();
-         Encryption.Asymmetric.PrivateKey privkey = new Encryption.Asymmetric.PrivateKey();
-         Data encryptedData;
-         Data decryptedData;
-         
-         Encryption.Asymmetric asym;
-         Encryption.Asymmetric asym2;
-
+         Asymmetric asym;
+         Asymmetric asym2;
          if (keysize == 0)
          {
-            asym = new Encryption.Asymmetric();
-            asym2 = new Encryption.Asymmetric();
+            asym = new Asymmetric();
+            asym2 = new Asymmetric();
          }
          else
          {
-            asym = new Encryption.Asymmetric(keysize);
-            asym2 = new Encryption.Asymmetric(keysize);
+            asym = new Asymmetric(keysize);
+            asym2 = new Asymmetric(keysize);
          }
-         asym.GenerateNewKeyset(ref pubkey, ref privkey);
+         
+         var keyPair = Asymmetric.GenerateNewKeyset();
+         var pubkey = keyPair.Key;
+         var privkey = keyPair.Value;
 
-         encryptedData = asym.Encrypt(new Data(secret), pubkey);
-         decryptedData = asym2.Decrypt(encryptedData, privkey);
+         Data encryptedData = asym.Encrypt(new Data(secret), pubkey);
+         Data decryptedData = asym2.Decrypt(encryptedData, privkey);
 
          return decryptedData.ToString();
       } 
+
       #endregion
 
       #region Symmetric Tests
-      [Test, Category("Symmetric")]
-      public void Symmetric()
-      {
-         Assert.AreEqual(_TargetString, SymmetricLoopback(Encryption.Symmetric.Provider.DES, _TargetString));
-         Assert.AreEqual(_TargetString, SymmetricWithKey(Encryption.Symmetric.Provider.DES, _TargetString));
-         Assert.AreEqual(_TargetString, SymmetricLoopback(Encryption.Symmetric.Provider.RC2, _TargetString));
-         Assert.AreEqual(_TargetString, SymmetricWithKey(Encryption.Symmetric.Provider.RC2, _TargetString));
-         Assert.AreEqual(_TargetString, SymmetricLoopback(Encryption.Symmetric.Provider.Rijndael, _TargetString));
-         Assert.AreEqual(_TargetString, SymmetricWithKey(Encryption.Symmetric.Provider.Rijndael, _TargetString));
-         Assert.AreEqual(_TargetString, SymmetricLoopback(Encryption.Symmetric.Provider.TripleDES, _TargetString));
-         Assert.AreEqual(_TargetString, SymmetricWithKey(Encryption.Symmetric.Provider.TripleDES, _TargetString));
 
-         Assert.AreEqual(_TargetString2, SymmetricLoopback(Encryption.Symmetric.Provider.DES, _TargetString2));
-         Assert.AreEqual(_TargetString2, SymmetricWithKey(Encryption.Symmetric.Provider.DES, _TargetString2));
-         Assert.AreEqual(_TargetString2, SymmetricLoopback(Encryption.Symmetric.Provider.RC2, _TargetString2));
-         Assert.AreEqual(_TargetString2, SymmetricWithKey(Encryption.Symmetric.Provider.RC2, _TargetString2));
-         Assert.AreEqual(_TargetString2, SymmetricLoopback(Encryption.Symmetric.Provider.Rijndael, _TargetString2));
-         Assert.AreEqual(_TargetString2, SymmetricWithKey(Encryption.Symmetric.Provider.Rijndael, _TargetString2));
-         Assert.AreEqual(_TargetString2, SymmetricLoopback(Encryption.Symmetric.Provider.TripleDES, _TargetString2));
-         Assert.AreEqual(_TargetString2, SymmetricWithKey(Encryption.Symmetric.Provider.TripleDES, _TargetString2));
+      [Test, Category("Symmetric")]
+      public void Symmetric_Test()
+      {
+         Assert.AreEqual(_targetString, SymmetricLoopback(SymmetricProvider.DES, _targetString));
+         Assert.AreEqual(_targetString, SymmetricWithKey(SymmetricProvider.DES, _targetString));
+         Assert.AreEqual(_targetString, SymmetricLoopback(SymmetricProvider.RC2, _targetString));
+         Assert.AreEqual(_targetString, SymmetricWithKey(SymmetricProvider.RC2, _targetString));
+         Assert.AreEqual(_targetString, SymmetricLoopback(SymmetricProvider.Rijndael, _targetString));
+         Assert.AreEqual(_targetString, SymmetricWithKey(SymmetricProvider.Rijndael, _targetString));
+         Assert.AreEqual(_targetString, SymmetricLoopback(SymmetricProvider.TripleDES, _targetString));
+         Assert.AreEqual(_targetString, SymmetricWithKey(SymmetricProvider.TripleDES, _targetString));
+
+         Assert.AreEqual(_targetString2, SymmetricLoopback(SymmetricProvider.DES, _targetString2));
+         Assert.AreEqual(_targetString2, SymmetricWithKey(SymmetricProvider.DES, _targetString2));
+         Assert.AreEqual(_targetString2, SymmetricLoopback(SymmetricProvider.RC2, _targetString2));
+         Assert.AreEqual(_targetString2, SymmetricWithKey(SymmetricProvider.RC2, _targetString2));
+         Assert.AreEqual(_targetString2, SymmetricLoopback(SymmetricProvider.Rijndael, _targetString2));
+         Assert.AreEqual(_targetString2, SymmetricWithKey(SymmetricProvider.Rijndael, _targetString2));
+         Assert.AreEqual(_targetString2, SymmetricLoopback(SymmetricProvider.TripleDES, _targetString2));
+         Assert.AreEqual(_targetString2, SymmetricWithKey(SymmetricProvider.TripleDES, _targetString2));
       }
 
       [Test, Category("Symmetric")]
-      public void SymmetricFile()
+      public void Symmetric_File_Test()
       {
          //-- compare the hash of the decrypted file to what it should be after encryption/decryption
          //-- using pure file streams
-         Assert.AreEqual("AC27F132E6728E4F8FA3B054013D3456", SymmetricFilePrivate(Encryption.Symmetric.Provider.TripleDES, "gettysburg.txt", "Password, Yo!"));
-         Assert.AreEqual("4F32AB797F0FCC782AAC0B4F4E5B1693", SymmetricFilePrivate(Encryption.Symmetric.Provider.RC2, "sample.doc", "0nTheDownLow1"));
+         Assert.AreEqual("AC27F132E6728E4F8FA3B054013D3456", SymmetricFilePrivate(SymmetricProvider.TripleDES, "gettysburg.txt", "Password, Yo!"));
+         Assert.AreEqual("4F32AB797F0FCC782AAC0B4F4E5B1693", SymmetricFilePrivate(SymmetricProvider.RC2, "sample.doc", "0nTheDownLow1"));
       }
 
-      private static string SymmetricFilePrivate(Encryption.Symmetric.Provider p, string fileName, string key)
+      [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202:Do not dispose objects multiple times")]
+      private static string SymmetricFilePrivate(SymmetricProvider p, string fileName, string key)
       {
          string encryptedFilePath = Path.GetFileNameWithoutExtension(fileName) + ".encrypted";
          string decryptedFilePath = Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(fileName)) + "-decrypted" + Path.GetExtension(fileName);
 
-         //-- encrypt the file to memory
-         var sym = new Encryption.Symmetric(p);
-         sym.Key = new Data(key);
+         // encrypt the file to memory
          Data encryptedData;
-
-         using (var fs = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.Read))
+         using (var sym = new Symmetric(p))
          {
-            encryptedData = sym.Encrypt(fs);
+            sym.Key = new Data(key);
+            using (var stream = File.OpenRead(fileName))
+            {
+               encryptedData = sym.Encrypt(stream);
+            }
          }
 
-         //-- write encrypted data to a new binary file
-         using (var fs = new FileStream(encryptedFilePath, FileMode.Create, FileAccess.Write, FileShare.None))
-         using (var bw = new BinaryWriter(fs))
+         // write encrypted data to a new binary file
+         using (var stream = File.Open(encryptedFilePath, FileMode.Create))
+         using (var bw = new BinaryWriter(stream))
          {
             bw.Write(encryptedData.Bytes);
          }
 
-         //-- decrypt this binary file
-         var sym2 = new Encryption.Symmetric(p);
-         sym2.Key = new Data(key);
+         // decrypt this binary file
          Data decryptedData;
-
-         using (var fs = new FileStream(encryptedFilePath, FileMode.Open, FileAccess.Read, FileShare.Read))
+         using (var sym2 = new Symmetric(p))
          {
-            decryptedData = sym.Decrypt(fs);
+            sym2.Key = new Data(key);
+            using (var stream = File.OpenRead(encryptedFilePath))
+            {
+               decryptedData = sym2.Decrypt(stream);
+            }
          }
 
-         //-- write decrypted data to a new binary file
-         using (var fs = new FileStream(decryptedFilePath, FileMode.Create, FileAccess.Write, FileShare.None))
-         using (var bw = new BinaryWriter(fs))
+         // write decrypted data to a new binary file
+         using (var stream = File.Open(decryptedFilePath, FileMode.Create))
+         using (var bw = new BinaryWriter(stream))
          {
             bw.Write(decryptedData.Bytes);
          }
 
-         //-- get the MD5 hash of the returned data
-         var h = new Hash(Hash.Provider.MD5);
-         return h.Calculate(decryptedData).ToHex();
+         // get the MD5 hash of the returned data
+         using (var h = new Hash(HashProvider.MD5))
+         {
+            return h.Calculate(decryptedData).Hex;
+         }
       }
 
       /// <summary>
       /// test using user-provided keys and init vectors
       /// </summary>
-      private static string SymmetricWithKey(Encryption.Symmetric.Provider p, string TargetString)
+      private static string SymmetricWithKey(SymmetricProvider p, string targetString)
       {
-         Encryption.Symmetric sym = new Encryption.Symmetric(p, false);
-         Encryption.Symmetric sym2 = new Encryption.Symmetric(p, false);
+         var keyData = new Data("MySecretPassword");
+         var ivData = new Data("MyInitializationVector");
+
          Data encryptedData;
+         using (var sym = new Symmetric(p, false))
+         {
+            sym.IntializationVector = ivData;
+            encryptedData = sym.Encrypt(new Data(targetString), keyData);
+         }
+
          Data decryptedData;
-
-         Data keyData = new Data("MySecretPassword");
-         Data ivData = new Data("MyInitializationVector");
-
-         sym.IntializationVector = ivData;
-         encryptedData = sym.Encrypt(new Data(TargetString), keyData);
-         string encryptedString = encryptedData.Base64;
-         
-         Data newEncryptedData = new Data(Utils.FromBase64(encryptedString));
-         sym2.IntializationVector = ivData;
-         decryptedData = sym2.Decrypt(newEncryptedData, keyData);
+         using (var sym2 = new Symmetric(p, false))
+         {
+            sym2.IntializationVector = ivData;
+            decryptedData = sym2.Decrypt(encryptedData, keyData);
+         }
 
          ////-- the data will be padded to the encryption blocksize, so we need to trim it back down.
          //return decryptedData.ToString().Substring(0, _TargetData.Bytes.Length);
@@ -276,21 +293,24 @@ namespace harlam357.Security.Tests
       /// <summary>
       /// test using auto-generated keys
       /// </summary>
-      private static string SymmetricLoopback(Encryption.Symmetric.Provider p, string TargetString)
+      private static string SymmetricLoopback(SymmetricProvider p, string targetString)
       {
-         Encryption.Symmetric sym = new Encryption.Symmetric(p);
-         Encryption.Symmetric sym2 = new Encryption.Symmetric(p);
-         Data encryptedData;
          Data decryptedData;
-
-         encryptedData = sym.Encrypt(new Data(TargetString));
-         decryptedData = sym2.Decrypt(encryptedData, sym.Key);
+         using (var sym = new Symmetric(p))
+         {
+            Data encryptedData = sym.Encrypt(new Data(targetString));
+            using (var sym2 = new Symmetric(p))
+            {
+               decryptedData = sym2.Decrypt(encryptedData, sym.Key);
+            }
+         }
 
          ////-- the data will be padded to the encryption blocksize, so we need to trim it back down.
          //return decryptedData.ToString().Substring(0, _TargetData.Bytes.Length);
 
          return decryptedData.ToString();
       } 
+
       #endregion
    }
 }

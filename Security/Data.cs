@@ -5,9 +5,6 @@
 //  Jeff Atwood
 //   http://www.codinghorror.com/
 //   http://www.codeproject.com/KB/security/SimpleEncryption.aspx
-//
-//  Contributions by Ryan Harlamert (harlam357) 2009-2010
-//   http://code.google.com/p/harlam357-net/
 
 using System;
 using System.Text;
@@ -15,236 +12,218 @@ using System.Text;
 namespace harlam357.Security
 {
    /// <summary>
-   /// represents Hex, Byte, Base64, or String data to encrypt/decrypt;
-   /// use the .Text property to set/get a string representation 
-   /// use the .Hex property to set/get a string-based Hexadecimal representation 
-   /// use the .Base64 to set/get a string-based Base64 representation 
-   /// </summary>
+   /// Represents Hex, Byte, Base64, or String data to encrypt or decrypt.
+   ///  </summary>
+   /// <remarks>
+   /// Use the Text property to get/set a string representation.
+   /// Use the Hex property to get/set a string-based Hexadecimal representation.
+   /// Use the Base64 to get/set a string-based Base64 representation.
+   /// </remarks>
    public class Data
    {
-      private byte[] _b;
-      private int _MaxBytes = 0;
-      private int _MinBytes = 0;
-      private int _StepBytes = 0;
+      #region Fields
 
-      /// <summary>
-      /// Determines the default text encoding across ALL Data instances
-      /// </summary>
-      public static Encoding DefaultEncoding = System.Text.Encoding.GetEncoding("Windows-1252");
+      private byte[] _data;
 
+      private static readonly Encoding DefaultEncodingValue = Encoding.GetEncoding("Windows-1252");
       /// <summary>
-      /// Determines the default text encoding for this Data instance
+      /// Gets the default text encoding for all Data instances.
       /// </summary>
-      public Encoding Encoding = DefaultEncoding;
-
-      /// <summary>
-      /// Creates new, empty encryption data
-      /// </summary>
-      public Data()
+      public static Encoding DefaultEncoding
       {
+         get { return DefaultEncodingValue; }
       }
 
+      private Encoding _encoding = DefaultEncoding;
       /// <summary>
-      /// Creates new encryption data with the specified byte array
+      /// Gets or sets the text encoding for this Data instance.
       /// </summary>
-      public Data(byte[] b)
+      public Encoding Encoding
       {
-         _b = b;
-      }
-
-      /// <summary>
-      /// Creates new encryption data with the specified string; 
-      /// will be converted to byte array using default encoding
-      /// </summary>
-      public Data(string s)
-      {
-         Text = s;
-      }
-
-      /// <summary>
-      /// Creates new encryption data using the specified string and the 
-      /// specified encoding to convert the string to a byte array.
-      /// </summary>
-      public Data(string s, Encoding encoding)
-      {
-         Encoding = encoding;
-         Text = s;
-      }
-
-      /// <summary>
-      /// returns true if no data is present
-      /// </summary>
-      public bool IsEmpty
-      {
-         get
+         get { return _encoding; }
+         set
          {
-            if (_b == null)
-            {
-               return true;
-            }
-            if (_b.Length == 0)
-            {
-               return true;
-            }
-            return false;
+            // don't allow a null to be set here
+            if (value == null) return;
+            _encoding = value;
          }
       }
 
+      #endregion
+
+      #region Constructors
+
       /// <summary>
-      /// allowed step interval, in bytes, for this data; if 0, no limit
+      /// Initializes a new instance of the Data class that is empty.
       /// </summary>
-      public int StepBytes
+      public Data()
       {
-         get { return _StepBytes; }
-         set { _StepBytes = value; }
+
       }
 
       /// <summary>
-      /// allowed step interval, in bits, for this data; if 0, no limit
+      /// Initializes a new instance of the Data class with the byte array value.
       /// </summary>
-      public int StepBits
+      public Data(byte[] value)
       {
-         get { return _StepBytes*8; }
-         set { _StepBytes = value/8; }
+         _data = value;
       }
 
       /// <summary>
-      /// minimum number of bytes allowed for this data; if 0, no limit
+      /// Initializes a new instance of the Data class with the string value.
       /// </summary>
-      public int MinBytes
+      public Data(string value)
       {
-         get { return _MinBytes; }
-         set { _MinBytes = value; }
+         Text = value;
       }
 
       /// <summary>
-      /// minimum number of bits allowed for this data; if 0, no limit
+      /// Initializes a new instance of the Data class with the string value.
       /// </summary>
-      public int MinBits
+      public Data(string value, Encoding encoding)
       {
-         get { return _MinBytes*8; }
-         set { _MinBytes = value/8; }
+         // encoding must be set BEFORE value
+         Encoding = encoding;
+         Text = value;
+      }
+
+      #endregion
+
+      #region Properties
+
+      /// <summary>
+      /// Indicates if no data is present in this instance.
+      /// </summary>
+      public bool IsEmpty
+      {
+         get { return _data == null || _data.Length == 0; }
       }
 
       /// <summary>
-      /// maximum number of bytes allowed for this data; if 0, no limit
+      /// Gets or sets the allowed step interval, in bytes, for this data; if 0, no limit.
       /// </summary>
-      public int MaxBytes
-      {
-         get { return _MaxBytes; }
-         set { _MaxBytes = value; }
-      }
+      public int StepBytes { get; set; }
+
+      ///// <summary>
+      ///// Gets or sets the allowed step interval, in bits, for this data; if 0, no limit.
+      ///// </summary>
+      //public int StepBits
+      //{
+      //   get { return StepBytes * 8; }
+      //   set { StepBytes = value / 8; }
+      //}
 
       /// <summary>
-      /// maximum number of bits allowed for this data; if 0, no limit
+      /// Gets or sets the minimum number of bytes allowed for this data; if 0, no limit.
+      /// </summary>
+      public int MinBytes { get; set; }
+
+      ///// <summary>
+      ///// Gets or sets the minimum number of bits allowed for this data; if 0, no limit.
+      ///// </summary>
+      //public int MinBits
+      //{
+      //   get { return _minBytes * 8; }
+      //   set { _minBytes = value / 8; }
+      //}
+
+      /// <summary>
+      /// Gets or sets the maximum number of bytes allowed for this data; if 0, no limit.
+      /// </summary>
+      public int MaxBytes { get; set; }
+
+      /// <summary>
+      /// Gets or sets the maximum number of bits allowed for this data; if 0, no limit.
       /// </summary>
       public int MaxBits
       {
-         get { return _MaxBytes*8; }
-         set { _MaxBytes = value/8; }
+         get { return MaxBytes * 8; }
+         set { MaxBytes = value / 8; }
       }
 
       /// <summary>
-      /// Returns the byte representation of the data; 
-      /// This will be padded to MinBytes and trimmed to MaxBytes as necessary!
+      /// Gets or sets the byte representation of the data. This will be padded to MinBytes and trimmed to MaxBytes as necessary.
       /// </summary>
       public byte[] Bytes
       {
          get
          {
-            if (_MaxBytes > 0)
+            if (MaxBytes > 0)
             {
-               if (_b.Length > _MaxBytes)
+               if (_data.Length > MaxBytes)
                {
-                  byte[] b = new byte[_MaxBytes];
-                  Array.Copy(_b, b, b.Length);
-                  _b = b;
+                  var b = new byte[MaxBytes];
+                  Array.Copy(_data, b, b.Length);
+                  _data = b;
                }
             }
-            if (_MinBytes > 0)
+            if (MinBytes > 0)
             {
-               if (_b.Length < _MinBytes)
+               if (_data.Length < MinBytes)
                {
-                  byte[] b = new byte[_MinBytes];
-                  Array.Copy(_b, b, _b.Length);
-                  _b = b;
+                  var b = new byte[MinBytes];
+                  Array.Copy(_data, b, _data.Length);
+                  _data = b;
                }
             }
-            return _b;
+            return _data;
          }
-         set { _b = value; }
+         set { _data = value; }
       }
 
       /// <summary>
-      /// Sets or returns text representation of bytes using the default text encoding
+      /// Gets or sets the text representation of the data using the Encoding value.
       /// </summary>
       public string Text
       {
          get
          {
-            if (_b == null)
+            if (_data == null)
             {
-               return "";
+               return String.Empty;
             }
-            else
+
+            // need to handle nulls here
+            // oddly, C# will happily convert nulls into the string
+            // whereas VB stops converting at the first null
+            int i = Array.IndexOf(_data, (byte)0);
+            if (i >= 0)
             {
-               //-- need to handle nulls here; oddly, C# will happily convert
-               //-- nulls into the string whereas VB stops converting at the
-               //-- first null!
-               int i = Array.IndexOf(_b, (byte) 0);
-               if (i >= 0)
-               {
-                  return Encoding.GetString(_b, 0, i);
-               }
-               else
-               {
-                  return Encoding.GetString(_b);
-               }
+               return Encoding.GetString(_data, 0, i);
             }
+            return Encoding.GetString(_data);
          }
-         set { _b = Encoding.GetBytes(value); }
+         set { _data = Encoding.GetBytes(value); }
       }
 
       /// <summary>
-      /// Sets or returns Hex string representation of this data
+      /// Gets or sets the Hex string representation of this data.
       /// </summary>
       public string Hex
       {
-         get { return Utils.ToHex(_b); }
-         set { _b = Utils.FromHex(value); }
+         get { return _data.ToHex(); }
+         set { _data = value.FromHex(); }
       }
 
       /// <summary>
-      /// Sets or returns Base64 string representation of this data
+      /// Gets or sets the Base64 string representation of this data.
       /// </summary>
       public string Base64
       {
-         get { return Utils.ToBase64(_b); }
-         set { _b = Utils.FromBase64(value); }
+         get { return _data.ToBase64(); }
+         set { _data = value.FromBase64(); }
       }
 
+      #endregion
+
       /// <summary>
-      /// Returns text representation of bytes using the default text encoding
+      /// Returns a string that represents the current object.
       /// </summary>
-      public new string ToString()
+      /// <returns>A string that represents the current object.</returns>
+      /// <filterpriority>2</filterpriority>
+      public override string ToString()
       {
          return Text;
-      }
-
-      /// <summary>
-      /// returns Base64 string representation of this data
-      /// </summary>
-      public string ToBase64()
-      {
-         return Base64;
-      }
-
-      /// <summary>
-      /// returns Hex string representation of this data
-      /// </summary>
-      public string ToHex()
-      {
-         return Hex;
       }
    }
 }

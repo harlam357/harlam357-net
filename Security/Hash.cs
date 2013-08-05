@@ -5,12 +5,6 @@
 //  Jeff Atwood
 //   http://www.codinghorror.com/
 //   http://www.codeproject.com/KB/security/SimpleEncryption.aspx
-//
-//  CRC32 Hash by damieng
-//   http://damieng.com/blog/2006/08/08/calculating_crc32_in_c_and_net
-//
-//  Contributions by Ryan Harlamert (harlam357) 2009-2010
-//   http://code.google.com/p/harlam357-net/
 
 using System;
 using System.Security.Cryptography;
@@ -18,161 +12,172 @@ using System.Security.Cryptography;
 namespace harlam357.Security
 {
    /// <summary>
-   /// Hash functions are fundamental to modern cryptography. These functions map binary 
-   /// strings of an arbitrary length to small binary strings of a fixed length, known as 
-   /// hash values. A cryptographic hash function has the property that it is computationally
-   /// infeasible to find two distinct inputs that hash to the same value. Hash functions 
-   /// are commonly used with digital signatures and for data integrity.
+   /// Specifies the type of hash.
    /// </summary>
-   public class Hash
+   public enum HashProvider
    {
-      /// <summary>
-      /// Type of hash; some are security oriented, others are fast and simple
-      /// </summary>
-      public enum Provider
-      {
-         /// <summary>
-         /// Cyclic Redundancy Check provider, 32-bit
-         /// </summary>
-         CRC32,
-         /// <summary>
-         /// Secure Hashing Algorithm provider, SHA-1 variant, 160-bit
-         /// </summary>
-         SHA1,
-         /// <summary>
-         /// Secure Hashing Algorithm provider, SHA-2 variant, 256-bit
-         /// </summary>
-         SHA256,
-         /// <summary>
-         /// Secure Hashing Algorithm provider, SHA-2 variant, 384-bit
-         /// </summary>
-         SHA384,
-         /// <summary>
-         /// Secure Hashing Algorithm provider, SHA-2 variant, 512-bit
-         /// </summary>
-         SHA512,
-         /// <summary>
-         /// Message Digest algorithm 5, 128-bit
-         /// </summary>
-         MD5
-      }
-
-      private readonly HashAlgorithm _Hash;
-      private readonly Data _HashValue = new Data();
+      // ReSharper disable InconsistentNaming
 
       /// <summary>
-      /// Instantiate a new hash of the specified type
+      /// Cyclic Redundancy Check provider, 32-bit.
       /// </summary>
-      public Hash(Provider p)
+      CRC32,
+      /// <summary>
+      /// Secure Hashing Algorithm provider, SHA-1 variant, 160-bit.
+      /// </summary>
+      SHA1,
+      /// <summary>
+      /// Secure Hashing Algorithm provider, SHA-2 variant, 256-bit.
+      /// </summary>
+      SHA256,
+      /// <summary>
+      /// Secure Hashing Algorithm provider, SHA-2 variant, 384-bit.
+      /// </summary>
+      SHA384,
+      /// <summary>
+      /// Secure Hashing Algorithm provider, SHA-2 variant, 512-bit.
+      /// </summary>
+      SHA512,
+      /// <summary>
+      /// Message Digest algorithm 5, 128-bit.
+      /// </summary>
+      MD5
+
+      // ReSharper restore InconsistentNaming
+   }
+
+   // Hash functions are fundamental to modern cryptography. These functions map binary 
+   // strings of an arbitrary length to small binary strings of a fixed length, known as 
+   // hash values. A cryptographic hash function has the property that it is computationally
+   // infeasible to find two distinct inputs that hash to the same value. Hash functions 
+   // are commonly used with digital signatures and for data integrity.
+
+   /// <summary>
+   /// Represents an object that performs hashing.
+   /// </summary>
+   public class Hash : IDisposable
+   {
+      private readonly HashAlgorithm _hash;
+      private readonly Data _hashValue = new Data();
+
+      /// <summary>
+      /// Initializes a new instance of the Hash class with the specified hash provider.
+      /// </summary>
+      public Hash(HashProvider provider)
       {
-         switch (p)
+         switch (provider)
          {
-            case Provider.CRC32:
-               _Hash = new CRC32();
+            case HashProvider.CRC32:
+               _hash = new CRC32();
                break;
-            case Provider.MD5:
-               _Hash = new MD5CryptoServiceProvider();
+            case HashProvider.SHA1:
+               _hash = new SHA1Managed();
                break;
-            case Provider.SHA1:
-               _Hash = new SHA1Managed();
+            case HashProvider.SHA256:
+               _hash = new SHA256Managed();
                break;
-            case Provider.SHA256:
-               _Hash = new SHA256Managed();
+            case HashProvider.SHA384:
+               _hash = new SHA384Managed();
                break;
-            case Provider.SHA384:
-               _Hash = new SHA384Managed();
+            case HashProvider.SHA512:
+               _hash = new SHA512Managed();
                break;
-            case Provider.SHA512:
-               _Hash = new SHA512Managed();
+            case HashProvider.MD5:
+               _hash = new MD5CryptoServiceProvider();
                break;
          }
       }
 
       /// <summary>
-      /// Returns the previously calculated hash
+      /// Gets the previously calculated hash value.
       /// </summary>
       public Data Value
       {
-         get { return _HashValue; }
+         get { return _hashValue; }
       }
 
       /// <summary>
-      /// Calculates hash on a stream of arbitrary length
+      /// Calculates the hash on a stream of arbitrary length.
       /// </summary>
-      public Data Calculate(ref System.IO.Stream s)
+      public Data Calculate(System.IO.Stream stream)
       {
-         _HashValue.Bytes = _Hash.ComputeHash(s);
-         return _HashValue;
+         _hashValue.Bytes = _hash.ComputeHash(stream);
+         return _hashValue;
       }
 
       /// <summary>
-      /// Calculates hash for fixed length <see cref="Data"/>
+      /// Calculates the hash for fixed length data.
       /// </summary>
-      public Data Calculate(Data d)
+      /// <exception cref="T:System.ArgumentNullException">data is null.</exception>
+      public Data Calculate(Data data)
       {
-         return CalculatePrivate(d.Bytes);
+         if (data == null) throw new ArgumentNullException("data");
+         return CalculatePrivate(data.Bytes);
       }
 
       /// <summary>
-      /// Calculates hash for a string with a prefixed salt value. 
-      /// A "salt" is random data prefixed to every hashed value to prevent 
-      /// common dictionary attacks.
-      /// </summary>
-      public Data Calculate(Data d, Data salt)
+      /// Calculates the hash for fixed length data with a prefixed salt value.
+      ///  </summary>
+      /// <exception cref="T:System.ArgumentNullException">data or salt is null.</exception>
+      /// <remarks>A "salt" value is random data prefixed to every hashed value to prevent common dictionary attacks.</remarks>
+      public Data Calculate(Data data, Data salt)
       {
-         byte[] nb = new byte[d.Bytes.Length + salt.Bytes.Length];
-         salt.Bytes.CopyTo(nb, 0);
-         d.Bytes.CopyTo(nb, salt.Bytes.Length);
-         return CalculatePrivate(nb);
+         if (data == null) throw new ArgumentNullException("data");
+         if (salt == null) throw new ArgumentNullException("salt");
+
+         var value = new byte[data.Bytes.Length + salt.Bytes.Length];
+         salt.Bytes.CopyTo(value, 0);
+         data.Bytes.CopyTo(value, salt.Bytes.Length);
+         return CalculatePrivate(value);
       }
 
-      /// <summary>
-      /// Calculates hash for an array of bytes
-      /// </summary>
-      private Data CalculatePrivate(byte[] b)
+      private Data CalculatePrivate(byte[] value)
       {
-         _HashValue.Bytes = _Hash.ComputeHash(b);
-         return _HashValue;
+         _hashValue.Bytes = _hash.ComputeHash(value);
+         return _hashValue;
       }
 
       #region CRC32 HashAlgorithm
 
-      private class CRC32 : HashAlgorithm
+      // ReSharper disable InconsistentNaming
+      private sealed class CRC32 : HashAlgorithm
+      // ReSharper restore InconsistentNaming
       {
-         public const UInt32 DefaultPolynomial = 0xedb88320;
-         public const UInt32 DefaultSeed = 0xffffffff;
+         private const UInt32 DefaultPolynomial = 0xedb88320;
+         private const UInt32 DefaultSeed = 0xffffffff;
 
-         private UInt32 hash;
-         private readonly UInt32 seed;
-         private readonly UInt32[] table;
-         private static UInt32[] defaultTable;
+         private UInt32 _hash;
+         private readonly UInt32 _seed;
+         private readonly UInt32[] _table;
+         private static UInt32[] DefaultTable;
 
          public CRC32()
-            : this(DefaultPolynomial, DefaultSeed)
          {
-            
-         }
-
-         public CRC32(UInt32 Polynomial, UInt32 Seed)
-         {
-            table = InitializeTable(Polynomial);
-            seed = Seed;
+            _table = InitializeTable(DefaultPolynomial);
+            _seed = DefaultSeed;
             Initialize();
          }
 
+         //public CRC32(UInt32 polynomial, UInt32 seed)
+         //{
+         //   _table = InitializeTable(polynomial);
+         //   _seed = seed;
+         //   Initialize();
+         //}
+
          public override void Initialize()
          {
-            hash = seed;
+            _hash = _seed;
          }
 
          protected override void HashCore(byte[] buffer, int start, int length)
          {
-            hash = CalculateHash(table, hash, buffer, start, length);
+            _hash = CalculateHash(_table, _hash, buffer, start, length);
          }
 
          protected override byte[] HashFinal()
          {
-            byte[] hashBuffer = UInt32ToBigEndianBytes(~hash);
+            byte[] hashBuffer = UInt32ToBigEndianBytes(~_hash);
             HashValue = hashBuffer;
             return hashBuffer;
          }
@@ -182,40 +187,51 @@ namespace harlam357.Security
             get { return 32; }
          }
 
-         public static UInt32 Compute(byte[] buffer)
-         {
-            return ~CalculateHash(InitializeTable(DefaultPolynomial), DefaultSeed, buffer, 0, buffer.Length);
-         }
+         //public static UInt32 Compute(byte[] buffer)
+         //{
+         //   return ~CalculateHash(InitializeTable(DefaultPolynomial), DefaultSeed, buffer, 0, buffer.Length);
+         //}
 
-         public static UInt32 Compute(UInt32 seed, byte[] buffer)
-         {
-            return ~CalculateHash(InitializeTable(DefaultPolynomial), seed, buffer, 0, buffer.Length);
-         }
+         //public static UInt32 Compute(UInt32 seed, byte[] buffer)
+         //{
+         //   return ~CalculateHash(InitializeTable(DefaultPolynomial), seed, buffer, 0, buffer.Length);
+         //}
 
-         public static UInt32 Compute(UInt32 polynomial, UInt32 seed, byte[] buffer)
-         {
-            return ~CalculateHash(InitializeTable(polynomial), seed, buffer, 0, buffer.Length);
-         }
+         //public static UInt32 Compute(UInt32 polynomial, UInt32 seed, byte[] buffer)
+         //{
+         //   return ~CalculateHash(InitializeTable(polynomial), seed, buffer, 0, buffer.Length);
+         //}
 
          private static UInt32[] InitializeTable(UInt32 polynomial)
          {
-            if (polynomial == DefaultPolynomial && defaultTable != null)
-               return defaultTable;
+            if (polynomial == DefaultPolynomial && DefaultTable != null)
+            {
+               return DefaultTable;
+            }
 
-            UInt32[] createTable = new UInt32[256];
+            var createTable = new UInt32[256];
             for (int i = 0; i < 256; i++)
             {
-               UInt32 entry = (UInt32) i;
+               var entry = (UInt32)i;
                for (int j = 0; j < 8; j++)
+               {
                   if ((entry & 1) == 1)
+                  {
                      entry = (entry >> 1) ^ polynomial;
+                  }
                   else
+                  {
                      entry = entry >> 1;
+                  }
+               }
+               
                createTable[i] = entry;
             }
 
             if (polynomial == DefaultPolynomial)
-               defaultTable = createTable;
+            {
+               DefaultTable = createTable;
+            }
 
             return createTable;
          }
@@ -224,24 +240,63 @@ namespace harlam357.Security
          {
             UInt32 crc = seed;
             for (int i = start; i < size; i++)
+            {
                unchecked
                {
                   crc = (crc >> 8) ^ table[buffer[i] ^ crc & 0xff];
                }
+            }
             return crc;
          }
 
          private static byte[] UInt32ToBigEndianBytes(UInt32 x)
          {
-            return new byte[]
-               {
-                  (byte) ((x >> 24) & 0xff),
-                  (byte) ((x >> 16) & 0xff),
-                  (byte) ((x >> 8) & 0xff),
-                  (byte) (x & 0xff)
-               };
+            return new[] 
+            {
+               (byte)((x >> 24) & 0xff),
+               (byte)((x >> 16) & 0xff),
+               (byte)((x >> 8) & 0xff),
+               (byte)(x & 0xff)
+            };
          }
+
       }
+
+      #endregion
+
+      #region IDisposable Implementation
+
+      /// <summary>
+      /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+      /// </summary>
+      /// <filterpriority>2</filterpriority>
+      public void Dispose()
+      {
+         Dispose(true);
+         GC.SuppressFinalize(this);
+      }
+
+      /// <summary>
+      /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+      /// </summary>
+      /// <param name="disposing">true to release both managed and unmanaged resources; false to release only unmanaged resources.</param>
+      /// <filterpriority>2</filterpriority>
+      protected virtual void Dispose(bool disposing)
+      {
+         if (!_disposed)
+         {
+            if (disposing)
+            {
+               // clean managed resources
+               ((IDisposable)_hash).Dispose();
+            }
+            // clean unmanaged resources
+         }
+
+         _disposed = true;
+      }
+
+      private bool _disposed;
 
       #endregion
    }

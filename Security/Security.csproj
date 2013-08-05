@@ -76,12 +76,12 @@
     <Compile Include="..\AssemblyVersion.cs">
       <Link>Properties\AssemblyVersion.cs</Link>
     </Compile>
-    <Compile Include="Encryption\Asymmetric.cs" />
+    <Compile Include="Cryptography\Asymmetric.cs" />
+    <Compile Include="Cryptography\Symmetric.cs" />
     <Compile Include="Data.cs" />
+    <Compile Include="Extensions.cs" />
     <Compile Include="Hash.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Encryption\Symmetric.cs" />
-    <Compile Include="Utils.cs" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
