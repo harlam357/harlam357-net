@@ -264,8 +264,8 @@ namespace harlam357.Windows.Forms
             stream = new FileStream(localFilePath, FileMode.Open, FileAccess.Read);
             if (selectedUpdate.SHA1.Length != 0)
             {
-               Hash hash = new Hash(Hash.Provider.SHA1);
-               Data hashData = hash.Calculate(ref stream);
+               Hash hash = new Hash(HashProvider.SHA1);
+               Data hashData = hash.Calculate(stream);
                if (String.Compare(selectedUpdate.SHA1, hashData.Hex, StringComparison.OrdinalIgnoreCase) != 0)
                {
                   throw new IOException("SHA1 file hash is not correct.");
@@ -274,8 +274,8 @@ namespace harlam357.Windows.Forms
             stream.Position = 0;
             if (selectedUpdate.MD5.Length != 0)
             {
-               Hash hash = new Hash(Hash.Provider.MD5);
-               Data hashData = hash.Calculate(ref stream);
+               Hash hash = new Hash(HashProvider.MD5);
+               Data hashData = hash.Calculate(stream);
                if (String.Compare(selectedUpdate.MD5, hashData.Hex, StringComparison.OrdinalIgnoreCase) != 0)
                {
                   throw new IOException("MD5 file hash is not correct.");
