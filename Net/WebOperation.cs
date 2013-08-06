@@ -72,7 +72,7 @@ namespace harlam357.Net
       /// <summary>
       /// Gets the inner WebRequest object.
       /// </summary>
-      WebRequest WebRequest { get; }
+      IWebRequest WebRequest { get; }
 
       /// <summary>
       /// Gets the state of the operation.
@@ -143,11 +143,11 @@ namespace harlam357.Net
       /// </summary>
       public event EventHandler<WebOperationProgressChangedEventArgs> ProgressChanged;
 
-      private WebRequest _webRequest;
+      private IWebRequest _webRequest;
       /// <summary>
       /// Gets or sets the inner WebRequest object.
       /// </summary>
-      public WebRequest WebRequest
+      public IWebRequest WebRequest
       {
          get { return _webRequest; }
          protected set { _webRequest = value; }
@@ -223,7 +223,7 @@ namespace harlam357.Net
          long totalBytesRead = 0;
          long totalLength;
 
-         WebResponse response = _webRequest.GetResponse();
+         IWebResponse response = _webRequest.GetResponse();
          using (Stream responseStream = response.GetResponseStream())
          {
             totalLength = response.ContentLength;
@@ -297,7 +297,7 @@ namespace harlam357.Net
          _webRequest.Method = GetWebDownloadMethod();
 
          OnWebOperationProgress(new WebOperationProgressChangedEventArgs(0, 0, State, Result));
-         WebResponse response = _webRequest.GetResponse();
+         IWebResponse response = _webRequest.GetResponse();
          long length = response.ContentLength;
          response.Close();
 
@@ -385,7 +385,7 @@ namespace harlam357.Net
 
          if (_cancel)
          {
-            if (WebRequest is FileWebRequest && File.Exists(WebRequest.RequestUri.LocalPath))
+            if (WebRequest is FileWebRequestAdapter && File.Exists(WebRequest.RequestUri.LocalPath))
             {
                File.Delete(WebRequest.RequestUri.LocalPath);   
             }
@@ -402,7 +402,7 @@ namespace harlam357.Net
          //   response.Close();
          //}
 
-         WebResponse response = _webRequest.GetResponse();
+         IWebResponse response = _webRequest.GetResponse();
          response.Close();
 
          State = WebOperationState.Idle;
@@ -423,7 +423,7 @@ namespace harlam357.Net
          Result = WebOperationResult.None;
          _webRequest.Method = GetWebCheckConnectionMethod();
 
-         WebResponse response = null;
+         IWebResponse response = null;
          try
          {
             OnWebOperationProgress(new WebOperationProgressChangedEventArgs(0, 0, State, Result));
@@ -527,7 +527,7 @@ namespace harlam357.Net
       /// <returns>A WebOperation descendant for the specific URI scheme.</returns>
       public static WebOperation Create(Uri requestUri)
       {
-         return CreateWebOperation(WebRequest.Create(requestUri));
+         return CreateWebOperation(System.Net.WebRequest.Create(requestUri));
       }
 
       private static WebOperation CreateWebOperation(WebRequest webRequest)
@@ -535,19 +535,19 @@ namespace harlam357.Net
          var fileWebRequest = webRequest as FileWebRequest;
          if (fileWebRequest != null)
          {
-            return new FileWebOperation(fileWebRequest);
+            return new FileWebOperation(new FileWebRequestAdapter(fileWebRequest));
          }
 
          var httpWebRequest = webRequest as HttpWebRequest;
          if (httpWebRequest != null)
          {
-            return new HttpWebOperation(httpWebRequest);
+            return new HttpWebOperation(new WebRequestAdapter(httpWebRequest));
          }
 
          var ftpWebRequest = webRequest as FtpWebRequest;
          if (ftpWebRequest != null)
          {
-            return new FtpWebOperation(ftpWebRequest);
+            return new FtpWebOperation(new FtpWebRequestAdapter(ftpWebRequest));
          }
 
          throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture,
@@ -556,7 +556,7 @@ namespace harlam357.Net
 
       private class FileWebOperation : WebOperation
       {
-         public FileWebOperation(WebRequest webRequest)
+         public FileWebOperation(IWebRequest webRequest)
          {
             WebRequest = webRequest;
          }
@@ -577,9 +577,25 @@ namespace harlam357.Net
          }
       }
 
+      /// <summary>
+      /// Represents an object that makes a request to a file system Uniform Resource Identifier (URI).
+      /// </summary>
+      private class FileWebRequestAdapter : WebRequestAdapter
+      {
+         /// <summary>
+         /// Initializes a new instance of the FileWebRequestAdapter class.
+         /// </summary>
+         /// <param name="fileWebRequest">The System.Net.WebRequest instance this object wraps.</param>
+         public FileWebRequestAdapter(FileWebRequest fileWebRequest)
+            : base(fileWebRequest)
+         {
+
+         }
+      }
+
       private class HttpWebOperation : WebOperation
       {
-         public HttpWebOperation(WebRequest webRequest)
+         public HttpWebOperation(IWebRequest webRequest)
          {
             WebRequest = webRequest;
          }
@@ -602,7 +618,7 @@ namespace harlam357.Net
 
       private class FtpWebOperation : WebOperation
       {
-         public FtpWebOperation(FtpWebRequest webRequest)
+         public FtpWebOperation(IFtpWebRequest webRequest)
          {
             WebRequest = webRequest;
          }
