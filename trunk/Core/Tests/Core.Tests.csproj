@@ -7,7 +7,7 @@
     <ProjectGuid>{9C46037B-CCC1-46D9-B1F0-C11F2065E5D7}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>harlam357.Core.Tests</RootNamespace>
+    <RootNamespace>harlam357.Core</RootNamespace>
     <AssemblyName>harlam357.Core.Tests</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -20,6 +20,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -28,6 +29,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
     <DebugSymbols>true</DebugSymbols>
@@ -46,6 +48,15 @@
     <PlatformTarget>x86</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>..\..\harlam357public.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+  <PropertyGroup>
+    <DelaySign>true</DelaySign>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="nunit.core">
@@ -70,16 +81,14 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\..\AssemblyVersion.cs">
       <Link>Properties\AssemblyVersion.cs</Link>
     </Compile>
-    <Compile Include="StreamExtensionsTests.cs" />
+    <Compile Include="IO\StreamExtensionsTests.cs" />
+    <Compile Include="Net\WebOperationTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -89,17 +98,21 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="TestFiles\" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="TestFiles\gpl-3.0-1.txt" />
+    <Content Include="TestFiles\gpl-3.0-2.txt" />
+    <Content Include="TestFiles\gpl-3.0-3.txt" />
+    <Content Include="TestFiles\NetTest.html" />
+    <Content Include="TestFiles\NetTest.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\harlam357public.snk">
+      <Link>Properties\harlam357public.snk</Link>
+    </None>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <PropertyGroup>
-    <PostBuildEvent>if not exist ..\..\..\..\Artifacts\bin\$(ConfigurationName) md ..\..\..\..\Artifacts\bin\$(ConfigurationName)
-copy /Y $(TargetName).dll ..\..\..\..\Artifacts\bin\$(ConfigurationName)
-copy /Y $(TargetName).pdb ..\..\..\..\Artifacts\bin\$(ConfigurationName)</PostBuildEvent>
-  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
@@ -107,4 +120,9 @@ copy /Y $(TargetName).pdb ..\..\..\..\Artifacts\bin\$(ConfigurationName)</PostBu
   <Target Name="AfterBuild">
   </Target>
   -->
+  <PropertyGroup>
+    <PostBuildEvent>if not exist ..\..\..\..\Artifacts\bin\$(ConfigurationName) md ..\..\..\..\Artifacts\bin\$(ConfigurationName)
+copy /Y $(TargetName).dll ..\..\..\..\Artifacts\bin\$(ConfigurationName)
+copy /Y $(TargetName).pdb ..\..\..\..\Artifacts\bin\$(ConfigurationName)</PostBuildEvent>
+  </PropertyGroup>
 </Project>

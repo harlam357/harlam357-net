@@ -23,7 +23,7 @@ using System.IO;
 using System.Net;
 using System.Windows.Forms;
 
-using harlam357.Net;
+using harlam357.Core.Net;
 using harlam357.Security;
 
 namespace harlam357.Windows.Forms

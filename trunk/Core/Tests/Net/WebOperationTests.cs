@@ -24,7 +24,7 @@ using System.Net;
 
 using NUnit.Framework;
 
-namespace harlam357.Net.Tests
+namespace harlam357.Core.Net
 {
    [TestFixture]
    public class WebOperationTests
