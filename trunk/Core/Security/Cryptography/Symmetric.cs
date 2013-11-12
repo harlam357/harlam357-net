@@ -10,7 +10,7 @@ using System;
 using System.IO;
 using System.Security.Cryptography;
 
-namespace harlam357.Security.Cryptography
+namespace harlam357.Core.Security.Cryptography
 {
    /// <summary>
    /// Specifies the symmetric encryption algorithm.

@@ -90,6 +90,7 @@
     <Compile Include="IO\StreamExtensionsTests.cs" />
     <Compile Include="Net\WebOperationTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Security\SecurityTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Core.csproj">
@@ -98,9 +99,12 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="app.config" />
     <None Include="packages.config" />
+    <None Include="TestFiles\sample.doc" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="TestFiles\gettysburg.txt" />
     <Content Include="TestFiles\gpl-3.0-1.txt" />
     <Content Include="TestFiles\gpl-3.0-2.txt" />
     <Content Include="TestFiles\gpl-3.0-3.txt" />

@@ -17,7 +17,7 @@ using System.IO;
 using System.Text.RegularExpressions;
 using System.Xml;
 
-namespace harlam357.Security.Cryptography
+namespace harlam357.Core.Security.Cryptography
 {
    // Asymmetric encryption uses a pair of keys to encrypt and decrypt.
    // There is a "public" key which is used to encrypt. Decrypting, on the other hand, 

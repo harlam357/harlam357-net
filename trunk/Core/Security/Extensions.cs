@@ -10,7 +10,7 @@ using System;
 using System.Globalization;
 using System.Text;
 
-namespace harlam357.Security
+namespace harlam357.Core.Security
 {
    /// <summary>
    /// Contains extension methods for hexidecimal and base64 conversions.

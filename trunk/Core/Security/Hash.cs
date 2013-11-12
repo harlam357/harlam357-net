@@ -9,7 +9,7 @@
 using System;
 using System.Security.Cryptography;
 
-namespace harlam357.Security
+namespace harlam357.Core.Security
 {
    /// <summary>
    /// Specifies the type of hash.
