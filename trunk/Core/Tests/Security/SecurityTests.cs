@@ -45,7 +45,7 @@ namespace harlam357.Core.Security
       #region Hash Tests
 
       [Test, Category("Hash")]
-      public void Hash_Salted_Test()
+      public void Security_Hash_Salted_Test()
       {
          Assert.AreEqual("6CD9DD96", DoSaltedHash(HashProvider.CRC32, new Data("Shazam!")).Hex);
          Assert.AreEqual("4F7FA9C182C5FA60F9197F4830296685", DoSaltedHash(HashProvider.MD5, new Data("SnapCracklePop")).Hex);
@@ -56,7 +56,7 @@ namespace harlam357.Core.Security
       }
 
       [Test, Category("Hash")]
-      public void Hash_File_Test()
+      public void Security_Hash_File_Test()
       {
          string hashHex;
 
@@ -76,7 +76,7 @@ namespace harlam357.Core.Security
       }
 
       [Test, Category("Hash")]
-      public void Hash_Test()
+      public void Security_Hash_Test()
       {
          Assert.AreEqual("AA692113", DoHash(HashProvider.CRC32).Hex);
          Assert.AreEqual("44D36517B0CCE797FF57118ABE264FD9", DoHash(HashProvider.MD5).Hex);
@@ -107,7 +107,7 @@ namespace harlam357.Core.Security
       #region Asymmetric Tests
 
       [Test, Category("Asymmetric")]
-      public void Asymmetric_Test()
+      public void Security_Asymmetric_Test()
       {
          string secret = "Pack my box with five dozen liquor jugs.";
          Assert.AreEqual(secret, AsymmetricNewKey(secret));
@@ -183,7 +183,7 @@ namespace harlam357.Core.Security
       #region Symmetric Tests
 
       [Test, Category("Symmetric")]
-      public void Symmetric_Test()
+      public void Security_Symmetric_Test()
       {
          Assert.AreEqual(_targetString, SymmetricLoopback(SymmetricProvider.DES, _targetString));
          Assert.AreEqual(_targetString, SymmetricWithKey(SymmetricProvider.DES, _targetString));
@@ -205,7 +205,7 @@ namespace harlam357.Core.Security
       }
 
       [Test, Category("Symmetric")]
-      public void Symmetric_File_Test()
+      public void Security_Symmetric_File_Test()
       {
          //-- compare the hash of the decrypted file to what it should be after encryption/decryption
          //-- using pure file streams

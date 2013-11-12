@@ -13,7 +13,7 @@ namespace harlam357.Core.IO
    {
       [Test]
       [ExpectedException(typeof(ArgumentNullException))]
-      public void CopyTo_ArgumentNullException_Test1()
+      public void Stream_CopyTo_ArgumentNullException_Test1()
       {
          using (var ms = new MemoryStream())
          {
@@ -23,7 +23,7 @@ namespace harlam357.Core.IO
 
       [Test]
       [ExpectedException(typeof(ArgumentNullException))]
-      public void CopyTo_ArgumentNullException_Test2()
+      public void Stream_CopyTo_ArgumentNullException_Test2()
       {
          using (var ms = new MemoryStream())
          {
@@ -33,7 +33,7 @@ namespace harlam357.Core.IO
 
       [Test]
       [ExpectedException(typeof(ArgumentException))]
-      public void CopyTo_ArgumentException_Test1()
+      public void Stream_CopyTo_ArgumentException_Test1()
       {
          using (var ms1 = new MemoryStream())
          using (var ms2 = new MemoryStream())
@@ -44,7 +44,7 @@ namespace harlam357.Core.IO
 
       [Test]
       [ExpectedException(typeof(InvalidOperationException))]
-      public void CopyTo_InvalidOperationException_Test1()
+      public void Stream_CopyTo_InvalidOperationException_Test1()
       {
          MemoryStream ms1;
          MemoryStream ms2;
@@ -61,7 +61,7 @@ namespace harlam357.Core.IO
 
       [Test]
       [ExpectedException(typeof(InvalidOperationException))]
-      public void CopyTo_InvalidOperationException_Test2()
+      public void Stream_CopyTo_InvalidOperationException_Test2()
       {
          MemoryStream ms1;
          MemoryStream ms2;
@@ -77,7 +77,7 @@ namespace harlam357.Core.IO
       }
 
       [Test]
-      public void CopyTo_Test1()
+      public void Stream_CopyTo_Test1()
       {
          var buffer = new byte[Int16.MaxValue * 3];
          var random = new Random();
@@ -91,7 +91,7 @@ namespace harlam357.Core.IO
       }
 
       [Test]
-      public void FindLastIndex_Test1()
+      public void Stream_FindLastIndex_Test1()
       {
          using (var fs = new FileStream(@"..\..\TestFiles\gpl-3.0-1.txt", FileMode.Open, FileAccess.Read))
          {

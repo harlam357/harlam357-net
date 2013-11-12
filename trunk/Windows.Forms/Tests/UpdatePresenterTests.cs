@@ -42,7 +42,7 @@ namespace harlam357.Windows.Forms.Tests
       }
 
       [Test]
-      public void DownloadClick_Test()
+      public void UpdatePresenter_DownloadClick_Test()
       {
          var updateView = MockRepository.GenerateMock<IUpdateView>();
          var saveFileView = MockRepository.GenerateMock<ISaveFileDialogView>();
@@ -85,7 +85,7 @@ namespace harlam357.Windows.Forms.Tests
       }
       
       [Test]
-      public void DownloadClick_SaveFileDialogCanceled_Test()
+      public void UpdatePresenter_DownloadClick_SaveFileDialogCanceled_Test()
       {
          var updateView = MockRepository.GenerateStub<IUpdateView>();
          var saveFileView = MockRepository.GenerateMock<ISaveFileDialogView>();
@@ -108,7 +108,7 @@ namespace harlam357.Windows.Forms.Tests
       }
 
       [Test]
-      public void DownloadClick_CancelDownload_Test()
+      public void UpdatePresenter_DownloadClick_CancelDownload_Test()
       {
          var updateView = MockRepository.GenerateMock<IUpdateView>();
          var saveFileView = MockRepository.GenerateMock<ISaveFileDialogView>();
@@ -156,7 +156,7 @@ namespace harlam357.Windows.Forms.Tests
       }
 
       [Test]
-      public void DownloadClick_DownloadException_Test()
+      public void UpdatePresenter_DownloadClick_DownloadException_Test()
       {
          var updateView = MockRepository.GenerateMock<IUpdateView>();
          var saveFileView = MockRepository.GenerateMock<ISaveFileDialogView>();
@@ -201,7 +201,7 @@ namespace harlam357.Windows.Forms.Tests
       }
 
       [Test]
-      public void Show_Test()
+      public void UpdatePresenter_Show_Test()
       {
          var updateView = MockRepository.GenerateMock<IUpdateView>();
          var saveFileView = MockRepository.GenerateStub<ISaveFileDialogView>();
@@ -215,7 +215,7 @@ namespace harlam357.Windows.Forms.Tests
       }
 
       [Test]
-      public void Cancel_Test()
+      public void UpdatePresenter_Cancel_Test()
       {
          var updateView = MockRepository.GenerateMock<IUpdateView>();
          var saveFileView = MockRepository.GenerateStub<ISaveFileDialogView>();
@@ -229,7 +229,7 @@ namespace harlam357.Windows.Forms.Tests
       }     
 
       [Test]
-      public void VerifyDownload_Test()
+      public void UpdatePresenter_VerifyDownload_Test()
       {
          UpdatePresenter.VerifyDownload("..\\..\\TestFile.txt", _update.UpdateFiles[0]);
       }

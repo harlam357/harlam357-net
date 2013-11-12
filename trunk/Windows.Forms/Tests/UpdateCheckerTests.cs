@@ -10,9 +10,9 @@ namespace harlam357.Windows.Forms.Tests
    public class UpdateCheckerTests
    {
       [Test]
-      public void CheckForUpdatesTest()
+      public void UpdateChecker_CheckForUpdate_Test()
       {
-         UpdateChecker checker = new UpdateChecker();
+         var checker = new UpdateChecker();
          ApplicationUpdate update = checker.CheckForUpdate("uniqueId", Path.Combine(Environment.CurrentDirectory, "ApplicationUpdate.xml"));
          
          Assert.AreEqual("0.4.10.156", update.Version);
