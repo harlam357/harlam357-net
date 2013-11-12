@@ -61,8 +61,7 @@
 
    <Target Name="NUnit">
       <MSBuild.ExtensionPack.Computer.EnvironmentVariable TaskAction="Set" Variable="COMPLUS_ProfAPI_ProfilerCompatibilitySetting" Value="EnableV2Profiler"/>
-      <Exec Command="$(NCoverPath) $(NUnitPath) .\Net\Tests\bin\$(Configuration)\harlam357.Net.Tests.dll /xml=$(ArtifactsPath)\harlam357.Net.Tests.Results.xml //reg //a harlam357.Net //ea $(NCoverExcludeList) //x $(ArtifactsPath)\harlam357.Net.Tests.Coverage.xml" />
-      <Exec Command="$(NCoverPath) $(NUnitPath) .\Security\Tests\bin\$(Configuration)\harlam357.Security.Tests.dll /xml=$(ArtifactsPath)\harlam357.Security.Tests.Results.xml //reg //a harlam357.Security //ea $(NCoverExcludeList) //x $(ArtifactsPath)\harlam357.Security.Tests.Coverage.xml" />
+      <Exec Command="$(NCoverPath) $(NUnitPath) .\Core\Tests\bin\$(Configuration)\harlam357.Core.Tests.dll /xml=$(ArtifactsPath)\harlam357.Core.Tests.Results.xml //reg //a harlam357.Core //ea $(NCoverExcludeList) //x $(ArtifactsPath)\harlam357.Core.Tests.Coverage.xml" />
       <Exec Command="$(NCoverPath) $(NUnitPath) .\Windows.Forms\Tests\bin\$(Configuration)\harlam357.Windows.Forms.Tests.dll /xml=$(ArtifactsPath)\harlam357.Windows.Forms.Tests.Results.xml //reg //a harlam357.Windows.Forms //ea $(NCoverExcludeList) //x $(ArtifactsPath)\harlam357.Windows.Forms.Tests.Coverage.xml" />
       <Exec Command="$(NCoverExpPath) $(ArtifactsPath)\*.Tests.Coverage.xml /s:$(ArtifactsPath)\Coverage.xml" />
    </Target>
