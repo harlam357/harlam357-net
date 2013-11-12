@@ -20,7 +20,9 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <DocumentationFile>bin\Debug\harlam357.Core.xml</DocumentationFile>
+    <NoWarn>1591</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -29,7 +31,17 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <DocumentationFile>bin\Release\harlam357.Core.xml</DocumentationFile>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>..\harlam357public.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+  <PropertyGroup>
+    <DelaySign>true</DelaySign>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -41,15 +53,19 @@
       <Link>Properties\AssemblyVersion.cs</Link>
     </Compile>
     <Compile Include="IO\StreamExtensions.cs" />
+    <Compile Include="Net\FtpWebRequestAdapter.cs" />
+    <Compile Include="Net\FtpWebResponseAdapter.cs" />
+    <Compile Include="Net\WebOperation.cs" />
+    <Compile Include="Net\WebRequestAdapter.cs" />
+    <Compile Include="Net\WebResponseAdapter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\harlam357public.snk">
+      <Link>Properties\harlam357public.snk</Link>
+    </None>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <PropertyGroup>
-    <PostBuildEvent>if not exist ..\..\..\Artifacts\bin\$(ConfigurationName) md ..\..\..\Artifacts\bin\$(ConfigurationName)
-copy /Y $(TargetName).dll ..\..\..\Artifacts\bin\$(ConfigurationName)
-copy /Y $(TargetName).pdb ..\..\..\Artifacts\bin\$(ConfigurationName)
-copy /Y $(TargetName).xml ..\..\..\Artifacts\bin\$(ConfigurationName)</PostBuildEvent>
-  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
@@ -57,4 +73,10 @@ copy /Y $(TargetName).xml ..\..\..\Artifacts\bin\$(ConfigurationName)</PostBuild
   <Target Name="AfterBuild">
   </Target>
   -->
+  <PropertyGroup>
+    <PostBuildEvent>if not exist ..\..\..\Artifacts\bin\$(ConfigurationName) md ..\..\..\Artifacts\bin\$(ConfigurationName)
+copy /Y $(TargetName).dll ..\..\..\Artifacts\bin\$(ConfigurationName)
+copy /Y $(TargetName).pdb ..\..\..\Artifacts\bin\$(ConfigurationName)
+copy /Y $(TargetName).xml ..\..\..\Artifacts\bin\$(ConfigurationName)</PostBuildEvent>
+  </PropertyGroup>
 </Project>

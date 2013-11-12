@@ -24,7 +24,7 @@ using System.Net.Cache;
 using System.Net.Security;
 using System.Security.Principal;
 
-namespace harlam357.Net
+namespace harlam357.Core.Net
 {
    /// <summary>
    /// Represents an object that makes a request to a Uniform Resource Identifier (URI).

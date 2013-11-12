@@ -21,7 +21,7 @@ using System;
 using System.IO;
 using System.Net;
 
-using harlam357.Net;
+using harlam357.Core.Net;
 
 namespace harlam357.Windows.Forms
 {

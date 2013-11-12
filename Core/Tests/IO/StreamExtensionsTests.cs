@@ -6,9 +6,7 @@ using System.Linq;
 
 using NUnit.Framework;
 
-using harlam357.Core.IO;
-
-namespace harlam357.Core.Tests
+namespace harlam357.Core.IO
 {
    [TestFixture]
    public class StreamExtensionsTests

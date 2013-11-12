@@ -26,7 +26,7 @@ using System.Windows.Forms;
 using NUnit.Framework;
 using Rhino.Mocks;
 
-using harlam357.Net;
+using harlam357.Core.Net;
 
 namespace harlam357.Windows.Forms.Tests
 {

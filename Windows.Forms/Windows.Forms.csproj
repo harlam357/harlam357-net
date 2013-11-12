@@ -163,9 +163,9 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Net\Net.csproj">
-      <Project>{8A712ABF-5B19-457C-A57D-82611CDA310F}</Project>
-      <Name>Net</Name>
+    <ProjectReference Include="..\Core\Core.csproj">
+      <Project>{6cd59c6b-a304-4dd3-82c3-2d15af3b219e}</Project>
+      <Name>Core</Name>
     </ProjectReference>
     <ProjectReference Include="..\Security\Security.csproj">
       <Project>{43AE939B-0917-4904-82F2-CA52998A15EF}</Project>
