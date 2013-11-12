@@ -14,9 +14,9 @@ using System.Text;
 
 using NUnit.Framework;
 
-using harlam357.Security.Cryptography;
+using harlam357.Core.Security.Cryptography;
 
-namespace harlam357.Security.Tests
+namespace harlam357.Core.Security
 {
    /// <summary>
    /// unit tests for the Encryption class to verify correct operation
@@ -61,14 +61,14 @@ namespace harlam357.Security.Tests
          string hashHex;
 
          using (var h1 = new Hash(HashProvider.CRC32))
-         using (var stream = File.OpenRead("gettysburg.txt"))
+         using (var stream = File.OpenRead(@"..\..\TestFiles\gettysburg.txt"))
          {
             hashHex = h1.Calculate(stream).Hex;
          }
          Assert.AreEqual(hashHex, "E37F6423");
 
          using (var h2 = new Hash(HashProvider.MD5))
-         using (var stream = File.OpenRead("sample.doc"))
+         using (var stream = File.OpenRead(@"..\..\TestFiles\sample.doc"))
          {
             hashHex = h2.Calculate(stream).Hex;
          }
@@ -209,8 +209,8 @@ namespace harlam357.Security.Tests
       {
          //-- compare the hash of the decrypted file to what it should be after encryption/decryption
          //-- using pure file streams
-         Assert.AreEqual("AC27F132E6728E4F8FA3B054013D3456", SymmetricFilePrivate(SymmetricProvider.TripleDES, "gettysburg.txt", "Password, Yo!"));
-         Assert.AreEqual("4F32AB797F0FCC782AAC0B4F4E5B1693", SymmetricFilePrivate(SymmetricProvider.RC2, "sample.doc", "0nTheDownLow1"));
+         Assert.AreEqual("AC27F132E6728E4F8FA3B054013D3456", SymmetricFilePrivate(SymmetricProvider.TripleDES, @"..\..\TestFiles\gettysburg.txt", "Password, Yo!"));
+         Assert.AreEqual("4F32AB797F0FCC782AAC0B4F4E5B1693", SymmetricFilePrivate(SymmetricProvider.RC2, @"..\..\TestFiles\sample.doc", "0nTheDownLow1"));
       }
 
       [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2202:Do not dispose objects multiple times")]

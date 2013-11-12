@@ -24,7 +24,7 @@ using System.Net;
 using System.Windows.Forms;
 
 using harlam357.Core.Net;
-using harlam357.Security;
+using harlam357.Core.Security;
 
 namespace harlam357.Windows.Forms
 {

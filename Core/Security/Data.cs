@@ -9,7 +9,7 @@
 using System;
 using System.Text;
 
-namespace harlam357.Security
+namespace harlam357.Core.Security
 {
    /// <summary>
    /// Represents Hex, Byte, Base64, or String data to encrypt or decrypt.
