@@ -100,6 +100,15 @@ namespace harlam357.Core.IO
       }
 
       [Test]
+      public void Stream_FindLastIndex_Test2()
+      {
+         using (var ms = new MemoryStream())
+         {
+            Assert.AreEqual(-1, ms.FindLastIndex(value => value == Convert.ToInt32('\n')));
+         }
+      }
+
+      [Test]
       public void Test1()
       {
          var lines = new List<string>();

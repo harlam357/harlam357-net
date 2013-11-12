@@ -4,6 +4,9 @@ using System.IO;
 
 namespace harlam357.Core.IO
 {
+   /// <summary>
+   /// Provides a set of static methods for operating on System.IO.Stream objects.
+   /// </summary>
    public static class StreamExtensions
    {
       #region CopyTo
