@@ -1,6 +1,8 @@
 ﻿
 using System;
+using System.Diagnostics;
 using System.IO;
+using System.Linq;
 
 namespace harlam357.Core.IO
 {
@@ -111,9 +113,12 @@ namespace harlam357.Core.IO
       /// </summary>
       /// <param name="stream">The stream instance.</param>
       /// <param name="match">The predicate delegate that defines the conditions of the byte to search for.</param>
+      /// <exception cref="T:System.ArgumentNullException">stream -or- match is null.</exception>
       /// <returns>The zero-based index of the last occurrence of a byte that matches the conditions defined by match, if found; otherwise, –1.</returns>
       public static long FindLastIndex(this Stream stream, Predicate<int> match)
       {
+         if (stream == null) throw new ArgumentNullException("stream");
+
          return stream.FindLastIndex(stream.Length, match);
       }
 
@@ -123,9 +128,15 @@ namespace harlam357.Core.IO
       /// <param name="stream">The stream instance.</param>
       /// <param name="startIndex">The zero-based starting index of the backward search.</param>
       /// <param name="match">The predicate delegate that defines the conditions of the byte to search for.</param>
+      /// <exception cref="T:System.ArgumentNullException">stream -or- match is null.</exception>
+      /// <exception cref="T:System.ArgumentOutOfRangeException">startIndex is less than zero -or- greater than stream length.</exception>
       /// <returns>The zero-based index of the last occurrence of a byte that matches the conditions defined by match, if found; otherwise, –1.</returns>
       public static long FindLastIndex(this Stream stream, long startIndex, Predicate<int> match)
       {
+         if (stream == null) throw new ArgumentNullException("stream");
+         if (startIndex < 0 || startIndex > stream.Length) throw new ArgumentOutOfRangeException("startIndex"); 
+         if (match == null) throw new ArgumentNullException("match");
+
          // read the stream backwards using SeekOrigin.Current
          stream.Seek(startIndex, SeekOrigin.Begin);
          for (long i = 0; i < startIndex; i++)
@@ -143,5 +154,97 @@ namespace harlam357.Core.IO
       }
 
       #endregion
+
+      #region StreamPosition
+
+      public static StreamPosition GetStreamPosition(this Stream stream, int checkBufferLength)
+      {
+         // get the existing position
+         long value = stream.Position;
+         // make sure the buffer length asked for is not bigger than
+         // the stream from start to existing position can supply
+         if (checkBufferLength > stream.Position)
+         {
+            checkBufferLength = (int)stream.Position;
+         }
+
+         // move the stream position back so we can read the last
+         // bytes equal to the number check bytes requested
+         stream.Position -= checkBufferLength;
+         var checkBuffer = new byte[checkBufferLength];
+         // read
+         stream.Read(checkBuffer, 0, checkBuffer.Length);
+         Debug.Assert(stream.Position == value);
+
+         return new StreamPosition(value, checkBuffer);
+      }
+
+      public static bool SetStreamPosition(this Stream stream, StreamPosition position)
+      {
+         // if the last position of the stream is greater than the length of this stream
+         if (position.Value > stream.Length)
+         {
+            // seek to the beginning 
+            stream.Seek(0, SeekOrigin.Begin);
+            return false;
+         }
+
+         // the position value is within the bounds of this stream, so set the stream position
+         stream.Position = position.Value;
+         // if check buffer exists then use it to validate the position of the stream
+         if (position.EndOfStream.Length > 0)
+         {
+            // move the stream position back so we can read the last
+            // bytes equal to the number given in the check buffer
+            stream.Seek(-position.EndOfStream.Length, SeekOrigin.Current);
+            // read the new check buffer
+            var checkBuffer = new byte[position.EndOfStream.Length];
+            stream.Read(checkBuffer, 0, checkBuffer.Length);
+            // compare
+            if (!checkBuffer.SequenceEqual(position.EndOfStream))
+            {
+               // the streams are not the same
+               // seek to the beginning 
+               stream.Seek(0, SeekOrigin.Begin);
+               return false;
+            }
+         }
+
+         return true;
+      }
+
+      #endregion
+   }
+
+   public struct StreamPosition
+   {
+      public StreamPosition(long value, byte[] endOfStream)
+      {
+         _value = value;
+         _endOfStream = endOfStream;
+      }
+
+      private readonly long _value;
+      /// <summary>
+      /// Gets the last position of the stream.
+      /// </summary>
+      public long Value
+      {
+         get { return _value; }
+      }
+
+      private readonly byte[] _endOfStream;
+      /// <summary>
+      /// Gets a byte array containing a number of bytes from the end of the last stream read.
+      /// </summary>
+      public byte[] EndOfStream
+      {
+         get { return _endOfStream; }
+      }
+
+      public static StreamPosition Empty
+      {
+         get { return new StreamPosition(0, new byte[0]); }
+      }
    }
 }
