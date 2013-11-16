@@ -207,6 +207,59 @@ namespace harlam357.Core.IO
          }
       }
 
+      [Test]
+      public void Stream_SetStreamPosition_Test1()
+      {
+         using (var ms = new MemoryStream(GetTestBuffer()))
+         {
+            var position = new StreamPosition(128, null);
+            Assert.AreEqual(false, ms.SetStreamPosition(position));
+            Assert.AreEqual(0, ms.Position);
+         }
+      }
+
+      [Test]
+      public void Stream_SetStreamPosition_Test2()
+      {
+         using (var ms = new MemoryStream(GetTestBuffer()))
+         {
+            var position = new StreamPosition(32, null);
+            Assert.AreEqual(true, ms.SetStreamPosition(position));
+            Assert.AreEqual(32, ms.Position);
+         }
+      }
+
+      [Test]
+      public void Stream_SetStreamPosition_Test3()
+      {
+         using (var fs = new FileStream(@"..\..\TestFiles\gpl-3.0-3.txt", FileMode.Open, FileAccess.Read))
+         {
+            fs.Seek(512, SeekOrigin.Current);
+            var checkBuffer = new byte[128];
+            fs.Read(checkBuffer, 0, checkBuffer.Length);
+            var position = new StreamPosition(640, checkBuffer);
+
+            fs.Seek(0, SeekOrigin.Begin);
+            Assert.AreEqual(true, fs.SetStreamPosition(position));
+            Assert.AreEqual(640, fs.Position);
+         }
+      }
+
+      [Test]
+      public void Stream_SetStreamPosition_Test4()
+      {
+         using (var fs = new FileStream(@"..\..\TestFiles\gpl-3.0-3.txt", FileMode.Open, FileAccess.Read))
+         {
+            var random = new Random();
+            var checkBuffer = new byte[128];
+            random.NextBytes(checkBuffer);
+            
+            var position = new StreamPosition(640, checkBuffer);
+            Assert.AreEqual(false, fs.SetStreamPosition(position));
+            Assert.AreEqual(0, fs.Position);
+         }
+      }
+
       #endregion
    }
 }
