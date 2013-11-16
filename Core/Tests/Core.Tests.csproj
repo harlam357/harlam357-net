@@ -87,6 +87,7 @@
     <Compile Include="..\..\AssemblyVersion.cs">
       <Link>Properties\AssemblyVersion.cs</Link>
     </Compile>
+    <Compile Include="IO\BufferedTextFileReaderTests.cs" />
     <Compile Include="IO\StreamExtensionsTests.cs" />
     <Compile Include="Net\WebOperationTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
