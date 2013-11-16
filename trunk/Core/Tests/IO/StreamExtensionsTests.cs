@@ -1,6 +1,5 @@
 ﻿
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
@@ -11,6 +10,8 @@ namespace harlam357.Core.IO
    [TestFixture]
    public class StreamExtensionsTests
    {
+      #region CopyTo
+
       [Test]
       [ExpectedException(typeof(ArgumentNullException))]
       public void Stream_CopyTo_ArgumentNullException_Test1()
@@ -90,6 +91,54 @@ namespace harlam357.Core.IO
          }
       }
 
+      #endregion
+
+      #region FindLastIndex
+
+      [Test]
+      [ExpectedException(typeof(ArgumentNullException))]
+      public void Stream_FindLastIndex_ArgumentNullException_Test1()
+      {
+         StreamExtensions.FindLastIndex(null, value => true);
+      }
+      
+      [Test]
+      [ExpectedException(typeof(ArgumentNullException))]
+      public void Stream_FindLastIndex_ArgumentNullException_Test2()
+      {
+         using (var ms = new MemoryStream())
+         {
+            StreamExtensions.FindLastIndex(ms, null);
+         }
+      }
+
+      [Test]
+      [ExpectedException(typeof(ArgumentNullException))]
+      public void Stream_FindLastIndex_ArgumentNullException_Test3()
+      {
+         StreamExtensions.FindLastIndex(null, 0, value => true);
+      }
+
+      [Test]
+      [ExpectedException(typeof(ArgumentOutOfRangeException))]
+      public void Stream_FindLastIndex_ArgumentOutOfRangeException_Test1()
+      {
+         using (var ms = new MemoryStream())
+         {
+            StreamExtensions.FindLastIndex(ms, -1, null);
+         }
+      }
+
+      [Test]
+      [ExpectedException(typeof(ArgumentOutOfRangeException))]
+      public void Stream_FindLastIndex_ArgumentOutOfRangeException_Test2()
+      {
+         using (var ms = new MemoryStream())
+         {
+            StreamExtensions.FindLastIndex(ms, 1, null);
+         }
+      }
+
       [Test]
       public void Stream_FindLastIndex_Test1()
       {
@@ -108,50 +157,6 @@ namespace harlam357.Core.IO
          }
       }
 
-      [Test]
-      public void Test1()
-      {
-         var lines = new List<string>();
-         long position = 0;
-
-         position = ReadFile(@"..\..\TestFiles\gpl-3.0-1.txt", position, lines);
-         position = ReadFile(@"..\..\TestFiles\gpl-3.0-2.txt", position, lines);
-         position = ReadFile(@"..\..\TestFiles\gpl-3.0-3.txt", position, lines);
-
-         Assert.AreEqual(48, lines.Count);
-      }
-
-      private static long ReadFile(string path, long position, IList<string> lines)
-      {
-         using (var stream = new StreamReader(path))
-         {
-            long newPosition = stream.BaseStream.FindLastIndex(position, Predicate);
-            if (newPosition >= 0)
-            {
-               stream.BaseStream.Position = newPosition + 1;
-               lines.RemoveAt(lines.Count - 1);
-            }
-
-            while (!stream.EndOfStream)
-            {
-               lines.Add(stream.ReadLine());
-            }
-
-            return stream.BaseStream.Position;
-         }
-      }
-
-      private static bool Predicate(int value)
-      {
-         return value == Convert.ToInt32('\r') || value == Convert.ToInt32('\n');
-      }
-
-      //[Test]
-      //public void Test2()
-      //{
-      //   var list = new List<int> {1, 2, 4, 3, 1, 2, 4, 3, 2, 1, 4};
-      //   Assert.AreEqual(10, list.FindLastIndex(x => x == 4));
-      //   Assert.AreEqual(2, list.FindLastIndex(3, x => x == 4));
-      //}
+      #endregion
    }
 }
