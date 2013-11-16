@@ -216,12 +216,12 @@ namespace harlam357.Core.IO
       #endregion
    }
 
-   public struct StreamPosition
+   public struct StreamPosition : IEquatable<StreamPosition>
    {
       public StreamPosition(long value, byte[] endOfStream)
       {
          _value = value;
-         _endOfStream = endOfStream;
+         _endOfStream = endOfStream ?? new byte[0];
       }
 
       private readonly long _value;
@@ -246,5 +246,39 @@ namespace harlam357.Core.IO
       {
          get { return new StreamPosition(0, new byte[0]); }
       }
+
+      #region IEquatable<StreamPosition>
+
+      public bool Equals(StreamPosition other)
+      {
+         return _value == other._value && 
+                _endOfStream.SequenceEqual(other._endOfStream);
+      }
+
+      public override bool Equals(object obj)
+      {
+         if (ReferenceEquals(null, obj)) return false;
+         return obj is StreamPosition && Equals((StreamPosition)obj);
+      }
+
+      public override int GetHashCode()
+      {
+         unchecked
+         {
+            return (_value.GetHashCode() * 397) ^ _endOfStream.GetHashCode();
+         }
+      }
+
+      public static bool operator ==(StreamPosition left, StreamPosition right)
+      {
+         return left.Equals(right);
+      }
+
+      public static bool operator !=(StreamPosition left, StreamPosition right)
+      {
+         return !left.Equals(right);
+      }
+
+      #endregion
    }
 }
