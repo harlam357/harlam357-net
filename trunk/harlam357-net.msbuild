@@ -67,7 +67,7 @@
    </Target>
 
    <Target Name="FxCop">
-      <Exec Command="$(FxCopPath) /f:$(ArtifactsBin)\harlam357.Net.dll /f:$(ArtifactsBin)\harlam357.Security.dll /f:$(ArtifactsBin)\harlam357.Windows.Forms.dll /out:.\Artifacts\FxCopReport.xml" />
+      <Exec Command="$(FxCopPath) /f:$(ArtifactsBin)\harlam357.Core.dll /f:$(ArtifactsBin)\harlam357.Windows.Forms.dll /out:.\Artifacts\FxCopReport.xml" />
    </Target>
 
    <ItemGroup>
