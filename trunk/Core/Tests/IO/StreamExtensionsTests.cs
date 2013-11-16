@@ -2,6 +2,8 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
+using System.Text;
 
 using NUnit.Framework;
 
@@ -154,6 +156,54 @@ namespace harlam357.Core.IO
          using (var ms = new MemoryStream())
          {
             Assert.AreEqual(-1, ms.FindLastIndex(value => value == Convert.ToInt32('\n')));
+         }
+      }
+
+      #endregion
+
+      #region StreamPosition
+
+      private static byte[] GetTestBuffer()
+      {
+         var sb = new StringBuilder();
+         sb.AppendLine("Test the stream position method.");
+         sb.AppendLine("It needs multiple lines of text");
+         sb.AppendLine("to execute an effective test.");
+         return Encoding.UTF8.GetBytes(sb.ToString());
+      }
+
+      [Test]
+      public void Stream_GetStreamPosition_Test1()
+      {
+         using (var ms = new MemoryStream(GetTestBuffer()))
+         {
+            StreamPosition position = ms.GetStreamPosition(128);
+            Assert.AreEqual(StreamPosition.Empty, position);
+         }
+      }
+
+      [Test]
+      public void Stream_GetStreamPosition_Test2()
+      {
+         using (var ms = new MemoryStream(GetTestBuffer()))
+         {
+            var checkBuffer = new byte[32];
+            ms.Read(checkBuffer, 0, checkBuffer.Length);
+            StreamPosition position = ms.GetStreamPosition(128);
+            Assert.AreEqual(new StreamPosition(32, checkBuffer), position);
+         }
+      }
+
+      [Test]
+      public void Stream_GetStreamPosition_Test3()
+      {
+         using (var fs = new FileStream(@"..\..\TestFiles\gpl-3.0-3.txt", FileMode.Open, FileAccess.Read))
+         {
+            fs.Seek(512, SeekOrigin.Current);
+            var checkBuffer = new byte[128];
+            fs.Read(checkBuffer, 0, checkBuffer.Length);
+            StreamPosition position = fs.GetStreamPosition(128);
+            Assert.AreEqual(new StreamPosition(640, checkBuffer), position);
          }
       }
 
