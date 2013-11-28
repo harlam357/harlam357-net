@@ -192,16 +192,16 @@ namespace harlam357.Core.IO
          // the position value is within the bounds of this stream, so set the stream position
          stream.Position = position.Value;
          // if check buffer exists then use it to validate the position of the stream
-         if (position.EndOfStream.Length > 0)
+         if (position.CheckBuffer.Length > 0)
          {
             // move the stream position back so we can read the last
             // bytes equal to the number given in the check buffer
-            stream.Seek(-position.EndOfStream.Length, SeekOrigin.Current);
+            stream.Seek(-position.CheckBuffer.Length, SeekOrigin.Current);
             // read the new check buffer
-            var checkBuffer = new byte[position.EndOfStream.Length];
+            var checkBuffer = new byte[position.CheckBuffer.Length];
             stream.Read(checkBuffer, 0, checkBuffer.Length);
             // compare
-            if (!checkBuffer.SequenceEqual(position.EndOfStream))
+            if (!checkBuffer.SequenceEqual(position.CheckBuffer))
             {
                // the streams are not the same
                // seek to the beginning 
@@ -218,10 +218,10 @@ namespace harlam357.Core.IO
 
    public struct StreamPosition : IEquatable<StreamPosition>
    {
-      public StreamPosition(long value, byte[] endOfStream)
+      public StreamPosition(long value, byte[] checkBuffer)
       {
          _value = value;
-         _endOfStream = endOfStream ?? new byte[0];
+         _checkBuffer = checkBuffer ?? new byte[0];
       }
 
       private readonly long _value;
@@ -233,13 +233,13 @@ namespace harlam357.Core.IO
          get { return _value; }
       }
 
-      private readonly byte[] _endOfStream;
+      private readonly byte[] _checkBuffer;
       /// <summary>
       /// Gets a byte array containing a number of bytes from the end of the last stream read.
       /// </summary>
-      public byte[] EndOfStream
+      public byte[] CheckBuffer
       {
-         get { return _endOfStream; }
+         get { return _checkBuffer; }
       }
 
       public static StreamPosition Empty
@@ -252,7 +252,7 @@ namespace harlam357.Core.IO
       public bool Equals(StreamPosition other)
       {
          return _value == other._value && 
-                _endOfStream.SequenceEqual(other._endOfStream);
+                _checkBuffer.SequenceEqual(other._checkBuffer);
       }
 
       public override bool Equals(object obj)
@@ -265,7 +265,7 @@ namespace harlam357.Core.IO
       {
          unchecked
          {
-            return (_value.GetHashCode() * 397) ^ _endOfStream.GetHashCode();
+            return (_value.GetHashCode() * 397) ^ _checkBuffer.GetHashCode();
          }
       }
 
