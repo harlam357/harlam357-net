@@ -1,87 +1,80 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-   <Import Project="$(MSBuildExtensionsPath)\MSBuildCommunityTasks\MSBuild.Community.Tasks.Targets"/>
-   <Import Project="$(MSBuildExtensionsPath)\ExtensionPack\4.0\MSBuild.ExtensionPack.tasks"/>
-
-   <PropertyGroup>
-      <Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
-   </PropertyGroup>
-
+<Project ToolsVersion="12.0" DefaultTargets="Build;Test" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+   <!--PRIMARY TARGETS: Build;Test;Analyze;BuildPackages;CopyPackages-->
+   <Import Project="$(MSBuildExtensionsPath)\MSBuildCommunityTasks\MSBuild.Community.Tasks.Targets" />
+   <Import Project="$(MSBuildExtensionsPath)\ExtensionPack\4.0\MSBuild.ExtensionPack.tasks" />
    <PropertyGroup>
       <Major>1</Major>
       <Minor>5</Minor>
       <Build>0</Build>
       <Revision>0</Revision>
+      <ProductName>harlam357-net</ProductName>
+      <SolutionFileName>harlam357-net.sln</SolutionFileName>
+      <Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
+      <Platform Condition=" '$(Platform)' == '' ">Any CPU</Platform>
+      <AssemblyOriginatorKeyFile Condition=" '$(PlatformAssemblyOriginatorKeyFile)' == '' ">$(MSBuildProjectDirectory)\harlam357public.snk</AssemblyOriginatorKeyFile>
    </PropertyGroup>
-
-   <Target Name="AssemblyVersion" DependsOnTargets="Version">
+   <!--PRIMARY TARGET: Build-->
+   <Target Name="Build" DependsOnTargets="CleanArtifactsFolder;Compile">
+      <Message Text="$(ProductName) Build Complete" />
+   </Target>
+   <Target Name="Compile" DependsOnTargets="CreateAssemblyVersion">
+      <MSBuild Projects="$(SolutionFileName)" Targets="Rebuild" Properties="Configuration=$(Configuration);Platform=$(Platform);AssemblyOriginatorKeyFile=$(AssemblyOriginatorKeyFile);NoWarn=1591" />
+   </Target>
+   <Target Name="CreateAssemblyVersion" DependsOnTargets="GetVersion">
       <AssemblyInfo CodeLanguage="CS"
         OutputFile="AssemblyVersion.cs"
         AssemblyCompany="harlam357"
-        AssemblyProduct="harlam357-net"
-        AssemblyCopyright="Copyright © Ryan Harlamert 2009-2013."
+        AssemblyProduct="$(ProductName)"
+        AssemblyCopyright="Copyright © Ryan Harlamert 2009-2015."
         AssemblyVersion="$(Major).$(Minor).$(Build).$(Revision)"
         AssemblyFileVersion="$(Major).$(Minor).$(Build).$(Revision)"
-        Condition="$(Revision) != '0' "/>
+        Condition="$(Revision) != '0' " />
    </Target>
-
-   <Target Name="Version">
+   <Target Name="GetVersion">
       <SvnVersion LocalPath="." ToolPath="$(ProgramFiles)\CollabNet\Subversion Client">
          <Output TaskParameter="Revision" PropertyName="Revision" />
       </SvnVersion>
-
-      <Message Text="Version: $(Major).$(Minor).$(Build).$(Revision)"/>
+      <Message Text="Version: $(Major).$(Minor).$(Build).$(Revision)" />
    </Target>
-
-   <Target Name="Build" DependsOnTargets="Compile">
-      <Message Text="harlam357-net Build Complete"/>
+   <Target Name="CleanArtifactsFolder">
+      <RemoveDir Directories="$(ArtifactsPath)" />
+      <!--<MakeDir Directories="$(ArtifactsBin)" />-->
+      <MakeDir Directories="$(ArtifactsPackages)" />
    </Target>
-
-   <Target Name="Compile" DependsOnTargets="AssemblyVersion">
-      <MSBuild Projects="harlam357-net.sln"
-               Targets="Rebuild"
-               Properties="Configuration=$(Configuration)" />
-
-      <CallTarget Targets="NUnit" />
-   </Target>
-
    <PropertyGroup>
-      <NCoverPath>&quot;.\tools\NCover\NCover.Console.exe&quot;</NCoverPath>
-      <NCoverExcludeList>System.Runtime.CompilerServices.CompilerGeneratedAttribute</NCoverExcludeList>
-      <NCoverExpPath>&quot;.\tools\NCoverExplorer\NCoverExplorer.Console.exe&quot;</NCoverExpPath>
+      <ArtifactsPath>Artifacts</ArtifactsPath>
+      <ArtifactsBin>Artifacts\bin\$(Configuration)</ArtifactsBin>
+      <ArtifactsPackages>Artifacts\Packages</ArtifactsPackages>
+   </PropertyGroup>
+   <PropertyGroup>
       <NUnitPath>&quot;.\lib\NUnit\bin\net-2.0\nunit-console-x86.exe&quot;</NUnitPath>
-      <FxCopPath>&quot;$(ProgramFiles)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\FxCopCmd.exe&quot;</FxCopPath>
+      <FxCopPath>&quot;$(ProgramFiles)\Microsoft Visual Studio 12.0\Team Tools\Static Analysis Tools\FxCop\FxCopCmd.exe&quot;</FxCopPath>
    </PropertyGroup>
-
-   <PropertyGroup>
-      <ArtifactsPath>.\Artifacts</ArtifactsPath>
-      <ArtifactsBin>.\Artifacts\bin\$(Configuration)</ArtifactsBin>
-      <ArtifactsPackages>.\Artifacts\Packages</ArtifactsPackages>
-   </PropertyGroup>
-
-   <Target Name="NUnit">
-      <MSBuild.ExtensionPack.Computer.EnvironmentVariable TaskAction="Set" Variable="COMPLUS_ProfAPI_ProfilerCompatibilitySetting" Value="EnableV2Profiler"/>
-      <Exec Command="$(NCoverPath) $(NUnitPath) .\Core\Tests\bin\$(Configuration)\harlam357.Core.Tests.dll /xml=$(ArtifactsPath)\harlam357.Core.Tests.Results.xml //reg //a harlam357.Core //ea $(NCoverExcludeList) //x $(ArtifactsPath)\harlam357.Core.Tests.Coverage.xml" />
-      <Exec Command="$(NCoverPath) $(NUnitPath) .\Windows.Forms\Tests\bin\$(Configuration)\harlam357.Windows.Forms.Tests.dll /xml=$(ArtifactsPath)\harlam357.Windows.Forms.Tests.Results.xml //reg //a harlam357.Windows.Forms //ea $(NCoverExcludeList) //x $(ArtifactsPath)\harlam357.Windows.Forms.Tests.Coverage.xml" />
-      <Exec Command="$(NCoverExpPath) $(ArtifactsPath)\*.Tests.Coverage.xml /s:$(ArtifactsPath)\Coverage.xml" />
+   <!--PRIMARY TARGET: Test-->
+   <Target Name="Test">
+      <Exec Command="$(NUnitPath) .\Core\Tests\bin\$(Configuration)\harlam357.Core.Tests.dll /framework=net-4.0 /xml=$(ArtifactsPath)\harlam357.Core.Tests.Results.xml" />
+      <Exec Command="$(NUnitPath) .\Windows.Forms\Tests\bin\$(Configuration)\harlam357.Windows.Forms.Tests.dll /framework=net-4.0 /xml=$(ArtifactsPath)\harlam357.Windows.Forms.Tests.Results.xml" />
+      <Message Text="Test Run Complete" />
    </Target>
-
-   <Target Name="FxCop">
-      <Exec Command="$(FxCopPath) /f:$(ArtifactsBin)\harlam357.Core.dll /f:$(ArtifactsBin)\harlam357.Windows.Forms.dll /out:.\Artifacts\FxCopReport.xml" />
+   <Target Name="Analyze">
+      <Exec Command="$(FxCopPath) /f:$(ArtifactsBin)\harlam357.Core.dll /f:$(ArtifactsBin)\harlam357.Windows.Forms.dll /out:.\Artifacts\FxCopReport.xml /gac" />
    </Target>
-
    <ItemGroup>
       <ZipFiles Include="$(ArtifactsBin)\**\*.*" />
    </ItemGroup>
-
-   <Target Name="BuildZip" DependsOnTargets="Version">
-      <MakeDir Directories="$(ArtifactsPackages)" />
-      <Zip Files="@(ZipFiles)"
-           WorkingDirectory="$(ArtifactsBin)"
-           ZipFileName="$(ArtifactsPackages)\harlam357-net $(Configuration) $(Major).$(Minor).$(Build).$(Revision).zip" />
+   <!--PRIMARY TARGET: BuildPackages-->
+   <Target Name="BuildPackages">
+      <CallTarget Targets="BuildZip" />
+      <Message Text="Package Build Complete" />
    </Target>
-
-   <Target Name ="CopyPackages" Condition="'$(PackageDestination)' != ''" DependsOnTargets="Version">
-      <Copy SourceFiles="$(ArtifactsPackages)\harlam357-net $(Configuration) $(Major).$(Minor).$(Build).$(Revision).zip" DestinationFolder="$(PackageDestination)" />
+   <Target Name="BuildZip" DependsOnTargets="GetVersion">
+      <Zip Files="@(ZipFiles)" WorkingDirectory="$(ArtifactsBin)" ZipFileName="$(ArtifactsPackages)\$(ProductName) $(Configuration) $(Major).$(Minor).$(Build).$(Revision).zip" />
+   </Target>
+   <Target Name="CopyPackages">
+      <CallTarget Targets="CopyZip" />
+   </Target>
+   <Target Name ="CopyZip" Condition="'$(PackageDestination)' != ''" DependsOnTargets="GetVersion">
+      <Copy SourceFiles="$(ArtifactsPackages)\$(ProductName) $(Configuration) $(Major).$(Minor).$(Build).$(Revision).zip" DestinationFolder="$(PackageDestination)" />
    </Target>
 </Project>
