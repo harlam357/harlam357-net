@@ -53,6 +53,7 @@
     <Compile Include="..\AssemblyVersion.cs">
       <Link>Properties\AssemblyVersion.cs</Link>
     </Compile>
+    <Compile Include="ComponentModel\ProgressProcessRunner.cs" />
     <Compile Include="IO\BufferedTextFileReader.cs" />
     <Compile Include="IO\StreamExtensions.cs" />
     <Compile Include="Net\FtpWebRequestAdapter.cs" />

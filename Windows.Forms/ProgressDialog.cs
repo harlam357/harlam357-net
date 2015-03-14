@@ -1,6 +1,6 @@
 ﻿/*
  * harlam357.Windows.Forms - Progress Dialog
- * Copyright (C) 2010-2013 Ryan Harlamert (harlam357)
+ * Copyright (C) 2010-2015 Ryan Harlamert (harlam357)
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -22,162 +22,10 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Windows.Forms;
 
+using harlam357.Core.ComponentModel;
+
 namespace harlam357.Windows.Forms
 {
-   /// <summary>
-   /// Represents an object that runs a process and reports progress.
-   /// </summary>
-   public interface IProgressProcessRunner
-   {
-      /// <summary>
-      /// Occurs when the runner's progress has changed.
-      /// </summary>
-      event EventHandler<ProgressEventArgs> ProgressChanged;
-      /// <summary>
-      /// Occurs when the runner's process has finished.
-      /// </summary>
-      event EventHandler ProcessFinished;
-
-      /// <summary>
-      /// Gets the exception that resulted from executing the runner or null if no exception occurred.
-      /// </summary>
-      Exception Exception { get; }
-      
-      /// <summary>
-      /// Gets a value that defines if this runner supports being cancelled.
-      /// </summary>
-      bool SupportsCancellation { get; }
-      
-      /// <summary>
-      /// Gets a value that reports if the runner is currently processing.
-      /// </summary>
-      bool Processing { get; }
-   
-      /// <summary>
-      /// Executes the runner.
-      /// </summary>
-      void Process();
-      
-      /// <summary>
-      /// Cancels the runner.
-      /// </summary>
-      void Cancel();
-   }
-   
-   /// <summary>
-   /// Represents an object that runs a process and reports progress.
-   /// </summary>
-   public abstract class ProgressProcessRunnerBase : IProgressProcessRunner
-   {
-      private EventHandler<ProgressEventArgs> _progressChanged;
-      /// <summary>
-      /// Occurs when the runner's progress has changed.
-      /// </summary>
-      event EventHandler<ProgressEventArgs> IProgressProcessRunner.ProgressChanged
-      {
-         add { _progressChanged += value; }
-         remove { _progressChanged -= value; }
-      }
-
-      protected virtual void OnProgressChanged(ProgressEventArgs e)
-      {
-         var handler = _progressChanged;
-         if (handler != null)
-         {
-            handler(this, e);
-         }
-      }
-
-      private EventHandler _processFinished;
-      /// <summary>
-      /// Occurs when the runner's process has finished.
-      /// </summary>
-      event EventHandler IProgressProcessRunner.ProcessFinished
-      {
-         add { _processFinished += value; }
-         remove { _processFinished -= value; }
-      }
-
-      protected virtual void OnProcessFinished(EventArgs e)
-      {
-         var handler = _processFinished;
-         if (handler != null)
-         {
-            handler(this, e);
-         }
-      }
-
-      private Exception _exception;
-      /// <summary>
-      /// Gets the exception that resulted from executing the runner or null if no exception occurred.
-      /// </summary>
-      Exception IProgressProcessRunner.Exception
-      {
-         get { return _exception; }
-      }
-
-      /// <summary>
-      /// Gets a value that defines if this runner supports being cancelled.
-      /// </summary>
-      bool IProgressProcessRunner.SupportsCancellation
-      {
-         get { return SupportsCancellationInternal; }
-      }
-
-      protected abstract bool SupportsCancellationInternal { get; }
-
-      bool IProgressProcessRunner.Processing
-      {
-         get { return Processing; }
-      }
-
-      private bool _processing;
-      /// <summary>
-      /// Gets a value that reports if the runner is currently processing.
-      /// </summary>
-      private bool Processing
-      {
-         get { return _processing; }
-         set
-         {
-            CancelToken = false;
-            _processing = value;
-         }
-      }
-
-      /// <summary>
-      /// Executes the runner.
-      /// </summary>
-      void IProgressProcessRunner.Process()
-      {
-         Processing = true;
-         try
-         {
-            ProcessInternal();
-         }
-         catch (Exception ex)
-         {
-            _exception = ex;
-         }
-         finally
-         {
-            Processing = false;
-            OnProcessFinished(EventArgs.Empty);
-         }
-      }
-
-      protected abstract void ProcessInternal();
-
-      protected bool CancelToken { get; set; }
-      /// <summary>
-      /// Cancels the runner.
-      /// </summary>
-      void IProgressProcessRunner.Cancel()
-      {
-         CancelToken = true;
-      }
-   }
-   
    /// <summary>
    /// Represents a view interface for a modal dialog that runs a process asynchronously and reports progress.
    /// </summary>
@@ -385,32 +233,6 @@ namespace harlam357.Windows.Forms
       {
          ProcessCancelButton.Visible = enabled;
          Size = enabled ? _baseSize : new Size(_baseSize.Width, _baseSize.Height - 30);
-      }
-   }
-
-   /// <summary>
-   /// Provides data for the event that is raised when the progress process runner's progress value has changed.
-   /// </summary>
-   public class ProgressEventArgs : EventArgs
-   {
-      /// <summary>
-      /// Gets the progress value.
-      /// </summary>
-      public int Progress { get; private set; }
-      /// <summary>
-      /// Gets the text message value.
-      /// </summary>
-      public string Message { get; private set; }
-
-      /// <summary>
-      /// Initializes a new instance of the ProgressEventArgs class with progress and text message values.
-      /// </summary>
-      /// <param name="progress">The progress value.</param>
-      /// <param name="message">The text message value.</param>
-      public ProgressEventArgs(int progress, string message)
-      {
-         Progress = progress;
-         Message = message ?? String.Empty;
       }
    }
 }
