@@ -26,7 +26,7 @@ namespace harlam357.Core.IO
       /// <exception cref="T:System.InvalidOperationException">output is not open for writing.</exception>
       public static void CopyTo(this Stream input, Stream output)
       {
-         input.CopyTo(output, 0);
+         CopyTo(input, output, 0);
       }
 
       /// <summary>
