@@ -29,7 +29,7 @@ namespace harlam357.Core
       public Progress(Action<T> handler)
          : this(null, handler)
       {
-         
+         if (handler == null) throw new ArgumentNullException("handler");
       }
 
       internal Progress(TaskScheduler taskScheduler, Action<T> handler)
@@ -40,8 +40,6 @@ namespace harlam357.Core
             throw new InvalidOperationException("No task scheduler.");
          }
          _invokeHandlers = InvokeHandlers;
-
-         if (handler == null) throw new ArgumentNullException("handler");
          _handler = handler;
       }
 

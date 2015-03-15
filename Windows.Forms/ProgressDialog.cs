@@ -114,7 +114,7 @@ namespace harlam357.Windows.Forms
       {
          if (InvokeRequired)
          {
-            Invoke(new Action<int>(UpdateProgress), progress);
+            BeginInvoke(new Action<int>(UpdateProgress), progress);
             return;
          }
 
@@ -128,7 +128,7 @@ namespace harlam357.Windows.Forms
       {
          if (InvokeRequired)
          {
-            Invoke(new Action<string>(UpdateMessage), message);
+            BeginInvoke(new Action<string>(UpdateMessage), message);
             return;
          }
 
@@ -169,9 +169,9 @@ namespace harlam357.Windows.Forms
       /// <summary>
       /// Handles the runner's ProgressChanged event.
       /// </summary>
-      protected virtual void ProcessRunnerProgressChanged(object sender, ProgressEventArgs e)
+      protected virtual void ProcessRunnerProgressChanged(object sender, ProgressChangedEventArgs e)
       {
-         UpdateProgress(e.Progress);
+         UpdateProgress(e.ProgressPercentage);
          UpdateMessage(e.Message);
       }
 
@@ -222,7 +222,7 @@ namespace harlam357.Windows.Forms
       {
          if (InvokeRequired)
          {
-            Invoke(new MethodInvoker(Close));
+            BeginInvoke(new MethodInvoker(Close));
             return;
          }
 
