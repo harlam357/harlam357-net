@@ -29,7 +29,7 @@ namespace harlam357.Core.ComponentModel
       /// <summary>
       /// Occurs when the runner's progress has changed.
       /// </summary>
-      event EventHandler<ProgressEventArgs> ProgressChanged;
+      event EventHandler<ProgressChangedEventArgs> ProgressChanged;
       /// <summary>
       /// Occurs when the runner's process has finished.
       /// </summary>
@@ -69,9 +69,9 @@ namespace harlam357.Core.ComponentModel
       /// <summary>
       /// Occurs when the runner's progress has changed.
       /// </summary>
-      public event EventHandler<ProgressEventArgs> ProgressChanged;
+      public event EventHandler<ProgressChangedEventArgs> ProgressChanged;
 
-      protected virtual void OnProgressChanged(ProgressEventArgs e)
+      protected virtual void OnProgressChanged(ProgressChangedEventArgs e)
       {
          var handler = ProgressChanged;
          if (handler != null)
@@ -158,54 +158,6 @@ namespace harlam357.Core.ComponentModel
       public void Cancel()
       {
          CancelToken = true;
-      }
-   }
-
-   /// <summary>
-   /// Provides data for the event that is raised when the progress process runner's progress value has changed.
-   /// </summary>
-   public class ProgressEventArgs : EventArgs
-   {
-      /// <summary>
-      /// Gets a percentage value indicating the task progress.
-      /// </summary>
-      /// <returns>A percentage value indicating the task progress.</returns>
-      public int Progress { get; private set; }
-      
-      /// <summary>
-      /// Gets a message value indicating the task progress.
-      /// </summary>
-      /// <returns>A System.String message value indicating the task progress.</returns>
-      public string Message { get; private set; }
-
-      /// <summary>
-      /// Gets a unique user state.
-      /// </summary>
-      /// <returns>A unique System.Object indicating the user state.</returns>
-      public object UserState { get; private set; }
-
-      /// <summary>
-      /// Initializes a new instance of the ProgressEventArgs class with progress percentage and message values.
-      /// </summary>
-      /// <param name="progress">The progress value.</param>
-      /// <param name="message">The text message value.</param>
-      public ProgressEventArgs(int progress, string message)
-      {
-         Progress = progress;
-         Message = message ?? String.Empty;
-      }
-
-      /// <summary>
-      /// Initializes a new instance of the ProgressEventArgs class with progress percentage and message values.
-      /// </summary>
-      /// <param name="progress">A percentage value indicating the task progress.</param>
-      /// <param name="message">A message value indicating the task progress.</param>
-      /// <param name="userState">A unique user state.</param>
-      public ProgressEventArgs(int progress, string message, object userState)
-      {
-         Progress = progress;
-         Message = message ?? String.Empty;
-         UserState = userState;
       }
    }
 }
