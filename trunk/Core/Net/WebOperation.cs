@@ -163,7 +163,7 @@ namespace harlam357.Core.Net
          protected set
          {
             _state = value;
-            if (_state.Equals(WebOperationState.Idle))
+            if (_state == WebOperationState.Idle)
             {
                _cancel = false;
             }
@@ -211,7 +211,7 @@ namespace harlam357.Core.Net
       /// <param name="fileName">The name of the local file that is to receive the data.</param>
       public void Download(string fileName)
       {
-         if (!State.Equals(WebOperationState.Idle))
+         if (State != WebOperationState.Idle)
          {
             return;
          }
@@ -287,7 +287,7 @@ namespace harlam357.Core.Net
       /// <returns>The length of the data being received in bytes.</returns>
       public long GetDownloadLength()
       {
-         if (!State.Equals(WebOperationState.Idle))
+         if (State != WebOperationState.Idle)
          {
             return 0;
          }
@@ -324,7 +324,7 @@ namespace harlam357.Core.Net
       /// <param name="maximumLength">The maximum number of bytes to upload.  If the value is 0 or less the entire file will be uploaded.</param>
       public void Upload(string fileName, int maximumLength)
       {
-         if (!State.Equals(WebOperationState.Idle))
+         if (State != WebOperationState.Idle)
          {
             return;
          }
@@ -414,7 +414,7 @@ namespace harlam357.Core.Net
       /// </summary>
       public void CheckConnection()
       {
-         if (!State.Equals(WebOperationState.Idle))
+         if (State != WebOperationState.Idle)
          {
             return;
          }
@@ -447,7 +447,7 @@ namespace harlam357.Core.Net
       /// </summary>
       public void Cancel()
       {
-         if (State.Equals(WebOperationState.InProgress))
+         if (State == WebOperationState.InProgress)
          {
             _cancel = true;
          }
