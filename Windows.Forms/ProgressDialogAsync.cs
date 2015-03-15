@@ -129,6 +129,10 @@ namespace harlam357.Windows.Forms
          }
          else if (e.State == ProgressChangedEventState.Finished)
          {
+            if (e.Exception != null)
+            {
+               MessageBox.Show(OwnerWindow, e.Exception.Message, Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
             Close();
          }
       }
