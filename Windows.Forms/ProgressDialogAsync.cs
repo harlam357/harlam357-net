@@ -29,9 +29,49 @@ using harlam357.Core.ComponentModel;
 namespace harlam357.Windows.Forms
 {
    /// <summary>
+   /// Represents a view interface for a modal dialog that runs a process asynchronously and reports progress.
+   /// </summary>
+   public interface IProgressDialogAsyncView : IWin32Window
+   {
+      /// <summary>
+      /// Gets or sets the window that owns this view.
+      /// </summary>
+      IWin32Window OwnerWindow { get; set; }
+
+      /// <summary>
+      /// Gets or sets the icon for the form.
+      /// </summary>
+      Icon Icon { get; set; }
+
+      /// <summary>
+      /// Gets or sets the starting position of the form at run time.
+      /// </summary>
+      FormStartPosition StartPosition { get; set; }
+
+      Progress<ProgressChangedEventArgs> Progress { get; set; }
+
+      CancellationTokenSource CancellationTokenSource { get; set; }
+
+      /// <summary>
+      /// Gets or sets the text associated with this control.
+      /// </summary>
+      string Text { get; set; }
+
+      /// <summary>
+      /// Updates the progress bar value.
+      /// </summary>
+      void UpdateProgress(int progress);
+
+      /// <summary>
+      /// Updates the text message value.
+      /// </summary>
+      void UpdateMessage(string message);
+   }
+
+   /// <summary>
    /// Progress Process Dialog Class
    /// </summary>
-   public partial class ProgressDialogAsync : Form
+   public partial class ProgressDialogAsync : Form, IProgressDialogAsyncView
    {
       private readonly Size _baseSize;
 
