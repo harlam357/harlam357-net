@@ -21,7 +21,7 @@ namespace harlam357.Core
       public event EventHandler<T> ProgressChanged;
 
       public Progress()
-         : this(null, null)
+         : this((TaskScheduler)null)
       {
          
       }
