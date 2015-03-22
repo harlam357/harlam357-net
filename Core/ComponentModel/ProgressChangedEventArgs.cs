@@ -1,42 +1,31 @@
-﻿
+﻿/*
+ * harlam357.Core.ComponentModel - Progress Changed Event Arguments
+ * Copyright (C) 2010-2015 Ryan Harlamert (harlam357)
+ * 
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ */
+
 using System;
 
 namespace harlam357.Core.ComponentModel
 {
    /// <summary>
-   /// Specifies the state of the task.
-   /// </summary>
-   public enum ProgressChangedEventState
-   {
-      /// <summary>
-      /// Specifies that the task has no determined state.
-      /// </summary>
-      None,
-      /// <summary>
-      /// Specifies that the task has started.
-      /// </summary>
-      Started,
-      /// <summary>
-      /// Specifies that the task is in progress.
-      /// </summary>
-      InProgress,
-      /// <summary>
-      /// Specifies that the task has finished.
-      /// </summary>
-      Finished
-   }
-
-   /// <summary>
    /// Provides data for the a ProgressChanged event.
    /// </summary>
    public class ProgressChangedEventArgs : EventArgs
    {
-      /// <summary>
-      /// Gets the task state.
-      /// </summary>
-      /// <returns>A value indicating the state of the task.</returns>
-      public ProgressChangedEventState State { get; private set; }
-
       /// <summary>
       /// Gets the task progress percentage.
       /// </summary>
@@ -56,20 +45,12 @@ namespace harlam357.Core.ComponentModel
       public object UserState { get; private set; }
 
       /// <summary>
-      /// Gets the exception that resulted in the task ending prematurely.
-      /// </summary>
-      /// <returns>A System.Exception indicating why the task ending prematurely or null if the task finished with no errors.</returns>
-      public Exception Exception { get; private set; }
-
-      /// <summary>
       /// Initializes a new instance of the ProgressEventArgs class with progress percentage and message values.
       /// </summary>
-      /// <param name="state">A value indicating the state of the task.</param>
       /// <param name="progressPercentage">The progress value.</param>
       /// <param name="message">The text message value.</param>
-      public ProgressChangedEventArgs(ProgressChangedEventState state, int progressPercentage, string message)
+      public ProgressChangedEventArgs(int progressPercentage, string message)
       {
-         State = state;
          ProgressPercentage = progressPercentage;
          Message = message ?? String.Empty;
       }
@@ -77,18 +58,14 @@ namespace harlam357.Core.ComponentModel
       /// <summary>
       /// Initializes a new instance of the ProgressEventArgs class with progress percentage and message values.
       /// </summary>
-      /// <param name="state">A value indicating the state of the task.</param>
       /// <param name="progressPercentage">A percentage value indicating the task progress.</param>
       /// <param name="message">A message value indicating the task progress.</param>
       /// <param name="userState">A unique user state.</param>
-      /// <param name="exception">An exception indicating why the task ending prematurely or null if the task finished with no errors.</param>
-      public ProgressChangedEventArgs(ProgressChangedEventState state, int progressPercentage, string message, object userState, Exception exception)
+      public ProgressChangedEventArgs(int progressPercentage, string message, object userState)
       {
-         State = state;
          ProgressPercentage = progressPercentage;
          Message = message ?? String.Empty;
          UserState = userState;
-         Exception = exception;
       }
    }
 }

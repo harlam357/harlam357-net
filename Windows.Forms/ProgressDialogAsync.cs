@@ -23,20 +23,37 @@ using System.Drawing;
 using System.Threading;
 using System.Windows.Forms;
 
-using harlam357.Core;
-using harlam357.Core.ComponentModel;
-
 namespace harlam357.Windows.Forms
 {
    /// <summary>
-   /// Represents a view interface for a modal dialog that runs a process asynchronously and reports progress.
+   /// Represents a view interface for a modal dialog that reports the progress of an asynchronous task.
    /// </summary>
-   public interface IProgressDialogAsyncView : IWin32Window
+   public interface IProgressDialogAsyncView : IWin32Window, IDisposable
    {
       /// <summary>
-      /// Gets or sets the window that owns this view.
+      /// Gets or sets the progress reporting object responsible for notifying the dialog of task progress.
       /// </summary>
-      IWin32Window OwnerWindow { get; set; }
+      Core.Progress<Core.ComponentModel.ProgressChangedEventArgs> Progress { get; set; }
+
+      /// <summary>
+      /// Gets or sets the object that facilitates task cancellation.
+      /// </summary>
+      CancellationTokenSource CancellationTokenSource { get; set; }
+
+      /// <summary>
+      /// Updates the progress bar value.
+      /// </summary>
+      void UpdateProgress(int progress);
+
+      /// <summary>
+      /// Updates the text message value.
+      /// </summary>
+      void UpdateMessage(string message);
+
+      /// <summary>
+      /// Occurs whenever the form is first displayed.
+      /// </summary>
+      event EventHandler Shown;
 
       /// <summary>
       /// Gets or sets the icon for the form.
@@ -48,24 +65,22 @@ namespace harlam357.Windows.Forms
       /// </summary>
       FormStartPosition StartPosition { get; set; }
 
-      Progress<ProgressChangedEventArgs> Progress { get; set; }
-
-      CancellationTokenSource CancellationTokenSource { get; set; }
-
       /// <summary>
-      /// Gets or sets the text associated with this control.
+      /// Gets or sets the text associated with this form.
       /// </summary>
       string Text { get; set; }
 
       /// <summary>
-      /// Updates the progress bar value.
+      /// Shows the form as a modal dialog box with the specified owner.
       /// </summary>
-      void UpdateProgress(int progress);
+      /// <param name="owner">Any object that implements System.Windows.Forms.IWin32Window that represents the top-level window that will own the modal dialog box.</param>
+      /// <returns>One of the System.Windows.Forms.DialogResult values.</returns>
+      DialogResult ShowDialog(IWin32Window owner);
 
       /// <summary>
-      /// Updates the text message value.
+      /// Closes the dialog.
       /// </summary>
-      void UpdateMessage(string message);
+      void Close();
    }
 
    /// <summary>
@@ -73,16 +88,12 @@ namespace harlam357.Windows.Forms
    /// </summary>
    public partial class ProgressDialogAsync : Form, IProgressDialogAsyncView
    {
-      private readonly Size _baseSize;
+      private Core.Progress<Core.ComponentModel.ProgressChangedEventArgs> _progress;
 
       /// <summary>
-      /// Gets or sets the window that owns this view.
+      /// Gets or sets the progress reporting object responsible for notifying the dialog of task progress.
       /// </summary>
-      public IWin32Window OwnerWindow { get; set; }
-
-      private Progress<ProgressChangedEventArgs> _progress;
-
-      public Progress<ProgressChangedEventArgs> Progress
+      public Core.Progress<Core.ComponentModel.ProgressChangedEventArgs> Progress
       {
          get { return _progress; }
          set
@@ -90,17 +101,22 @@ namespace harlam357.Windows.Forms
             if (_progress != null)
             {
                _progress.ProgressChanged -= OnProgressChanged;
+               TaskInProgress = false;
             }
             _progress = value;
             if (_progress != null)
             {
                _progress.ProgressChanged += OnProgressChanged;
+               TaskInProgress = true;
             }
          }
       }
 
       private CancellationTokenSource _cancellationTokenSource;
 
+      /// <summary>
+      /// Gets or sets the object that facilitates task cancellation.
+      /// </summary>
       public CancellationTokenSource CancellationTokenSource
       {
          get { return _cancellationTokenSource; }
@@ -116,8 +132,10 @@ namespace harlam357.Windows.Forms
          get { return _cancellationTokenSource != null; }
       }
 
+      private readonly Size _baseSize;
+
       /// <summary>
-      /// Initializes a new instance of the ProgressDialog class.
+      /// Initializes a new instance of the ProgressDialogAsync class.
       /// </summary>
       public ProgressDialogAsync()
       {
@@ -154,27 +172,10 @@ namespace harlam357.Windows.Forms
          messageLabel.Text = message;
       }
 
-      protected ProgressChangedEventState LastProgressChangedEventState { get; set; }
-
-      protected virtual void OnProgressChanged(object sender, ProgressChangedEventArgs e)
+      protected virtual void OnProgressChanged(object sender, Core.ComponentModel.ProgressChangedEventArgs e)
       {
-         LastProgressChangedEventState = e.State;
-         
          UpdateProgress(e.ProgressPercentage);
          UpdateMessage(e.Message);
-         if (e.State == ProgressChangedEventState.Started)
-         {
-            //Show(OwnerWindow);
-            ShowDialog(OwnerWindow);
-         }
-         else if (e.State == ProgressChangedEventState.Finished)
-         {
-            if (e.Exception != null)
-            {
-               MessageBox.Show(OwnerWindow, e.Exception.Message, Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-            Close();
-         }
       }
 
       private void ProcessCancelButtonClick(object sender, EventArgs e)
@@ -187,14 +188,7 @@ namespace harlam357.Windows.Forms
          }
       }
 
-      protected bool TaskInProgress
-      {
-         get
-         {
-            return LastProgressChangedEventState == ProgressChangedEventState.Started ||
-                   LastProgressChangedEventState == ProgressChangedEventState.InProgress;
-         }
-      }
+      protected bool TaskInProgress { get; private set; }
 
       /// <summary>
       /// Raises the <see cref="E:System.Windows.Forms.Form.FormClosing"/> event.
@@ -229,9 +223,10 @@ namespace harlam357.Windows.Forms
             return;
          }
 
+         TaskInProgress = false;
          base.Close();
       }
-      
+
       private void SetCancellationControls(bool enabled)
       {
          ProcessCancelButton.Visible = enabled;
