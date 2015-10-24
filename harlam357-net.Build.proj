@@ -6,7 +6,7 @@
    <PropertyGroup>
       <Major>1</Major>
       <Minor>5</Minor>
-      <Build>0</Build>
+      <Build>1</Build>
       <Revision>0</Revision>
       <ProductName>harlam357-net</ProductName>
       <SolutionFileName>harlam357-net.sln</SolutionFileName>
@@ -32,9 +32,12 @@
         Condition="$(Revision) != '0' " />
    </Target>
    <Target Name="GetVersion">
-      <SvnVersion LocalPath="." ToolPath="$(ProgramFiles)\CollabNet\Subversion Client">
+      <!--<SvnVersion LocalPath="." ToolPath="$(ProgramFiles)\CollabNet\Subversion Client">
          <Output TaskParameter="Revision" PropertyName="Revision" />
-      </SvnVersion>
+      </SvnVersion>-->
+      <!--<GitDescribe LocalPath="$(MSBuildProjectDirectory)">
+         <Output TaskParameter="CommitCount" PropertyName="Revision" />
+      </GitDescribe>-->
       <Message Text="Version: $(Major).$(Minor).$(Build).$(Revision)" />
    </Target>
    <Target Name="CleanArtifactsFolder">
