@@ -282,10 +282,9 @@ namespace harlam357.Core.Security
       /// </summary>
       public Data Calculate(System.IO.Stream stream, IProgress<int> progress)
       {
-         if (!stream.CanSeek)
-         {
-            throw new ArgumentException("stream must support seeking.", "stream");
-         }
+         if (stream == null) throw new ArgumentNullException("stream");
+         if (progress == null) throw new ArgumentNullException("progress");
+         if (!stream.CanSeek) throw new ArgumentException("stream must support seeking.", "stream");
 
          const int bufferLength = 1048576;
          long totalBytesRead = 0;
