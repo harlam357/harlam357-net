@@ -277,6 +277,51 @@ namespace harlam357.Core.Security
          return _hashValue;
       }
 
+      /// <summary>
+      /// Calculates the hash on a seekable stream while reporting progress.
+      /// </summary>
+      public Data Calculate(System.IO.Stream stream, IProgress<int> progress)
+      {
+         if (!stream.CanSeek)
+         {
+            throw new ArgumentException("stream must support seeking.", "stream");
+         }
+
+         const int bufferLength = 1048576;
+         long totalBytesRead = 0;
+         long size = stream.Length;
+         var buffer = new byte[bufferLength];
+
+         int bytesRead = stream.Read(buffer, 0, buffer.Length);
+         totalBytesRead += bytesRead;
+
+         do
+         {
+            int oldBytesRead = bytesRead;
+            byte[] oldBuffer = buffer;
+
+            buffer = new byte[bufferLength];
+            bytesRead = stream.Read(buffer, 0, buffer.Length);
+
+            totalBytesRead += bytesRead;
+
+            if (bytesRead == 0)
+            {
+               _hash.TransformFinalBlock(oldBuffer, 0, oldBytesRead);
+            }
+            else
+            {
+               _hash.TransformBlock(oldBuffer, 0, oldBytesRead, oldBuffer, 0);
+            }
+
+            progress.Report((int)((double)totalBytesRead * 100 / size));
+
+         } while (bytesRead != 0);
+
+         _hashValue.Bytes = _hash.Hash;
+         return _hashValue;
+      }
+
       #region IDisposable Implementation
 
       /// <summary>

@@ -88,7 +88,7 @@ namespace harlam357.Core
          string message = null;
          object userState = null;
 
-         EventHandler<ProgressChangedEventArgs> handler = (sender, args) =>
+         ProgressHandler<ProgressChangedEventArgs> handler = (sender, args) =>
          {
             progressPercentage = args.ProgressPercentage;
             message = args.Message;

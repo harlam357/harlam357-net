@@ -15,6 +15,7 @@ using System.Text;
 using NUnit.Framework;
 
 using harlam357.Core.Security.Cryptography;
+using harlam357.Core.Threading.Tasks;
 
 namespace harlam357.Core.Security
 {
@@ -100,7 +101,33 @@ namespace harlam357.Core.Security
          {
             return h.Calculate(new Data(_targetString));
          }
-      } 
+      }
+
+      [Test, Category("Hash")]
+      public void Security_Hash_File_WithProgress_Test()
+      {
+         string hashHex;
+
+         bool progressRaised = false;
+         var progress = new Progress<int>(new CurrentThreadTaskScheduler(), value => progressRaised = true);
+         using (var h1 = new Hash(HashProvider.CRC32))
+         using (var stream = File.OpenRead(@"..\..\TestFiles\gettysburg.txt"))
+         {
+            hashHex = h1.Calculate(stream, progress).Bytes.ToHex();
+         }
+         Assert.AreEqual(hashHex, "E37F6423");
+         Assert.IsTrue(progressRaised);
+
+         progressRaised = false;
+         progress = new Progress<int>(new CurrentThreadTaskScheduler(), value => progressRaised = true);
+         using (var h2 = new Hash(HashProvider.MD5))
+         using (var stream = File.OpenRead(@"..\..\TestFiles\sample.doc"))
+         {
+            hashHex = h2.Calculate(stream, progress).Bytes.ToHex();
+         }
+         Assert.AreEqual(hashHex, "4F32AB797F0FCC782AAC0B4F4E5B1693");
+         Assert.IsTrue(progressRaised);
+      }
 
       #endregion
 

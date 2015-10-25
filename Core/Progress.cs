@@ -11,14 +11,16 @@ namespace harlam357.Core
       void Report(T value);
    }
 
+   public delegate void ProgressHandler<in T>(object sender, T eventArgs);
+
    // Implementation of IProgress<T> based on the .NET 4.5 implementation.
-   public class Progress<T> : IProgress<T> where T : EventArgs
+   public class Progress<T> : IProgress<T>
    {
       private readonly TaskScheduler _taskScheduler;
       private readonly Action<T> _handler;
       private readonly Action<object> _invokeHandlers;
 
-      public event EventHandler<T> ProgressChanged;
+      public event ProgressHandler<T> ProgressChanged;
 
       public Progress()
          : this((TaskScheduler)null)
@@ -77,7 +79,7 @@ namespace harlam357.Core
          {
             action(e);
          }
-         EventHandler<T> eventHandler = ProgressChanged;
+         ProgressHandler<T> eventHandler = ProgressChanged;
          if (eventHandler == null)
          {
             return;
