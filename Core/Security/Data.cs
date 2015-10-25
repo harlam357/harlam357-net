@@ -12,12 +12,10 @@ using System.Text;
 namespace harlam357.Core.Security
 {
    /// <summary>
-   /// Represents Hex, Byte, Base64, or String data to encrypt or decrypt.
-   ///  </summary>
+   /// Represents data to encrypt or decrypt.
+   /// </summary>
    /// <remarks>
    /// Use the Text property to get/set a string representation.
-   /// Use the Hex property to get/set a string-based Hexadecimal representation.
-   /// Use the Base64 to get/set a string-based Base64 representation.
    /// </remarks>
    public class Data
    {
@@ -40,13 +38,8 @@ namespace harlam357.Core.Security
       /// </summary>
       public Encoding Encoding
       {
-         get { return _encoding; }
-         set
-         {
-            // don't allow a null to be set here
-            if (value == null) return;
-            _encoding = value;
-         }
+         get { return _encoding ?? (_encoding = DefaultEncoding); }
+         set { _encoding = value; }
       }
 
       #endregion
@@ -100,74 +93,11 @@ namespace harlam357.Core.Security
       }
 
       /// <summary>
-      /// Gets or sets the allowed step interval, in bytes, for this data; if 0, no limit.
+      /// Gets or sets the byte representation of the data.
       /// </summary>
-      public int StepBytes { get; set; }
-
-      ///// <summary>
-      ///// Gets or sets the allowed step interval, in bits, for this data; if 0, no limit.
-      ///// </summary>
-      //public int StepBits
-      //{
-      //   get { return StepBytes * 8; }
-      //   set { StepBytes = value / 8; }
-      //}
-
-      /// <summary>
-      /// Gets or sets the minimum number of bytes allowed for this data; if 0, no limit.
-      /// </summary>
-      public int MinBytes { get; set; }
-
-      ///// <summary>
-      ///// Gets or sets the minimum number of bits allowed for this data; if 0, no limit.
-      ///// </summary>
-      //public int MinBits
-      //{
-      //   get { return _minBytes * 8; }
-      //   set { _minBytes = value / 8; }
-      //}
-
-      /// <summary>
-      /// Gets or sets the maximum number of bytes allowed for this data; if 0, no limit.
-      /// </summary>
-      public int MaxBytes { get; set; }
-
-      /// <summary>
-      /// Gets or sets the maximum number of bits allowed for this data; if 0, no limit.
-      /// </summary>
-      public int MaxBits
+      public virtual byte[] Bytes
       {
-         get { return MaxBytes * 8; }
-         set { MaxBytes = value / 8; }
-      }
-
-      /// <summary>
-      /// Gets or sets the byte representation of the data. This will be padded to MinBytes and trimmed to MaxBytes as necessary.
-      /// </summary>
-      public byte[] Bytes
-      {
-         get
-         {
-            if (MaxBytes > 0)
-            {
-               if (_data.Length > MaxBytes)
-               {
-                  var b = new byte[MaxBytes];
-                  Array.Copy(_data, b, b.Length);
-                  _data = b;
-               }
-            }
-            if (MinBytes > 0)
-            {
-               if (_data.Length < MinBytes)
-               {
-                  var b = new byte[MinBytes];
-                  Array.Copy(_data, b, _data.Length);
-                  _data = b;
-               }
-            }
-            return _data;
-         }
+         get { return _data; }
          set { _data = value; }
       }
 
@@ -194,24 +124,6 @@ namespace harlam357.Core.Security
             return Encoding.GetString(_data);
          }
          set { _data = Encoding.GetBytes(value); }
-      }
-
-      /// <summary>
-      /// Gets or sets the Hex string representation of this data.
-      /// </summary>
-      public string Hex
-      {
-         get { return _data.ToHex(); }
-         set { _data = value.FromHex(); }
-      }
-
-      /// <summary>
-      /// Gets or sets the Base64 string representation of this data.
-      /// </summary>
-      public string Base64
-      {
-         get { return _data.ToBase64(); }
-         set { _data = value.FromBase64(); }
       }
 
       #endregion

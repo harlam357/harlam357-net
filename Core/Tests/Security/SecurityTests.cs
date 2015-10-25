@@ -47,12 +47,12 @@ namespace harlam357.Core.Security
       [Test, Category("Hash")]
       public void Security_Hash_Salted_Test()
       {
-         Assert.AreEqual("6CD9DD96", DoSaltedHash(HashProvider.CRC32, new Data("Shazam!")).Hex);
-         Assert.AreEqual("4F7FA9C182C5FA60F9197F4830296685", DoSaltedHash(HashProvider.MD5, new Data("SnapCracklePop")).Hex);
-         Assert.AreEqual("3DC330B4E4E61C8DF039EAE93EC16412E22425FB", DoSaltedHash(HashProvider.SHA1, new Data("全球最大的華文新聞網站", Encoding.Unicode)).Hex);
-         Assert.AreEqual("EFAE307AEE511D6078FDF0D4372F4D0C8135170C5F7626CB19B04BFDBABBBDB2", DoSaltedHash(HashProvider.SHA256, new Data("!@#$%^&*()_-+=", Encoding.ASCII)).Hex);
-         Assert.AreEqual("582B31C13EF16D706EC2514FDA08316A369DF1F130D34A0A2A16B065D82662A1101EA01110AB7C8F9022A1CEA76FD6B9", DoSaltedHash(HashProvider.SHA384, new Data("supercalifragilisticexpialidocious", Encoding.ASCII)).Hex);
-         Assert.AreEqual("44FAA06E8E80666408304E3458621769699A76B591C6389F958C0DDA1D80A82965D169E8AA7D3C1A0637BCB7B0F45D420389C629D19E255D64A923F6C4F87FD8", DoSaltedHash(HashProvider.SHA512, new Data("42", Encoding.ASCII)).Hex);
+         Assert.AreEqual("6CD9DD96", DoSaltedHash(HashProvider.CRC32, new Data("Shazam!")).Bytes.ToHex());
+         Assert.AreEqual("4F7FA9C182C5FA60F9197F4830296685", DoSaltedHash(HashProvider.MD5, new Data("SnapCracklePop")).Bytes.ToHex());
+         Assert.AreEqual("3DC330B4E4E61C8DF039EAE93EC16412E22425FB", DoSaltedHash(HashProvider.SHA1, new Data("全球最大的華文新聞網站", Encoding.Unicode)).Bytes.ToHex());
+         Assert.AreEqual("EFAE307AEE511D6078FDF0D4372F4D0C8135170C5F7626CB19B04BFDBABBBDB2", DoSaltedHash(HashProvider.SHA256, new Data("!@#$%^&*()_-+=", Encoding.ASCII)).Bytes.ToHex());
+         Assert.AreEqual("582B31C13EF16D706EC2514FDA08316A369DF1F130D34A0A2A16B065D82662A1101EA01110AB7C8F9022A1CEA76FD6B9", DoSaltedHash(HashProvider.SHA384, new Data("supercalifragilisticexpialidocious", Encoding.ASCII)).Bytes.ToHex());
+         Assert.AreEqual("44FAA06E8E80666408304E3458621769699A76B591C6389F958C0DDA1D80A82965D169E8AA7D3C1A0637BCB7B0F45D420389C629D19E255D64A923F6C4F87FD8", DoSaltedHash(HashProvider.SHA512, new Data("42", Encoding.ASCII)).Bytes.ToHex());
       }
 
       [Test, Category("Hash")]
@@ -63,14 +63,14 @@ namespace harlam357.Core.Security
          using (var h1 = new Hash(HashProvider.CRC32))
          using (var stream = File.OpenRead(@"..\..\TestFiles\gettysburg.txt"))
          {
-            hashHex = h1.Calculate(stream).Hex;
+            hashHex = h1.Calculate(stream).Bytes.ToHex();
          }
          Assert.AreEqual(hashHex, "E37F6423");
 
          using (var h2 = new Hash(HashProvider.MD5))
          using (var stream = File.OpenRead(@"..\..\TestFiles\sample.doc"))
          {
-            hashHex = h2.Calculate(stream).Hex;
+            hashHex = h2.Calculate(stream).Bytes.ToHex();
          }
          Assert.AreEqual(hashHex, "4F32AB797F0FCC782AAC0B4F4E5B1693");
       }
@@ -78,12 +78,12 @@ namespace harlam357.Core.Security
       [Test, Category("Hash")]
       public void Security_Hash_Test()
       {
-         Assert.AreEqual("AA692113", DoHash(HashProvider.CRC32).Hex);
-         Assert.AreEqual("44D36517B0CCE797FF57118ABE264FD9", DoHash(HashProvider.MD5).Hex);
-         Assert.AreEqual("9E93AB42BCC8F738C7FBB6CCA27A902DC663DBE1", DoHash(HashProvider.SHA1).Hex);
-         Assert.AreEqual("40AF07ABFE970590B2C313619983651B1E7B2F8C2D855C6FD4266DAFD7A5E670", DoHash(HashProvider.SHA256).Hex);
-         Assert.AreEqual("9FC0AFB3DA61201937C95B133AB397FE62C329D6061A8768DA2B9D09923F07624869D01CD76826E1152DAB7BFAA30915", DoHash(HashProvider.SHA384).Hex);
-         Assert.AreEqual("2E7D4B051DD528F3E9339E0927930007426F4968B5A4A08349472784272F17DA5C532EDCFFE14934988503F77DEF4AB58EB05394838C825632D04A10F42A753B", DoHash(HashProvider.SHA512).Hex);
+         Assert.AreEqual("AA692113", DoHash(HashProvider.CRC32).Bytes.ToHex());
+         Assert.AreEqual("44D36517B0CCE797FF57118ABE264FD9", DoHash(HashProvider.MD5).Bytes.ToHex());
+         Assert.AreEqual("9E93AB42BCC8F738C7FBB6CCA27A902DC663DBE1", DoHash(HashProvider.SHA1).Bytes.ToHex());
+         Assert.AreEqual("40AF07ABFE970590B2C313619983651B1E7B2F8C2D855C6FD4266DAFD7A5E670", DoHash(HashProvider.SHA256).Bytes.ToHex());
+         Assert.AreEqual("9FC0AFB3DA61201937C95B133AB397FE62C329D6061A8768DA2B9D09923F07624869D01CD76826E1152DAB7BFAA30915", DoHash(HashProvider.SHA384).Bytes.ToHex());
+         Assert.AreEqual("2E7D4B051DD528F3E9339E0927930007426F4968B5A4A08349472784272F17DA5C532EDCFFE14934988503F77DEF4AB58EB05394838C825632D04A10F42A753B", DoHash(HashProvider.SHA512).Bytes.ToHex());
       }
 
       private Data DoSaltedHash(HashProvider p, Data salt)
@@ -223,7 +223,7 @@ namespace harlam357.Core.Security
          Data encryptedData;
          using (var sym = new Symmetric(p))
          {
-            sym.Key = new Data(key);
+            sym.Key = new SymmetricKeyData(key);
             using (var stream = File.OpenRead(fileName))
             {
                encryptedData = sym.Encrypt(stream);
@@ -241,7 +241,7 @@ namespace harlam357.Core.Security
          Data decryptedData;
          using (var sym2 = new Symmetric(p))
          {
-            sym2.Key = new Data(key);
+            sym2.Key = new SymmetricKeyData(key);
             using (var stream = File.OpenRead(encryptedFilePath))
             {
                decryptedData = sym2.Decrypt(stream);
@@ -258,7 +258,7 @@ namespace harlam357.Core.Security
          // get the MD5 hash of the returned data
          using (var h = new Hash(HashProvider.MD5))
          {
-            return h.Calculate(decryptedData).Hex;
+            return h.Calculate(decryptedData).Bytes.ToHex();
          }
       }
 
@@ -267,8 +267,8 @@ namespace harlam357.Core.Security
       /// </summary>
       private static string SymmetricWithKey(SymmetricProvider p, string targetString)
       {
-         var keyData = new Data("MySecretPassword");
-         var ivData = new Data("MyInitializationVector");
+         var keyData = new SymmetricKeyData("MySecretPassword");
+         var ivData = new SymmetricKeyData("MyInitializationVector");
 
          Data encryptedData;
          using (var sym = new Symmetric(p, false))

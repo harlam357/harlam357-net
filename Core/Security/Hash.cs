@@ -46,95 +46,36 @@ namespace harlam357.Core.Security
       // ReSharper restore InconsistentNaming
    }
 
-   // Hash functions are fundamental to modern cryptography. These functions map binary 
-   // strings of an arbitrary length to small binary strings of a fixed length, known as 
-   // hash values. A cryptographic hash function has the property that it is computationally
-   // infeasible to find two distinct inputs that hash to the same value. Hash functions 
-   // are commonly used with digital signatures and for data integrity.
-
    /// <summary>
-   /// Represents an object that performs hashing.
+   /// Provides access to factory methods for creating HashAlgorithm instances.
    /// </summary>
-   public class Hash : IDisposable
+   public static class HashAlgorithmFactory
    {
-      private readonly HashAlgorithm _hash;
-      private readonly Data _hashValue = new Data();
-
       /// <summary>
-      /// Initializes a new instance of the Hash class with the specified hash provider.
+      /// Creates a new instance of the HashAlgorithm class based on the specified provider.
       /// </summary>
-      public Hash(HashProvider provider)
+      /// <param name="provider">Provides the type of hash algorithm to create.</param>
+      /// <returns>The HashAlgorithm object.</returns>
+      /// <exception cref="T:System.ArgumentException">The provider is unknown.</exception>
+      public static HashAlgorithm Create(HashProvider provider)
       {
          switch (provider)
          {
             case HashProvider.CRC32:
-               _hash = new CRC32();
-               break;
+               return new CRC32();
             case HashProvider.SHA1:
-               _hash = new SHA1Managed();
-               break;
+               return SHA1.Create();
             case HashProvider.SHA256:
-               _hash = new SHA256Managed();
-               break;
+               return SHA256.Create();
             case HashProvider.SHA384:
-               _hash = new SHA384Managed();
-               break;
+               return SHA384.Create();
             case HashProvider.SHA512:
-               _hash = new SHA512Managed();
-               break;
+               return SHA512.Create();
             case HashProvider.MD5:
-               _hash = new MD5CryptoServiceProvider();
-               break;
+               return MD5.Create();
          }
-      }
 
-      /// <summary>
-      /// Gets the previously calculated hash value.
-      /// </summary>
-      public Data Value
-      {
-         get { return _hashValue; }
-      }
-
-      /// <summary>
-      /// Calculates the hash on a stream of arbitrary length.
-      /// </summary>
-      public Data Calculate(System.IO.Stream stream)
-      {
-         _hashValue.Bytes = _hash.ComputeHash(stream);
-         return _hashValue;
-      }
-
-      /// <summary>
-      /// Calculates the hash for fixed length data.
-      /// </summary>
-      /// <exception cref="T:System.ArgumentNullException">data is null.</exception>
-      public Data Calculate(Data data)
-      {
-         if (data == null) throw new ArgumentNullException("data");
-         return CalculatePrivate(data.Bytes);
-      }
-
-      /// <summary>
-      /// Calculates the hash for fixed length data with a prefixed salt value.
-      ///  </summary>
-      /// <exception cref="T:System.ArgumentNullException">data or salt is null.</exception>
-      /// <remarks>A "salt" value is random data prefixed to every hashed value to prevent common dictionary attacks.</remarks>
-      public Data Calculate(Data data, Data salt)
-      {
-         if (data == null) throw new ArgumentNullException("data");
-         if (salt == null) throw new ArgumentNullException("salt");
-
-         var value = new byte[data.Bytes.Length + salt.Bytes.Length];
-         salt.Bytes.CopyTo(value, 0);
-         data.Bytes.CopyTo(value, salt.Bytes.Length);
-         return CalculatePrivate(value);
-      }
-
-      private Data CalculatePrivate(byte[] value)
-      {
-         _hashValue.Bytes = _hash.ComputeHash(value);
-         return _hashValue;
+         throw new ArgumentException("Unknown HashProvider.", "provider");
       }
 
       #region CRC32 HashAlgorithm
@@ -263,6 +204,78 @@ namespace harlam357.Core.Security
       }
 
       #endregion
+   }
+
+   // Hash functions are fundamental to modern cryptography. These functions map binary 
+   // strings of an arbitrary length to small binary strings of a fixed length, known as 
+   // hash values. A cryptographic hash function has the property that it is computationally
+   // infeasible to find two distinct inputs that hash to the same value. Hash functions 
+   // are commonly used with digital signatures and for data integrity.
+
+   /// <summary>
+   /// Represents an object that performs hashing.
+   /// </summary>
+   public class Hash : IDisposable
+   {
+      private readonly HashAlgorithm _hash;
+      private readonly Data _hashValue = new Data();
+
+      /// <summary>
+      /// Initializes a new instance of the Hash class with the specified hash provider.
+      /// </summary>
+      public Hash(HashProvider provider)
+      {
+         _hash = HashAlgorithmFactory.Create(provider);
+      }
+
+      /// <summary>
+      /// Gets the previously calculated hash value.
+      /// </summary>
+      public Data Value
+      {
+         get { return _hashValue; }
+      }
+
+      /// <summary>
+      /// Calculates the hash on a stream of arbitrary length.
+      /// </summary>
+      public Data Calculate(System.IO.Stream stream)
+      {
+         _hashValue.Bytes = _hash.ComputeHash(stream);
+         return _hashValue;
+      }
+
+      /// <summary>
+      /// Calculates the hash for fixed length data.
+      /// </summary>
+      /// <exception cref="T:System.ArgumentNullException">data is null.</exception>
+      public Data Calculate(Data data)
+      {
+         if (data == null) throw new ArgumentNullException("data");
+         return CalculatePrivate(data.Bytes);
+      }
+
+      /// <summary>
+      /// Calculates the hash for fixed length data with a prefixed salt value.
+      ///  </summary>
+      /// <exception cref="T:System.ArgumentNullException">data or salt is null.</exception>
+      /// <remarks>A "salt" value is random data prefixed to every hashed value to prevent common dictionary attacks.</remarks>
+      public Data Calculate(Data data, Data salt)
+      {
+         if (data == null) throw new ArgumentNullException("data");
+         if (salt == null) throw new ArgumentNullException("salt");
+
+         var value = new byte[data.Bytes.Length + salt.Bytes.Length];
+         salt.Bytes.CopyTo(value, 0);
+         data.Bytes.CopyTo(value, salt.Bytes.Length);
+         return CalculatePrivate(value);
+      }
+
+      private Data CalculatePrivate(byte[] value)
+      {
+         _hashValue.Bytes = _hash.ComputeHash(value);
+         return _hashValue;
+      }
 
       #region IDisposable Implementation
 

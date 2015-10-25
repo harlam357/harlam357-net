@@ -9,6 +9,7 @@
 using System;
 using System.IO;
 using System.Security.Cryptography;
+using System.Text;
 
 namespace harlam357.Core.Security.Cryptography
 {
@@ -40,20 +41,49 @@ namespace harlam357.Core.Security.Cryptography
    }
 
    /// <summary>
+   /// Provides access to factory methods for creating SymmetricAlgorithm instances.
+   /// </summary>
+   public static class SymmetricAlgorithmFactory
+   {
+      /// <summary>
+      /// Creates a new instance of the SymmetricAlgorithm class based on the specified provider.
+      /// </summary>
+      /// <param name="provider">Provides the type of symmetric algorithm to create.</param>
+      /// <returns>The SymmetricAlgorithm object.</returns>
+      /// <exception cref="T:System.ArgumentException">The provider is unknown.</exception>
+      public static SymmetricAlgorithm Create(SymmetricProvider provider)
+      {
+         switch (provider)
+         {
+            case SymmetricProvider.DES:
+               return DES.Create();
+            case SymmetricProvider.RC2:
+               return RC2.Create();
+            case SymmetricProvider.Rijndael:
+               return Rijndael.Create();
+            case SymmetricProvider.TripleDES:
+               return TripleDES.Create();
+         }
+
+         throw new ArgumentException("Unknown SymmetricProvider.", "provider");
+      }
+   }
+
+   /// <summary>
    /// Represents an object that performs symmetric encryption.
    /// </summary>
    /// <remarks>Symmetric encryption uses a single key to encrypt and decrypt. Both parties (encryptor and decryptor) must share the same secret key.</remarks>
    public class Symmetric : IDisposable
    {
-      private const string DefaultIntializationVector = "%2Bz=+@xT";
+      private const string DefaultIntializationVector = "439#k5;&+";
       private const int BufferSize = 2048;
 
-      private Data _key;
-      private Data _iv;
+      private SymmetricKeyData _key;
+      private SymmetricKeyData _iv;
       private readonly SymmetricAlgorithm _crypto;
 
       /// <summary>
-      /// Initializes a new instance of the Symmetric class using the specified provider.
+      /// Initializes a new instance of the Symmetric class based on the specified provider.
       /// </summary>
       public Symmetric(SymmetricProvider provider)
          : this(provider, true)
@@ -62,67 +92,22 @@ namespace harlam357.Core.Security.Cryptography
       }
 
       /// <summary>
-      /// Initializes a new instance of the Symmetric class using the specified provider.
+      /// Initializes a new instance of the Symmetric class based on the specified provider.
       /// </summary>
       public Symmetric(SymmetricProvider provider, bool useDefaultInitializationVector)
       {
-         switch (provider)
-         {
-            case SymmetricProvider.DES:
-               _crypto = new DESCryptoServiceProvider();
-               break;
-            case SymmetricProvider.RC2:
-               _crypto = new RC2CryptoServiceProvider();
-               break;
-            case SymmetricProvider.Rijndael:
-               _crypto = new RijndaelManaged();
-               break;
-            case SymmetricProvider.TripleDES:
-               _crypto = new TripleDESCryptoServiceProvider();
-               break;
-         }
+         _crypto = SymmetricAlgorithmFactory.Create(provider);
 
          // make sure key and IV are always set, no matter what
          Key = RandomKey();
-         IntializationVector = useDefaultInitializationVector ? new Data(DefaultIntializationVector) : RandomInitializationVector();
+         IntializationVector = useDefaultInitializationVector ? new SymmetricKeyData(DefaultIntializationVector) : RandomInitializationVector();
       }
-
-      ///// <summary>
-      ///// Gets or sets the key size in bytes. 
-      ///// </summary>
-      ///// <remarks>The default key size for the given provider is used; if you want to force a specific key size, set this property.</remarks>
-      //public int KeySizeBytes
-      //{
-      //   get { return _crypto.KeySize / 8; }
-      //   set
-      //   {
-      //      checked
-      //      {
-      //         _crypto.KeySize = value * 8;
-      //      }
-      //      _key.MaxBytes = value;
-      //   }
-      //}
-
-      ///// <summary>
-      ///// Gets or sets the key size in bits.
-      ///// </summary>
-      ///// <remarks>The default key size for the given provider is used; if you want to force a specific key size, set this property.</remarks>
-      //public int KeySizeBits
-      //{
-      //   get { return _crypto.KeySize; }
-      //   set
-      //   {
-      //      _crypto.KeySize = value;
-      //      _key.MaxBits = value;
-      //   }
-      //}
 
       /// <summary>
       /// Gets or sets the key used to encrypt or decrypt data.
       /// </summary>
       /// <remarks>Setting a null value will be ignored.</remarks>
-      public Data Key
+      public SymmetricKeyData Key
       {
          get { return _key; }
          set
@@ -132,7 +117,6 @@ namespace harlam357.Core.Security.Cryptography
             _key = value;
             _key.MaxBytes = _crypto.LegalKeySizes[0].MaxSize / 8;
             _key.MinBytes = _crypto.LegalKeySizes[0].MinSize / 8;
-            _key.StepBytes = _crypto.LegalKeySizes[0].SkipSize / 8;
          }
       }
 
@@ -144,7 +128,7 @@ namespace harlam357.Core.Security.Cryptography
       /// Gets or sets the initialization vector.
       /// </summary>
       /// <remarks>Setting a null value will be ignored.</remarks>
-      public Data IntializationVector
+      public SymmetricKeyData IntializationVector
       {
          get { return _iv; }
          set
@@ -160,19 +144,19 @@ namespace harlam357.Core.Security.Cryptography
       /// <summary>
       /// Generates a random initialization vector.
       /// </summary>
-      private Data RandomInitializationVector()
+      private SymmetricKeyData RandomInitializationVector()
       {
          _crypto.GenerateIV();
-         return new Data(_crypto.IV);
+         return new SymmetricKeyData(_crypto.IV);
       }
 
       /// <summary>
       /// Generates a random key.
       /// </summary>
-      private Data RandomKey()
+      private SymmetricKeyData RandomKey()
       {
          _crypto.GenerateKey();
-         return new Data(_crypto.Key);
+         return new SymmetricKeyData(_crypto.Key);
       }
 
       /// <summary>
@@ -210,7 +194,7 @@ namespace harlam357.Core.Security.Cryptography
       /// Encrypts the specified data using the provided key.
       /// </summary>
       /// <exception cref="T:System.ArgumentNullException">data is null.</exception>
-      public Data Encrypt(Data d, Data key)
+      public Data Encrypt(Data d, SymmetricKeyData key)
       {
          Key = key;
          return Encrypt(d);
@@ -239,7 +223,7 @@ namespace harlam357.Core.Security.Cryptography
       /// Encrypts the specified stream to memory using the provided key and initialization vector.
       /// </summary>
       /// <exception cref="T:System.ArgumentNullException">stream is null.</exception>
-      public Data Encrypt(Stream stream, Data key, Data iv)
+      public Data Encrypt(Stream stream, SymmetricKeyData key, SymmetricKeyData iv)
       {
          IntializationVector = iv;
          Key = key;
@@ -250,7 +234,7 @@ namespace harlam357.Core.Security.Cryptography
       /// Encrypts the specified stream to memory using the provided key.
       /// </summary>
       /// <exception cref="T:System.ArgumentNullException">stream is null.</exception>
-      public Data Encrypt(Stream stream, Data key)
+      public Data Encrypt(Stream stream, SymmetricKeyData key)
       {
          Key = key;
          return Encrypt(stream);
@@ -285,7 +269,7 @@ namespace harlam357.Core.Security.Cryptography
       /// Decrypts the specified stream using the provided key and preset initialization vector.
       /// </summary>
       /// <exception cref="T:System.ArgumentNullException">stream is null.</exception>
-      public Data Decrypt(Stream stream, Data key)
+      public Data Decrypt(Stream stream, SymmetricKeyData key)
       {
          Key = key;
          return Decrypt(stream);
@@ -321,7 +305,7 @@ namespace harlam357.Core.Security.Cryptography
       /// </summary>
       /// <exception cref="T:System.ArgumentNullException">data is null.</exception>
       /// <exception cref="T:System.Security.Cryptography.CryptographicException">Unable to decrypt data.</exception>
-      public Data Decrypt(Data data, Data key)
+      public Data Decrypt(Data data, SymmetricKeyData key)
       {
          Key = key;
          return Decrypt(data);
@@ -390,5 +374,86 @@ namespace harlam357.Core.Security.Cryptography
       private bool _disposed;
 
       #endregion
+   }
+
+   /// <summary>
+   /// Represents symmetric key data used to encrypt or decrypt data.
+   /// </summary>
+   public class SymmetricKeyData : Data
+   {
+      /// <summary>
+      /// Initializes a new instance of the SymmetricKeyData class that is empty.
+      /// </summary>
+      public SymmetricKeyData()
+      {
+
+      }
+
+      /// <summary>
+      /// Initializes a new instance of the SymmetricKeyData class with the byte array value.
+      /// </summary>
+      public SymmetricKeyData(byte[] value)
+         : base(value)
+      {
+         
+      }
+
+      /// <summary>
+      /// Initializes a new instance of the SymmetricKeyData class with the string value.
+      /// </summary>
+      public SymmetricKeyData(string value)
+         : base(value)
+      {
+         
+      }
+
+      /// <summary>
+      /// Initializes a new instance of the SymmetricKeyData class with the string value.
+      /// </summary>
+      public SymmetricKeyData(string value, Encoding encoding)
+         : base(value, encoding)
+      {
+         
+      }
+
+      /// <summary>
+      /// Gets or sets the minimum number of bytes allowed for this data; if 0, no limit.
+      /// </summary>
+      public int MinBytes { get; set; }
+
+      /// <summary>
+      /// Gets or sets the maximum number of bytes allowed for this data; if 0, no limit.
+      /// </summary>
+      public int MaxBytes { get; set; }
+
+      /// <summary>
+      /// Gets or sets the byte representation of the data. This will be padded to MinBytes and trimmed to MaxBytes as necessary.
+      /// </summary>
+      public override byte[] Bytes
+      {
+         get
+         {
+            if (MaxBytes > 0)
+            {
+               if (base.Bytes.Length > MaxBytes)
+               {
+                  var b = new byte[MaxBytes];
+                  Array.Copy(base.Bytes, b, b.Length);
+                  base.Bytes = b;
+               }
+            }
+            if (MinBytes > 0)
+            {
+               if (base.Bytes.Length < MinBytes)
+               {
+                  var b = new byte[MinBytes];
+                  Array.Copy(base.Bytes, b, base.Bytes.Length);
+                  base.Bytes = b;
+               }
+            }
+            return base.Bytes;
+         }
+         set { base.Bytes = value; }
+      }
    }
 }
