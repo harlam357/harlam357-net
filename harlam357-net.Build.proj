@@ -16,6 +16,10 @@
       <ConfigurationPath Condition=" '$(Configuration)' == 'Release' ">Release</ConfigurationPath>
       <ConfigurationPath Condition=" '$(Configuration)' == 'Debug 4.5' ">Debug\net45</ConfigurationPath>
       <ConfigurationPath Condition=" '$(Configuration)' == 'Release 4.5' ">Release\net45</ConfigurationPath>
+      <FrameworkString Condition=" '$(Configuration)' == 'Debug' ">net40</FrameworkString>
+      <FrameworkString Condition=" '$(Configuration)' == 'Release' ">net40</FrameworkString>
+      <FrameworkString Condition=" '$(Configuration)' == 'Debug 4.5' ">net45</FrameworkString>
+      <FrameworkString Condition=" '$(Configuration)' == 'Release 4.5' ">net45</FrameworkString>
       <AssemblyOriginatorKeyFile Condition=" '$(PlatformAssemblyOriginatorKeyFile)' == '' ">$(MSBuildProjectDirectory)\harlam357public.snk</AssemblyOriginatorKeyFile>
    </PropertyGroup>
    <!--PRIMARY TARGET: Rebuild-->
@@ -64,13 +68,13 @@
    </PropertyGroup>
    <!--PRIMARY TARGET: Test-->
    <Target Name="Test">
-      <Exec Command="$(NUnitPath) .\Core\Tests\bin\$(ConfigurationPath)\harlam357.Core.Tests.dll /framework=net-4.0 /xml=$(ArtifactsPath)\harlam357.Core.Tests.Results.xml" />
-      <Exec Command="$(NUnitPath) .\Windows.Forms\Tests\bin\$(ConfigurationPath)\harlam357.Windows.Forms.Tests.dll /framework=net-4.0 /xml=$(ArtifactsPath)\harlam357.Windows.Forms.Tests.Results.xml" />
+      <Exec Command="$(NUnitPath) .\Core\Tests\bin\$(ConfigurationPath)\harlam357.Core.Tests.dll /framework=net-4.0 /xml=$(ArtifactsPath)\harlam357.Core.Tests.Results-$(FrameworkString).xml" />
+      <Exec Command="$(NUnitPath) .\Windows.Forms\Tests\bin\$(ConfigurationPath)\harlam357.Windows.Forms.Tests.dll /framework=net-4.0 /xml=$(ArtifactsPath)\harlam357.Windows.Forms.Tests.Results-$(FrameworkString).xml" />
       <Message Text="Test Run Complete" />
    </Target>
   <!--PRIMARY TARGET: Analyze-->
    <Target Name="Analyze">
-      <Exec Command="$(FxCopPath) /f:$(ArtifactsBin)\harlam357.Core.dll /f:$(ArtifactsBin)\harlam357.Windows.Forms.dll /out:.\Artifacts\FxCopReport.xml /gac" />
+      <Exec Command="$(FxCopPath) /f:$(ArtifactsBin)\harlam357.Core.dll /f:$(ArtifactsBin)\harlam357.Windows.Forms.dll /out:.\Artifacts\FxCopReport-$(FrameworkString).xml /gac" />
    </Target>
    <ItemGroup>
       <ZipFiles Include="$(ArtifactsBin)\**\*.*" />
