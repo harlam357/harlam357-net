@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build;Test" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-   <!--PRIMARY TARGETS: Build;Test;Analyze;BuildPackages;CopyPackages-->
+   <!--PRIMARY TARGETS: Rebuild;Build;Test;Analyze;BuildPackages;CopyPackages-->
    <Import Project="$(MSBuildExtensionsPath)\MSBuildCommunityTasks\MSBuild.Community.Tasks.Targets" />
    <Import Project="$(MSBuildExtensionsPath)\ExtensionPack\4.0\MSBuild.ExtensionPack.tasks" />
    <PropertyGroup>
@@ -18,12 +18,15 @@
       <ConfigurationPath Condition=" '$(Configuration)' == 'Release 4.5' ">Release\net45</ConfigurationPath>
       <AssemblyOriginatorKeyFile Condition=" '$(PlatformAssemblyOriginatorKeyFile)' == '' ">$(MSBuildProjectDirectory)\harlam357public.snk</AssemblyOriginatorKeyFile>
    </PropertyGroup>
-   <!--PRIMARY TARGET: Build-->
-   <Target Name="Build" DependsOnTargets="CleanArtifactsFolder;Compile">
+   <!--PRIMARY TARGET: Rebuild-->
+   <Target Name="Rebuild" DependsOnTargets="CleanArtifactsFolder;CreateAssemblyVersion">
+      <MSBuild Projects="$(SolutionFileName)" Targets="Rebuild" Properties="Configuration=$(Configuration);Platform=$(Platform);AssemblyOriginatorKeyFile=$(AssemblyOriginatorKeyFile);NoWarn=1591" />
       <Message Text="$(ProductName) Build Complete" />
    </Target>
-   <Target Name="Compile" DependsOnTargets="CreateAssemblyVersion">
-      <MSBuild Projects="$(SolutionFileName)" Targets="Rebuild" Properties="Configuration=$(Configuration);Platform=$(Platform);AssemblyOriginatorKeyFile=$(AssemblyOriginatorKeyFile);NoWarn=1591" />
+   <!--PRIMARY TARGET: Build-->
+   <Target Name="Build" DependsOnTargets="CreateAssemblyVersion">
+      <MSBuild Projects="$(SolutionFileName)" Targets="Build" Properties="Configuration=$(Configuration);Platform=$(Platform);AssemblyOriginatorKeyFile=$(AssemblyOriginatorKeyFile);NoWarn=1591" />
+     <Message Text="$(ProductName) Build Complete" />
    </Target>
    <Target Name="CreateAssemblyVersion" DependsOnTargets="GetVersion">
       <AssemblyInfo CodeLanguage="CS"
