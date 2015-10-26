@@ -1,6 +1,6 @@
 ﻿/*
  * harlam357.Net - Web Operation Class Tests
- * Copyright (C) 2009-2013 Ryan Harlamert (harlam357)
+ * Copyright (C) 2009-2015 Ryan Harlamert (harlam357)
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,7 +18,6 @@
  */
 
 using System;
-using System.Globalization;
 using System.IO;
 using System.Net;
 
@@ -31,12 +30,12 @@ namespace harlam357.Core.Net
    {
       private static string TestFilesFolder
       {
-         get { return Path.GetFullPath(String.Format(CultureInfo.InvariantCulture, "..{0}..{0}TestFiles", Path.DirectorySeparatorChar)); }
+         get { return Path.Combine(Environment.CurrentDirectory, @"TestFiles"); }
       }
 
       private static string TestFilesWorkFolder
       {
-         get { return Path.GetFullPath(String.Format(CultureInfo.InvariantCulture, "..{0}..{0}TestFiles{0}Work", Path.DirectorySeparatorChar)); }
+         get { return Path.Combine(Environment.CurrentDirectory, @"TestFiles\Work"); }
       }
 
       [SetUp]

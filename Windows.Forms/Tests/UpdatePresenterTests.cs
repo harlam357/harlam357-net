@@ -231,7 +231,7 @@ namespace harlam357.Windows.Forms.Tests
       [Test]
       public void UpdatePresenter_VerifyDownload_Test()
       {
-         UpdatePresenter.VerifyDownload("..\\..\\TestFile.txt", _update.UpdateFiles[0]);
+         UpdatePresenter.VerifyDownload(Path.Combine(Environment.CurrentDirectory, "TestFile.txt"), _update.UpdateFiles[0]);
       }
    }
 }

@@ -33,7 +33,7 @@ namespace harlam357.Windows.Forms
       /// <summary>
       /// Gets or sets the progress reporting object responsible for notifying the dialog of task progress.
       /// </summary>
-      Core.Progress<Core.ComponentModel.ProgressChangedEventArgs> Progress { get; set; }
+      Core.IProgressWithEvent<Core.ComponentModel.ProgressChangedEventArgs> Progress { get; set; }
 
       /// <summary>
       /// Gets or sets the object that facilitates task cancellation.
@@ -88,12 +88,12 @@ namespace harlam357.Windows.Forms
    /// </summary>
    public partial class ProgressDialogAsync : Form, IProgressDialogAsyncView
    {
-      private Core.Progress<Core.ComponentModel.ProgressChangedEventArgs> _progress;
+      private Core.IProgressWithEvent<Core.ComponentModel.ProgressChangedEventArgs> _progress;
 
       /// <summary>
       /// Gets or sets the progress reporting object responsible for notifying the dialog of task progress.
       /// </summary>
-      public Core.Progress<Core.ComponentModel.ProgressChangedEventArgs> Progress
+      public Core.IProgressWithEvent<Core.ComponentModel.ProgressChangedEventArgs> Progress
       {
          get { return _progress; }
          set

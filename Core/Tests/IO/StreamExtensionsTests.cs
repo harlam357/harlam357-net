@@ -143,7 +143,7 @@ namespace harlam357.Core.IO
       [Test]
       public void Stream_FindLastIndex_Test1()
       {
-         using (var fs = new FileStream(@"..\..\TestFiles\gpl-3.0-1.txt", FileMode.Open, FileAccess.Read))
+         using (var fs = new FileStream(Path.Combine(Environment.CurrentDirectory, @"TestFiles\gpl-3.0-1.txt"), FileMode.Open, FileAccess.Read))
          {
             Assert.AreEqual(1108, fs.FindLastIndex(value => value == Convert.ToInt32('\n')));
          }
@@ -196,7 +196,7 @@ namespace harlam357.Core.IO
       [Test]
       public void Stream_GetStreamPosition_Test3()
       {
-         using (var fs = new FileStream(@"..\..\TestFiles\gpl-3.0-3.txt", FileMode.Open, FileAccess.Read))
+         using (var fs = new FileStream(Path.Combine(Environment.CurrentDirectory, @"TestFiles\gpl-3.0-3.txt"), FileMode.Open, FileAccess.Read))
          {
             fs.Seek(512, SeekOrigin.Current);
             var checkBuffer = new byte[128];
@@ -231,7 +231,7 @@ namespace harlam357.Core.IO
       [Test]
       public void Stream_SetStreamPosition_Test3()
       {
-         using (var fs = new FileStream(@"..\..\TestFiles\gpl-3.0-3.txt", FileMode.Open, FileAccess.Read))
+         using (var fs = new FileStream(Path.Combine(Environment.CurrentDirectory, @"TestFiles\gpl-3.0-3.txt"), FileMode.Open, FileAccess.Read))
          {
             fs.Seek(512, SeekOrigin.Current);
             var checkBuffer = new byte[128];
@@ -247,7 +247,7 @@ namespace harlam357.Core.IO
       [Test]
       public void Stream_SetStreamPosition_Test4()
       {
-         using (var fs = new FileStream(@"..\..\TestFiles\gpl-3.0-3.txt", FileMode.Open, FileAccess.Read))
+         using (var fs = new FileStream(Path.Combine(Environment.CurrentDirectory, @"TestFiles\gpl-3.0-3.txt"), FileMode.Open, FileAccess.Read))
          {
             var random = new Random();
             var checkBuffer = new byte[128];

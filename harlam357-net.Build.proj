@@ -12,6 +12,10 @@
       <SolutionFileName>harlam357-net.sln</SolutionFileName>
       <Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
       <Platform Condition=" '$(Platform)' == '' ">Any CPU</Platform>
+      <ConfigurationPath Condition=" '$(Configuration)' == 'Debug' ">Debug</ConfigurationPath>
+      <ConfigurationPath Condition=" '$(Configuration)' == 'Release' ">Release</ConfigurationPath>
+      <ConfigurationPath Condition=" '$(Configuration)' == 'Debug 4.5' ">Debug\net45</ConfigurationPath>
+      <ConfigurationPath Condition=" '$(Configuration)' == 'Release 4.5' ">Release\net45</ConfigurationPath>
       <AssemblyOriginatorKeyFile Condition=" '$(PlatformAssemblyOriginatorKeyFile)' == '' ">$(MSBuildProjectDirectory)\harlam357public.snk</AssemblyOriginatorKeyFile>
    </PropertyGroup>
    <!--PRIMARY TARGET: Build-->
@@ -48,7 +52,7 @@
    </Target>
    <PropertyGroup>
       <ArtifactsPath>Artifacts</ArtifactsPath>
-      <ArtifactsBin>Artifacts\bin\$(Configuration)</ArtifactsBin>
+      <ArtifactsBin>Artifacts\bin\$(ConfigurationPath)</ArtifactsBin>
       <ArtifactsPackages>Artifacts\Packages</ArtifactsPackages>
    </PropertyGroup>
    <PropertyGroup>
@@ -57,10 +61,11 @@
    </PropertyGroup>
    <!--PRIMARY TARGET: Test-->
    <Target Name="Test">
-      <Exec Command="$(NUnitPath) .\Core\Tests\bin\$(Configuration)\harlam357.Core.Tests.dll /framework=net-4.0 /xml=$(ArtifactsPath)\harlam357.Core.Tests.Results.xml" />
-      <Exec Command="$(NUnitPath) .\Windows.Forms\Tests\bin\$(Configuration)\harlam357.Windows.Forms.Tests.dll /framework=net-4.0 /xml=$(ArtifactsPath)\harlam357.Windows.Forms.Tests.Results.xml" />
+      <Exec Command="$(NUnitPath) .\Core\Tests\bin\$(ConfigurationPath)\harlam357.Core.Tests.dll /framework=net-4.0 /xml=$(ArtifactsPath)\harlam357.Core.Tests.Results.xml" />
+      <Exec Command="$(NUnitPath) .\Windows.Forms\Tests\bin\$(ConfigurationPath)\harlam357.Windows.Forms.Tests.dll /framework=net-4.0 /xml=$(ArtifactsPath)\harlam357.Windows.Forms.Tests.Results.xml" />
       <Message Text="Test Run Complete" />
    </Target>
+  <!--PRIMARY TARGET: Analyze-->
    <Target Name="Analyze">
       <Exec Command="$(FxCopPath) /f:$(ArtifactsBin)\harlam357.Core.dll /f:$(ArtifactsBin)\harlam357.Windows.Forms.dll /out:.\Artifacts\FxCopReport.xml /gac" />
    </Target>
@@ -75,6 +80,7 @@
    <Target Name="BuildZip" DependsOnTargets="GetVersion">
       <Zip Files="@(ZipFiles)" WorkingDirectory="$(ArtifactsBin)" ZipFileName="$(ArtifactsPackages)\$(ProductName) $(Configuration) $(Major).$(Minor).$(Build).$(Revision).zip" />
    </Target>
+  <!--PRIMARY TARGET: CopyPackages-->
    <Target Name="CopyPackages">
       <CallTarget Targets="CopyZip" />
    </Target>

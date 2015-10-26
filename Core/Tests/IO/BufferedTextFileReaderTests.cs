@@ -16,13 +16,13 @@ namespace harlam357.Core.IO
       public void BufferedTextFileReader_ReadAllLines_Test1()
       {
          var reader = new BufferedTextFileReader();
-         List<string> lines = reader.ReadAllLines(@"..\..\TestFiles\gpl-3.0-1.txt").ToList();
+         List<string> lines = reader.ReadAllLines(Path.Combine(Environment.CurrentDirectory, @"TestFiles\gpl-3.0-1.txt")).ToList();
          Assert.AreEqual(24, lines.Count);
-         lines = reader.ReadAllLines(@"..\..\TestFiles\gpl-3.0-2.txt").ToList();
+         lines = reader.ReadAllLines(Path.Combine(Environment.CurrentDirectory, @"TestFiles\gpl-3.0-2.txt")).ToList();
          Assert.AreEqual(40, lines.Count);
-         lines = reader.ReadAllLines(@"..\..\TestFiles\gpl-3.0-3.txt").ToList();
+         lines = reader.ReadAllLines(Path.Combine(Environment.CurrentDirectory, @"TestFiles\gpl-3.0-3.txt")).ToList();
          Assert.AreEqual(48, lines.Count);
-         var compareLines = File.ReadAllLines(@"..\..\TestFiles\gpl-3.0-3.txt");
+         var compareLines = File.ReadAllLines(Path.Combine(Environment.CurrentDirectory, @"TestFiles\gpl-3.0-3.txt"));
          Assert.IsTrue(lines.SequenceEqual(compareLines));
       }
 
