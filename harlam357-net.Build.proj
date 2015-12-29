@@ -82,7 +82,7 @@
       <ZipFiles Include="$(ArtifactsBin)\**\*.*" />
    </ItemGroup>
    <!--PRIMARY TARGET: Pack-->
-   <Target Name="Pack">
+   <Target Name="Pack" DependsOnTargets="GetVersion">
       <Zip Files="@(ZipFiles)" WorkingDirectory="$(ArtifactsBin)" ZipFileName="$(ArtifactsPath)\$(ProductName) $(FrameworkString) $(Major).$(Minor).$(Build).$(Revision).zip" />
       <Message Text="Pack Complete" />
    </Target>
