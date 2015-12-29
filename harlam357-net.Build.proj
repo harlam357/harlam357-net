@@ -12,8 +12,8 @@
       <SolutionFileName>harlam357-net.sln</SolutionFileName>
       <Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
       <Platform Condition=" '$(Platform)' == '' ">Any CPU</Platform>
-      <ConfigurationPath Condition=" '$(Configuration)' == 'Debug' ">Debug</ConfigurationPath>
-      <ConfigurationPath Condition=" '$(Configuration)' == 'Release' ">Release</ConfigurationPath>
+      <ConfigurationPath Condition=" '$(Configuration)' == 'Debug' ">Debug\net40</ConfigurationPath>
+      <ConfigurationPath Condition=" '$(Configuration)' == 'Release' ">Release\net40</ConfigurationPath>
       <ConfigurationPath Condition=" '$(Configuration)' == 'Debug 4.5' ">Debug\net45</ConfigurationPath>
       <ConfigurationPath Condition=" '$(Configuration)' == 'Release 4.5' ">Release\net45</ConfigurationPath>
       <FrameworkString Condition=" '$(Configuration)' == 'Debug' ">net40</FrameworkString>
