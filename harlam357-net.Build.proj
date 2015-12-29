@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build;Test" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-   <!--PRIMARY TARGETS: Rebuild;Build;Test;Analyze;BuildPackages;CopyPackages-->
+   <!--PRIMARY TARGETS: Rebuild;Build;Test;Analyze;Pack;CopyPackages-->
    <Import Project="$(MSBuildExtensionsPath)\MSBuildCommunityTasks\MSBuild.Community.Tasks.Targets" />
    <Import Project="$(MSBuildExtensionsPath)\ExtensionPack\4.0\MSBuild.ExtensionPack.tasks" />
    <PropertyGroup>
@@ -23,10 +23,7 @@
       <AssemblyOriginatorKeyFile Condition=" '$(PlatformAssemblyOriginatorKeyFile)' == '' ">$(MSBuildProjectDirectory)\harlam357public.snk</AssemblyOriginatorKeyFile>
    </PropertyGroup>
    <!--PRIMARY TARGET: Rebuild-->
-   <Target Name="Rebuild" DependsOnTargets="CleanArtifactsFolder;CreateAssemblyVersion">
-      <MSBuild Projects="$(SolutionFileName)" Targets="Rebuild" Properties="Configuration=$(Configuration);Platform=$(Platform);AssemblyOriginatorKeyFile=$(AssemblyOriginatorKeyFile);NoWarn=1591" />
-      <Message Text="$(ProductName) Build Complete" />
-   </Target>
+   <Target Name="Rebuild" DependsOnTargets="Clean;Build" />
    <!--PRIMARY TARGET: Build-->
    <Target Name="Build" DependsOnTargets="CreateAssemblyVersion">
       <MSBuild Projects="$(SolutionFileName)" Targets="Build" Properties="Configuration=$(Configuration);Platform=$(Platform);AssemblyOriginatorKeyFile=$(AssemblyOriginatorKeyFile);NoWarn=1591" />
@@ -52,15 +49,20 @@
       </GitCommits>
       <Message Text="Version: $(Major).$(Minor).$(Build).$(Revision)" />
    </Target>
+   <!--PRIMARY TARGET: Clean-->
+   <Target Name="Clean" DependsOnTargets="CleanArtifactsFolder">
+      <MSBuild Projects="$(SolutionFileName)" Targets="Clean" Properties="Configuration=$(Configuration);Platform=$(Platform)" />
+      <Message Text="$(ProductName) Clean Complete" />
+   </Target>
    <Target Name="CleanArtifactsFolder">
       <RemoveDir Directories="$(ArtifactsPath)" />
-      <!--<MakeDir Directories="$(ArtifactsBin)" />-->
-      <MakeDir Directories="$(ArtifactsPackages)" />
+      <MakeDir Directories="$(ArtifactsPath)" />
+      <RemoveDir Directories="$(ArtifactsBin)" />
+      <MakeDir Directories="$(ArtifactsBin)" />
    </Target>
    <PropertyGroup>
-      <ArtifactsPath>Artifacts</ArtifactsPath>
+      <ArtifactsPath>Artifacts\$(FrameworkString)</ArtifactsPath>
       <ArtifactsBin>Artifacts\bin\$(ConfigurationPath)</ArtifactsBin>
-      <ArtifactsPackages>Artifacts\Packages</ArtifactsPackages>
    </PropertyGroup>
    <PropertyGroup>
       <NUnitPath>&quot;.\lib\NUnit\bin\net-2.0\nunit-console-x86.exe&quot;</NUnitPath>
@@ -68,30 +70,27 @@
    </PropertyGroup>
    <!--PRIMARY TARGET: Test-->
    <Target Name="Test">
-      <Exec Command="$(NUnitPath) .\Core\Tests\bin\$(ConfigurationPath)\harlam357.Core.Tests.dll /framework=net-4.0 /xml=$(ArtifactsPath)\harlam357.Core.Tests.Results-$(FrameworkString).xml" />
-      <Exec Command="$(NUnitPath) .\Windows.Forms\Tests\bin\$(ConfigurationPath)\harlam357.Windows.Forms.Tests.dll /framework=net-4.0 /xml=$(ArtifactsPath)\harlam357.Windows.Forms.Tests.Results-$(FrameworkString).xml" />
+      <Exec Command="$(NUnitPath) .\Core\Tests\bin\$(ConfigurationPath)\harlam357.Core.Tests.dll /framework=net-4.0 /xml=$(ArtifactsPath)\harlam357.Core.Tests.Results.xml" />
+      <Exec Command="$(NUnitPath) .\Windows.Forms\Tests\bin\$(ConfigurationPath)\harlam357.Windows.Forms.Tests.dll /framework=net-4.0 /xml=$(ArtifactsPath)\harlam357.Windows.Forms.Tests.Results.xml" />
       <Message Text="Test Run Complete" />
    </Target>
   <!--PRIMARY TARGET: Analyze-->
    <Target Name="Analyze">
-      <Exec Command="$(FxCopPath) /f:$(ArtifactsBin)\harlam357.Core.dll /f:$(ArtifactsBin)\harlam357.Windows.Forms.dll /out:.\Artifacts\FxCopReport-$(FrameworkString).xml /gac" />
+      <Exec Command="$(FxCopPath) /f:$(ArtifactsBin)\harlam357.Core.dll /f:$(ArtifactsBin)\harlam357.Windows.Forms.dll /out:.\$(ArtifactsPath)\FxCopReport.xml /gac" />
    </Target>
    <ItemGroup>
       <ZipFiles Include="$(ArtifactsBin)\**\*.*" />
    </ItemGroup>
-   <!--PRIMARY TARGET: BuildPackages-->
-   <Target Name="BuildPackages">
-      <CallTarget Targets="BuildZip" />
-      <Message Text="Package Build Complete" />
+   <!--PRIMARY TARGET: Pack-->
+   <Target Name="Pack">
+      <Zip Files="@(ZipFiles)" WorkingDirectory="$(ArtifactsBin)" ZipFileName="$(ArtifactsPath)\$(ProductName) $(FrameworkString) $(Major).$(Minor).$(Build).$(Revision).zip" />
+      <Message Text="Pack Complete" />
    </Target>
-   <Target Name="BuildZip" DependsOnTargets="GetVersion">
-      <Zip Files="@(ZipFiles)" WorkingDirectory="$(ArtifactsBin)" ZipFileName="$(ArtifactsPackages)\$(ProductName) $(Configuration) $(Major).$(Minor).$(Build).$(Revision).zip" />
-   </Target>
-  <!--PRIMARY TARGET: CopyPackages-->
+   <!--PRIMARY TARGET: CopyPackages-->
    <Target Name="CopyPackages">
       <CallTarget Targets="CopyZip" />
    </Target>
    <Target Name ="CopyZip" Condition="'$(PackageDestination)' != ''" DependsOnTargets="GetVersion">
-      <Copy SourceFiles="$(ArtifactsPackages)\$(ProductName) $(Configuration) $(Major).$(Minor).$(Build).$(Revision).zip" DestinationFolder="$(PackageDestination)" />
+      <Copy SourceFiles="$(ArtifactsPath)\$(ProductName) $(Configuration) $(Major).$(Minor).$(Build).$(Revision).zip" DestinationFolder="$(PackageDestination)" />
    </Target>
 </Project>
