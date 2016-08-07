@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build;Test" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-   <!--PRIMARY TARGETS: Rebuild;Build;Test;Analyze;Pack;CopyPackages-->
+   <!--PRIMARY TARGETS: Rebuild;Build;Clean;Test;Analyze;Pack-->
    <Import Project="$(MSBuildExtensionsPath)\MSBuildCommunityTasks\MSBuild.Community.Tasks.Targets" />
    <Import Project="$(MSBuildExtensionsPath)\ExtensionPack\4.0\MSBuild.ExtensionPack.tasks" />
    <PropertyGroup>
@@ -85,12 +85,5 @@
    <Target Name="Pack" DependsOnTargets="GetVersion">
       <Zip Files="@(ZipFiles)" WorkingDirectory="$(ArtifactsBin)" ZipFileName="$(ArtifactsPath)\$(ProductName) $(FrameworkString) $(Major).$(Minor).$(Build).$(Revision).zip" />
       <Message Text="Pack Complete" />
-   </Target>
-   <!--PRIMARY TARGET: CopyPackages-->
-   <Target Name="CopyPackages">
-      <CallTarget Targets="CopyZip" />
-   </Target>
-   <Target Name ="CopyZip" Condition="'$(PackageDestination)' != ''" DependsOnTargets="GetVersion">
-      <Copy SourceFiles="$(ArtifactsPath)\$(ProductName) $(Configuration) $(Major).$(Minor).$(Build).$(Revision).zip" DestinationFolder="$(PackageDestination)" />
    </Target>
 </Project>
