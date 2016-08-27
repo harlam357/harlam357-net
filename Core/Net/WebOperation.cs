@@ -101,6 +101,12 @@ namespace harlam357.Core.Net
       void Download(string fileName);
 
       /// <summary>
+      /// Downloads the resource to a stream.
+      /// </summary>
+      /// <param name="stream">The stream used to receive the data.</param>
+      void Download(Stream stream);
+
+      /// <summary>
       /// Gets the length of the data being received.
       /// </summary>
       /// <returns>The length of the data being received in bytes.</returns>
@@ -119,6 +125,12 @@ namespace harlam357.Core.Net
       /// <param name="fileName">The file to send to the resource.</param>
       /// <param name="maximumLength">The maximum number of bytes to upload.  If the value is 0 or less the entire file will be uploaded.</param>
       void Upload(string fileName, int maximumLength);
+
+      /// <summary>
+      /// Uploads the specified stream to the resource.
+      /// </summary>
+      /// <param name="stream">The stream to send to the resource.</param>
+      void Upload(Stream stream);
 
       /// <summary>
       /// Returns a value indicating if a connection can be made to the resource.
@@ -216,6 +228,35 @@ namespace harlam357.Core.Net
             return;
          }
 
+         // Create the directory if it does not exist
+         string localPath = Path.GetDirectoryName(fileName);
+         if (localPath != null && !Directory.Exists(localPath))
+         {
+            Directory.CreateDirectory(localPath);
+         }
+
+         using (Stream fileStream = File.Create(fileName))
+         {
+            Download(fileStream);
+         }
+
+         if (Result == WebOperationResult.Canceled)
+         {
+            File.Delete(fileName);
+         }
+      }
+
+      /// <summary>
+      /// Downloads the resource to a stream.
+      /// </summary>
+      /// <param name="stream">The stream used to receive the data.</param>
+      public void Download(Stream stream)
+      {
+         if (State != WebOperationState.Idle)
+         {
+            return;
+         }
+
          State = WebOperationState.InProgress;
          Result = WebOperationResult.None;
          _webRequest.Method = GetWebDownloadMethod();
@@ -232,44 +273,30 @@ namespace harlam357.Core.Net
                Buffer = CalculateBufferSize(totalLength);
             }
 
-            // Create the directory if it does not exist
-            string localPath = Path.GetDirectoryName(fileName);
-            if (localPath != null && !Directory.Exists(localPath))
-            {
-               Directory.CreateDirectory(localPath);
-            }
+            var buffer = new byte[Buffer];
+            int bytesRead = 0;
 
-            using (Stream fileStream = File.Create(fileName))
+            do
             {
-               var buffer = new byte[Buffer];
-               int bytesRead = 0;
-
-               do
+               if (_cancel)
                {
-                  if (_cancel)
-                  {
-                     Result = WebOperationResult.Canceled;
-                     break;
-                  }
-
-                  if (responseStream != null)
-                  {
-                     bytesRead = responseStream.Read(buffer, 0, buffer.Length);
-                  }
-                  fileStream.Write(buffer, 0, bytesRead);
-
-                  totalBytesRead += bytesRead;
-                  OnWebOperationProgress(new WebOperationProgressChangedEventArgs(totalBytesRead, totalLength, State, Result));
+                  Result = WebOperationResult.Canceled;
+                  break;
                }
-               while (bytesRead > 0);
+
+               if (responseStream != null)
+               {
+                  bytesRead = responseStream.Read(buffer, 0, buffer.Length);
+               }
+               stream.Write(buffer, 0, bytesRead);
+
+               totalBytesRead += bytesRead;
+               OnWebOperationProgress(new WebOperationProgressChangedEventArgs(totalBytesRead, totalLength, State, Result));
             }
+            while (bytesRead > 0);
          }
 
-         if (_cancel)
-         {
-            File.Delete(fileName);
-         }
-         else if (totalBytesRead == totalLength)
+         if (Result != WebOperationResult.Canceled && totalBytesRead == totalLength)
          {
             Result = WebOperationResult.Completed;
          }
@@ -324,6 +351,30 @@ namespace harlam357.Core.Net
       /// <param name="maximumLength">The maximum number of bytes to upload.  If the value is 0 or less the entire file will be uploaded.</param>
       public void Upload(string fileName, int maximumLength)
       {
+         using (Stream fileStream = File.OpenRead(fileName))
+         {
+            if (maximumLength >= 0 && fileStream.Length >= maximumLength)
+            {
+               fileStream.Position = fileStream.Length - maximumLength;
+            }
+            Upload(fileStream);
+         }
+
+         if (Result == WebOperationResult.Canceled)
+         {
+            if (WebRequest is FileWebRequestAdapter && File.Exists(WebRequest.RequestUri.LocalPath))
+            {
+               File.Delete(WebRequest.RequestUri.LocalPath);
+            }
+         }
+      }
+
+      /// <summary>
+      /// Uploads the specified stream to the resource.
+      /// </summary>
+      /// <param name="stream">The stream to send to the resource.</param>
+      public void Upload(Stream stream)
+      {
          if (State != WebOperationState.Idle)
          {
             return;
@@ -334,73 +385,39 @@ namespace harlam357.Core.Net
          _webRequest.Method = GetWebUploadMethod();
 
          long totalBytesRead = 0;
-         long totalLength;
+         long totalLength = stream.Length - stream.Position;
 
-         using (Stream fileStream = File.OpenRead(fileName))
+         if (AutoSizeBuffer)
          {
-            if (maximumLength < 1)
-            {
-               totalLength = fileStream.Length;
-            }
-            else
-            {
-               if (fileStream.Length < maximumLength)
-               {
-                  totalLength = fileStream.Length;
-               }
-               else
-               {
-                  totalLength = maximumLength;
-                  fileStream.Position = fileStream.Length - maximumLength;   
-               }
-            }
-            
-            if (AutoSizeBuffer)
-            {
-               Buffer = CalculateBufferSize(totalLength);
-            }
-
-            using (Stream requestStream = _webRequest.GetRequestStream())
-            {
-               var buffer = new byte[Buffer];
-               int bytesRead;
-
-               do
-               {
-                  if (_cancel)
-                  {
-                     Result = WebOperationResult.Canceled;
-                     break;
-                  }
-
-                  bytesRead = fileStream.Read(buffer, 0, buffer.Length);
-                  requestStream.Write(buffer, 0, bytesRead);
-
-                  totalBytesRead += bytesRead;
-                  OnWebOperationProgress(new WebOperationProgressChangedEventArgs(totalBytesRead, totalLength, State, Result));
-
-               } while (bytesRead > 0);
-            }
+            Buffer = CalculateBufferSize(totalLength);
          }
 
-         if (_cancel)
+         using (Stream requestStream = _webRequest.GetRequestStream())
          {
-            if (WebRequest is FileWebRequestAdapter && File.Exists(WebRequest.RequestUri.LocalPath))
+            var buffer = new byte[Buffer];
+            int bytesRead;
+
+            do
             {
-               File.Delete(WebRequest.RequestUri.LocalPath);   
-            }
+               if (_cancel)
+               {
+                  Result = WebOperationResult.Canceled;
+                  break;
+               }
+
+               bytesRead = stream.Read(buffer, 0, buffer.Length);
+               requestStream.Write(buffer, 0, bytesRead);
+
+               totalBytesRead += bytesRead;
+               OnWebOperationProgress(new WebOperationProgressChangedEventArgs(totalBytesRead, totalLength, State, Result));
+
+            } while (bytesRead > 0);
          }
-         else if (totalBytesRead == totalLength)
+
+         if (Result != WebOperationResult.Canceled && totalBytesRead == totalLength)
          {
             Result = WebOperationResult.Completed;
          }
-
-         // Get the Response Stream and Close
-         //if (FtpWebRequest != null)
-         //{
-         //   FtpWebResponse response = (FtpWebResponse)FtpWebRequest.GetResponse();
-         //   response.Close();
-         //}
 
          IWebResponse response = _webRequest.GetResponse();
          response.Close();
