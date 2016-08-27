@@ -6,7 +6,7 @@
    <PropertyGroup>
       <Major>1</Major>
       <Minor>5</Minor>
-      <Build>1</Build>
+      <Build>2</Build>
       <Revision>0</Revision>
       <ProductName>harlam357-net</ProductName>
       <SolutionFileName>harlam357-net.sln</SolutionFileName>
@@ -34,7 +34,7 @@
         OutputFile="AssemblyVersion.cs"
         AssemblyCompany="harlam357"
         AssemblyProduct="$(ProductName)"
-        AssemblyCopyright="Copyright © Ryan Harlamert 2009-2015."
+        AssemblyCopyright="Copyright © Ryan Harlamert 2009-2016."
         AssemblyVersion="$(Major).$(Minor).$(Build).$(Revision)"
         AssemblyFileVersion="$(Major).$(Minor).$(Build).$(Revision)"
         Condition="$(Revision) != '0' " />
