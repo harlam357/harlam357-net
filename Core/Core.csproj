@@ -82,6 +82,7 @@
     </Compile>
     <Compile Include="ComponentModel\ProgressChangedEventArgs.cs" />
     <Compile Include="ComponentModel\ProgressProcessRunner.cs" />
+    <Compile Include="ComponentModel\SortComparer.cs" />
     <Compile Include="IO\BufferedTextFileReader.cs" />
     <Compile Include="IO\StreamExtensions.cs" />
     <Compile Include="IProgressWithEvent.cs" />
