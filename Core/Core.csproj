@@ -99,6 +99,7 @@
     <Compile Include="Security\Hash.cs" />
     <Compile Include="Threading\Tasks\CurrentThreadTaskScheduler.cs" />
     <Compile Include="Threading\Tasks\TaskSchedulerProgress.cs" />
+    <Compile Include="Threading\ThreadLocalDisposable.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\harlam357public.snk">
