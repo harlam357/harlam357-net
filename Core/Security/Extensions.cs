@@ -66,7 +66,7 @@ namespace harlam357.Core.Security
       /// <summary>
       /// Converts an array of bytes to a Base64 string representation.
       /// </summary>
-      static public string ToBase64(this byte[] value)
+      public static string ToBase64(this byte[] value)
       {
          if (value == null || value.Length == 0)
          {
@@ -79,7 +79,7 @@ namespace harlam357.Core.Security
       /// Converts a Base64 string representation to an array of bytes.
       /// </summary>
       /// <exception cref="T:System.FormatException">The length of value, ignoring white-space characters, is not zero or a multiple of 4. -or- The format of value is invalid. value contains a non-base-64 character, more than two padding characters, or a non-white space-character among the padding characters.</exception>
-      static public byte[] FromBase64(this string value)
+      public static byte[] FromBase64(this string value)
       {
          if (String.IsNullOrEmpty(value))
          {
