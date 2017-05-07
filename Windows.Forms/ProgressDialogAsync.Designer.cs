@@ -58,7 +58,7 @@
          this.ProcessCancelButton.UseVisualStyleBackColor = true;
          this.ProcessCancelButton.Click += new System.EventHandler(this.ProcessCancelButtonClick);
          // 
-         // ProgressDialog
+         // ProgressDialogAsync
          // 
          this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
          this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -69,7 +69,7 @@
          this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
          this.MaximizeBox = false;
          this.MinimizeBox = false;
-         this.Name = "ProgressDialog";
+         this.Name = "ProgressDialogAsync";
          this.ShowInTaskbar = false;
          this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
          this.Text = "ProgressDialog";

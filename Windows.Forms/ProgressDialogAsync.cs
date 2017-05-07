@@ -124,7 +124,20 @@ namespace harlam357.Windows.Forms
          var progress = new Progress<ProgressInfo>();
          progress.ProgressChanged += (s, progressInfo) =>
          {
-            progressBar.Value = progressInfo.ProgressPercentage;
+            int value = SanitizeProgressValue(progressInfo.ProgressPercentage);
+            // Sets the progress bar value, without using Windows animation
+            // https://stackoverflow.com/questions/5332616/disabling-net-progressbar-animation-when-changing-value
+            if (value == progressBar.Maximum)
+            {
+               progressBar.Maximum = value + 1;
+               progressBar.Value = value + 1;
+               progressBar.Maximum = value;
+            }
+            else
+            {
+               progressBar.Value = value + 1;
+            }
+            progressBar.Value = value;
             messageLabel.Text = progressInfo.Message;
          };
 
@@ -138,6 +151,19 @@ namespace harlam357.Windows.Forms
             await RunAsyncProcessor(AsyncProcessor, progress);
          }
          Close();
+      }
+
+      private int SanitizeProgressValue(int value)
+      {
+         if (value < 0)
+         {
+            return 0;
+         }
+         if (value > progressBar.Maximum)
+         {
+            return progressBar.Maximum;
+         }
+         return value;
       }
 
       private async Task RunAsyncProcessorWithCancellation(IAsyncProcessorWithCancellation processor, IProgress<ProgressInfo> progress)
