@@ -10,11 +10,17 @@ namespace harlam357.Core.ComponentModel
       Task ExecuteAsync(IProgress<ProgressInfo> progress);
 
       Exception Exception { get; }
+
+      bool IsCompleted { get; }
+
+      bool IsFaulted { get; }
    }
 
    public interface IAsyncProcessorWithCancellation : IAsyncProcessor
    {
       Task ExecuteAsync(CancellationToken cancellationToken, IProgress<ProgressInfo> progress);
+
+      bool IsCanceled { get; }
    }
 
 #if NET45
@@ -25,14 +31,20 @@ namespace harlam357.Core.ComponentModel
          try
          {
             await OnExecuteAsync(progress).ConfigureAwait(false);
+            IsCompleted = true;
          }
          catch (Exception ex)
          {
             Exception = ex;
+            IsFaulted = true;
          }
       }
 
       public Exception Exception { get; private set; }
+
+      public bool IsCompleted { get; private set; }
+
+      public bool IsFaulted { get; private set; }
 
       protected abstract Task OnExecuteAsync(IProgress<ProgressInfo> progress);
    }
@@ -49,18 +61,26 @@ namespace harlam357.Core.ComponentModel
          try
          {
             await OnExecuteAsync(cancellationToken, progress).ConfigureAwait(false);
+            IsCompleted = true;
          }
          catch (OperationCanceledException)
          {
-            // handle the cancellation
+            IsCanceled = true;
          }
          catch (Exception ex)
          {
             Exception = ex;
+            IsFaulted = true;
          }
       }
 
       public Exception Exception { get; private set; }
+
+      public bool IsCanceled { get; private set; }
+
+      public bool IsCompleted { get; private set; }
+
+      public bool IsFaulted { get; private set; }
 
       protected abstract Task OnExecuteAsync(CancellationToken cancellationToken, IProgress<ProgressInfo> progress);
    }
