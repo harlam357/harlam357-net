@@ -5,8 +5,8 @@
    <Import Project="$(MSBuildExtensionsPath)\ExtensionPack\4.0\MSBuild.ExtensionPack.tasks" />
    <PropertyGroup>
       <Major>1</Major>
-      <Minor>5</Minor>
-      <Build>2</Build>
+      <Minor>6</Minor>
+      <Build>0</Build>
       <Revision>0</Revision>
       <ProductName>harlam357-net</ProductName>
       <SolutionFileName>harlam357-net.sln</SolutionFileName>
@@ -16,10 +16,10 @@
       <ConfigurationPath Condition=" '$(Configuration)' == 'Release' ">Release\net40</ConfigurationPath>
       <ConfigurationPath Condition=" '$(Configuration)' == 'Debug 4.5' ">Debug\net45</ConfigurationPath>
       <ConfigurationPath Condition=" '$(Configuration)' == 'Release 4.5' ">Release\net45</ConfigurationPath>
-      <FrameworkString Condition=" '$(Configuration)' == 'Debug' ">net40</FrameworkString>
-      <FrameworkString Condition=" '$(Configuration)' == 'Release' ">net40</FrameworkString>
-      <FrameworkString Condition=" '$(Configuration)' == 'Debug 4.5' ">net45</FrameworkString>
-      <FrameworkString Condition=" '$(Configuration)' == 'Release 4.5' ">net45</FrameworkString>
+      <FrameworkMoniker Condition=" '$(Configuration)' == 'Debug' ">net40</FrameworkMoniker>
+      <FrameworkMoniker Condition=" '$(Configuration)' == 'Release' ">net40</FrameworkMoniker>
+      <FrameworkMoniker Condition=" '$(Configuration)' == 'Debug 4.5' ">net45</FrameworkMoniker>
+      <FrameworkMoniker Condition=" '$(Configuration)' == 'Release 4.5' ">net45</FrameworkMoniker>
       <AssemblyOriginatorKeyFile Condition=" '$(PlatformAssemblyOriginatorKeyFile)' == '' ">$(MSBuildProjectDirectory)\harlam357public.snk</AssemblyOriginatorKeyFile>
    </PropertyGroup>
    <!--PRIMARY TARGET: Rebuild-->
@@ -34,7 +34,7 @@
         OutputFile="AssemblyVersion.cs"
         AssemblyCompany="harlam357"
         AssemblyProduct="$(ProductName)"
-        AssemblyCopyright="Copyright © Ryan Harlamert 2009-2016."
+        AssemblyCopyright="Copyright © Ryan Harlamert 2009-2017."
         AssemblyVersion="$(Major).$(Minor).$(Build).$(Revision)"
         AssemblyFileVersion="$(Major).$(Minor).$(Build).$(Revision)"
         Condition="$(Revision) != '0' " />
@@ -61,7 +61,7 @@
       <MakeDir Directories="$(ArtifactsBin)" />
    </Target>
    <PropertyGroup>
-      <ArtifactsPath>Artifacts\$(FrameworkString)</ArtifactsPath>
+      <ArtifactsPath>Artifacts\$(FrameworkMoniker)</ArtifactsPath>
       <ArtifactsBin>Artifacts\bin\$(ConfigurationPath)</ArtifactsBin>
    </PropertyGroup>
    <PropertyGroup>
@@ -83,7 +83,7 @@
    </ItemGroup>
    <!--PRIMARY TARGET: Pack-->
    <Target Name="Pack" DependsOnTargets="GetVersion">
-      <Zip Files="@(ZipFiles)" WorkingDirectory="$(ArtifactsBin)" ZipFileName="$(ArtifactsPath)\$(ProductName) $(FrameworkString) $(Major).$(Minor).$(Build).$(Revision).zip" />
+      <Zip Files="@(ZipFiles)" WorkingDirectory="$(ArtifactsBin)" ZipFileName="$(ArtifactsPath)\$(ProductName) $(FrameworkMoniker) $(Major).$(Minor).$(Build).$(Revision).zip" />
       <Message Text="Pack Complete" />
    </Target>
 </Project>
