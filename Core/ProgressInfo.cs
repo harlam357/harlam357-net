@@ -22,7 +22,7 @@ using System;
 namespace harlam357.Core
 {
    /// <summary>
-   /// Provides progress information data for Progress<T>.
+   /// Provides progress information data.
    /// </summary>
    public class ProgressInfo
    {
