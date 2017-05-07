@@ -25,7 +25,7 @@
    <!--PRIMARY TARGET: Rebuild-->
    <Target Name="Rebuild" DependsOnTargets="Clean;Build" />
    <!--PRIMARY TARGET: Build-->
-   <Target Name="Build" DependsOnTargets="CreateAssemblyVersion">
+   <Target Name="Build" DependsOnTargets="CreateAssemblyVersion;NuGetRestore">
       <MSBuild Projects="$(SolutionFileName)" Targets="Build" Properties="Configuration=$(Configuration);Platform=$(Platform);AssemblyOriginatorKeyFile=$(AssemblyOriginatorKeyFile);NoWarn=1591" />
      <Message Text="$(ProductName) Build Complete" />
    </Target>
@@ -54,6 +54,9 @@
       <MSBuild Projects="$(SolutionFileName)" Targets="Clean" Properties="Configuration=$(Configuration);Platform=$(Platform)" />
       <Message Text="$(ProductName) Clean Complete" />
    </Target>
+   <Target Name="NuGetRestore">
+      <Exec Command="$(NuGetPath) restore $(SolutionFileName)" />
+   </Target>
    <Target Name="CleanArtifactsFolder">
       <RemoveDir Directories="$(ArtifactsPath)" />
       <MakeDir Directories="$(ArtifactsPath)" />
@@ -65,8 +68,9 @@
       <ArtifactsBin>Artifacts\bin\$(ConfigurationPath)</ArtifactsBin>
    </PropertyGroup>
    <PropertyGroup>
-      <NUnitPath>&quot;.\lib\NUnit\bin\net-2.0\nunit-console-x86.exe&quot;</NUnitPath>
+      <NUnitPath>&quot;packages\NUnit.Runners.2.6.4\tools\nunit-console-x86.exe&quot;</NUnitPath>
       <FxCopPath>&quot;$(ProgramFiles)\Microsoft Visual Studio 12.0\Team Tools\Static Analysis Tools\FxCop\FxCopCmd.exe&quot;</FxCopPath>
+      <NuGetPath>&quot;.nuget\NuGet.exe&quot;</NuGetPath>
    </PropertyGroup>
    <!--PRIMARY TARGET: Test-->
    <Target Name="Test">
