@@ -119,6 +119,8 @@ namespace harlam357.Windows.Forms
 #if NET45
       protected override async void OnShown(EventArgs e)
       {
+         base.OnShown(e);
+
          var progress = new Progress<ProgressInfo>();
          progress.ProgressChanged += (s, progressInfo) =>
          {
@@ -146,14 +148,6 @@ namespace harlam357.Windows.Forms
          {
             await processor.ExecuteAsync(_cancellationTokenSource.Token, progress).ConfigureAwait(false);
          }
-         catch (OperationCanceledException)
-         {
-            // handle the cancellation
-         }
-         catch (Exception ex)
-         {
-            MessageBox.Show(this, ex.Message, Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
-         }
          finally
          {
             _taskInProgress = false;
@@ -168,10 +162,6 @@ namespace harlam357.Windows.Forms
          try
          {
             await processor.ExecuteAsync(progress).ConfigureAwait(false);
-         }
-         catch (Exception ex)
-         {
-            MessageBox.Show(this, ex.Message, Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
          }
          finally
          {

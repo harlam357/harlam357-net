@@ -81,7 +81,7 @@
       <Link>Properties\AssemblyVersion.cs</Link>
     </Compile>
     <Compile Include="ProgressInfo.cs" />
-    <Compile Include="ComponentModel\IAsyncProcessor.cs" />
+    <Compile Include="ComponentModel\AsyncProcessor.cs" />
     <Compile Include="ComponentModel\SortComparer.cs" />
     <Compile Include="IO\BufferedTextFileReader.cs" />
     <Compile Include="IO\StreamExtensions.cs" />
