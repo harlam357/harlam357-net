@@ -1,5 +1,5 @@
 ﻿/*
- * harlam357.Windows.Forms - Progress Dialog Async
+ * harlam357.Windows.Forms
  * Copyright (C) 2010-2017 Ryan Harlamert (harlam357)
  * 
  * This library is free software; you can redistribute it and/or
@@ -29,7 +29,6 @@ using harlam357.Core.ComponentModel;
 
 namespace harlam357.Windows.Forms
 {
-#if NET45
    /// <summary>
    /// Represents a view interface for a modal dialog that reports the progress of an asynchronous task.
    /// </summary>
@@ -117,6 +116,7 @@ namespace harlam357.Windows.Forms
       private CancellationTokenSource _cancellationTokenSource;
       private bool _taskInProgress;
 
+#if NET45
       protected override async void OnShown(EventArgs e)
       {
          var progress = new Progress<ProgressInfo>();
@@ -178,6 +178,7 @@ namespace harlam357.Windows.Forms
             _taskInProgress = false;
          }
       }
+#endif
 
       protected override void OnFormClosing(FormClosingEventArgs e)
       {
@@ -202,5 +203,4 @@ namespace harlam357.Windows.Forms
          Size = enabled ? _baseSize : new Size(_baseSize.Width, _baseSize.Height - 30);
       }
    }
-#endif
 }
