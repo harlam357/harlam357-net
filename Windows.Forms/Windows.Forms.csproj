@@ -108,7 +108,7 @@
       <Link>Properties\AssemblyVersion.cs</Link>
     </Compile>
     <Compile Include="ApplicationUpdate.cs" />
-    <Compile Include="BindableToolStripStatusLabel.cs">
+    <Compile Include="Controls\BindableToolStripStatusLabel.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="ClipboardWrapper.cs" />
@@ -120,18 +120,10 @@
     </Compile>
     <Compile Include="FileDialogView.cs" />
     <Compile Include="FolderBrowserView.cs" />
-    <Compile Include="IValidatingControl.cs" />
+    <Compile Include="Controls\IValidatingControl.cs" />
     <Compile Include="MessageBoxView.cs" />
     <Compile Include="OpenFileDialogView.cs" />
-    <Compile Include="ProgressDialog.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="ProgressDialog.Designer.cs">
-      <DependentUpon>ProgressDialog.cs</DependentUpon>
-    </Compile>
-    <Compile Include="ProgressDialogAsync.cs">
-      <SubType>Form</SubType>
-    </Compile>
+    <Compile Include="ProgressDialogAsync.cs" />
     <Compile Include="ProgressDialogAsync.Designer.cs">
       <DependentUpon>ProgressDialogAsync.cs</DependentUpon>
     </Compile>
@@ -141,7 +133,7 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
-    <Compile Include="RadioPanel.cs">
+    <Compile Include="Controls\RadioPanel.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="SaveFileDialogView.cs" />
@@ -154,32 +146,29 @@
       <DependentUpon>UpdateDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="UpdatePresenter.cs" />
-    <Compile Include="ValidatingComboBox.cs">
+    <Compile Include="Controls\ValidatingComboBox.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="ValidatingComboBox.Designer.cs">
+    <Compile Include="Controls\ValidatingComboBox.Designer.cs">
       <DependentUpon>ValidatingComboBox.cs</DependentUpon>
     </Compile>
-    <Compile Include="ValidatingControlLogic.cs" />
-    <Compile Include="ValidatingMaskedTextBox.cs">
+    <Compile Include="Controls\ValidatingControlLogic.cs" />
+    <Compile Include="Controls\ValidatingMaskedTextBox.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="ValidatingMaskedTextBox.Designer.cs">
+    <Compile Include="Controls\ValidatingMaskedTextBox.Designer.cs">
       <DependentUpon>ValidatingMaskedTextBox.cs</DependentUpon>
     </Compile>
-    <Compile Include="ValidatingTextBox.cs">
+    <Compile Include="Controls\ValidatingTextBox.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="ValidatingTextBox.Designer.cs">
+    <Compile Include="Controls\ValidatingTextBox.Designer.cs">
       <DependentUpon>ValidatingTextBox.cs</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="ExceptionDialog.resx">
       <DependentUpon>ExceptionDialog.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="ProgressDialog.resx">
-      <DependentUpon>ProgressDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="ProgressDialogAsync.resx">
       <DependentUpon>ProgressDialogAsync.cs</DependentUpon>

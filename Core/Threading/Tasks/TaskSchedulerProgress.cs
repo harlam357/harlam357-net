@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace harlam357.Core.Threading.Tasks
 {
-   public class TaskSchedulerProgress<T> : IProgressWithEvent<T>
+   public class TaskSchedulerProgress<T> : IProgress<T>
    {
       private readonly TaskScheduler _taskScheduler;
       private readonly Action<T> _handler;

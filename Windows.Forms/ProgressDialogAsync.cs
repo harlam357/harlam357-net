@@ -1,6 +1,6 @@
 ﻿/*
  * harlam357.Windows.Forms - Progress Dialog Async
- * Copyright (C) 2010-2015 Ryan Harlamert (harlam357)
+ * Copyright (C) 2010-2017 Ryan Harlamert (harlam357)
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -21,39 +21,24 @@ using System;
 using System.Diagnostics;
 using System.Drawing;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
+
+using harlam357.Core;
+using harlam357.Core.ComponentModel;
 
 namespace harlam357.Windows.Forms
 {
+#if NET45
    /// <summary>
    /// Represents a view interface for a modal dialog that reports the progress of an asynchronous task.
    /// </summary>
    public interface IProgressDialogAsyncView : IWin32Window, IDisposable
    {
       /// <summary>
-      /// Gets or sets the progress reporting object responsible for notifying the dialog of task progress.
+      /// Gets or sets the asynchronous processor object.
       /// </summary>
-      Core.IProgressWithEvent<Core.ComponentModel.ProgressChangedEventArgs> Progress { get; set; }
-
-      /// <summary>
-      /// Gets or sets the object that facilitates task cancellation.
-      /// </summary>
-      CancellationTokenSource CancellationTokenSource { get; set; }
-
-      /// <summary>
-      /// Updates the progress bar value.
-      /// </summary>
-      void UpdateProgress(int progress);
-
-      /// <summary>
-      /// Updates the text message value.
-      /// </summary>
-      void UpdateMessage(string message);
-
-      /// <summary>
-      /// Occurs whenever the form is first displayed.
-      /// </summary>
-      event EventHandler Shown;
+      IAsyncProcessor AsyncProcessor { get; set; }
 
       /// <summary>
       /// Gets or sets the icon for the form.
@@ -86,53 +71,27 @@ namespace harlam357.Windows.Forms
    /// <summary>
    /// Progress Process Dialog Class
    /// </summary>
-   public partial class ProgressDialogAsync : Form, IProgressDialogAsyncView
+   public sealed partial class ProgressDialogAsync : Form, IProgressDialogAsyncView
    {
-      private Core.IProgressWithEvent<Core.ComponentModel.ProgressChangedEventArgs> _progress;
+      private IAsyncProcessor _asyncProcessor;
 
       /// <summary>
-      /// Gets or sets the progress reporting object responsible for notifying the dialog of task progress.
+      /// Gets or sets the asynchronous processor object.
       /// </summary>
-      public Core.IProgressWithEvent<Core.ComponentModel.ProgressChangedEventArgs> Progress
+      public IAsyncProcessor AsyncProcessor
       {
-         get { return _progress; }
+         get { return _asyncProcessor; }
          set
          {
-            if (_progress != null)
-            {
-               _progress.ProgressChanged -= OnProgressChanged;
-               TaskInProgress = false;
-            }
-            _progress = value;
-            if (_progress != null)
-            {
-               _progress.ProgressChanged += OnProgressChanged;
-               TaskInProgress = true;
-            }
-         }
-      }
-
-      private CancellationTokenSource _cancellationTokenSource;
-
-      /// <summary>
-      /// Gets or sets the object that facilitates task cancellation.
-      /// </summary>
-      public CancellationTokenSource CancellationTokenSource
-      {
-         get { return _cancellationTokenSource; }
-         set
-         {
-            _cancellationTokenSource = value;
+            _asyncProcessor = value;
             SetCancellationControls(SupportsCancellation);
          }
       }
 
       private bool SupportsCancellation
       {
-         get { return _cancellationTokenSource != null; }
+         get { return AsyncProcessor is IAsyncProcessorWithCancellation; }
       }
-
-      private readonly Size _baseSize;
 
       /// <summary>
       /// Initializes a new instance of the ProgressDialogAsync class.
@@ -144,66 +103,89 @@ namespace harlam357.Windows.Forms
          SetCancellationControls(SupportsCancellation);
       }
 
-      /// <summary>
-      /// Updates the progress bar value.
-      /// </summary>
-      public void UpdateProgress(int progress)
-      {
-         if (InvokeRequired)
-         {
-            BeginInvoke(new Action<int>(UpdateProgress), progress);
-            return;
-         }
-
-         progressBar.Value = progress;
-      }
-
-      /// <summary>
-      /// Updates the text message value.
-      /// </summary>
-      public void UpdateMessage(string message)
-      {
-         if (InvokeRequired)
-         {
-            BeginInvoke(new Action<string>(UpdateMessage), message);
-            return;
-         }
-
-         messageLabel.Text = message;
-      }
-
-      protected virtual void OnProgressChanged(object sender, Core.ComponentModel.ProgressChangedEventArgs e)
-      {
-         UpdateProgress(e.ProgressPercentage);
-         UpdateMessage(e.Message);
-      }
-
       private void ProcessCancelButtonClick(object sender, EventArgs e)
       {
          Debug.Assert(SupportsCancellation);
 
-         if (TaskInProgress)
+         if (_taskInProgress)
          {
+            Debug.Assert(_cancellationTokenSource != null);
             _cancellationTokenSource.Cancel();
          }
       }
 
-      protected bool TaskInProgress { get; private set; }
+      private CancellationTokenSource _cancellationTokenSource;
+      private bool _taskInProgress;
 
-      /// <summary>
-      /// Raises the <see cref="E:System.Windows.Forms.Form.FormClosing"/> event.
-      /// </summary>
-      /// <param name="e">A <see cref="T:System.Windows.Forms.FormClosingEventArgs"/> that contains the event data.</param>
-      /// <remarks>
-      /// If the task is processing and task does not support cancellation then this event will be cancelled.
-      /// If the task supports cancellation then the task will be cancelled and the dialog will be closed when the task is finished.
-      /// </remarks>
+      protected override async void OnShown(EventArgs e)
+      {
+         var progress = new Progress<ProgressInfo>();
+         progress.ProgressChanged += (s, progressInfo) =>
+         {
+            progressBar.Value = progressInfo.ProgressPercentage;
+            messageLabel.Text = progressInfo.Message;
+         };
+
+         var processorWithCancellation = AsyncProcessor as IAsyncProcessorWithCancellation;
+         if (processorWithCancellation != null)
+         {
+            await RunAsyncProcessorWithCancellation(processorWithCancellation, progress);
+         }
+         else
+         {
+            await RunAsyncProcessor(AsyncProcessor, progress);
+         }
+         Close();
+      }
+
+      private async Task RunAsyncProcessorWithCancellation(IAsyncProcessorWithCancellation processor, IProgress<ProgressInfo> progress)
+      {
+         _cancellationTokenSource = new CancellationTokenSource();
+         _taskInProgress = true;
+         try
+         {
+            await processor.ExecuteAsync(_cancellationTokenSource.Token, progress).ConfigureAwait(false);
+         }
+         catch (OperationCanceledException)
+         {
+            // handle the cancellation
+         }
+         catch (Exception ex)
+         {
+            MessageBox.Show(this, ex.Message, Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
+         }
+         finally
+         {
+            _taskInProgress = false;
+            _cancellationTokenSource.Dispose();
+            _cancellationTokenSource = null;
+         }
+      }
+
+      private async Task RunAsyncProcessor(IAsyncProcessor processor, IProgress<ProgressInfo> progress)
+      {
+         _taskInProgress = true;
+         try
+         {
+            await processor.ExecuteAsync(progress).ConfigureAwait(false);
+         }
+         catch (Exception ex)
+         {
+            MessageBox.Show(this, ex.Message, Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
+         }
+         finally
+         {
+            _taskInProgress = false;
+         }
+      }
+
       protected override void OnFormClosing(FormClosingEventArgs e)
       {
-         if (TaskInProgress)
+         if (_taskInProgress)
          {
             if (SupportsCancellation)
             {
+               Debug.Assert(_cancellationTokenSource != null);
                _cancellationTokenSource.Cancel();
             }
             e.Cancel = true;
@@ -212,20 +194,7 @@ namespace harlam357.Windows.Forms
          base.OnFormClosing(e);
       }
 
-      /// <summary>
-      /// Closes the dialog.
-      /// </summary>
-      public new void Close()
-      {
-         if (InvokeRequired)
-         {
-            BeginInvoke(new MethodInvoker(Close));
-            return;
-         }
-
-         TaskInProgress = false;
-         base.Close();
-      }
+      private readonly Size _baseSize;
 
       private void SetCancellationControls(bool enabled)
       {
@@ -233,4 +202,5 @@ namespace harlam357.Windows.Forms
          Size = enabled ? _baseSize : new Size(_baseSize.Width, _baseSize.Height - 30);
       }
    }
+#endif
 }

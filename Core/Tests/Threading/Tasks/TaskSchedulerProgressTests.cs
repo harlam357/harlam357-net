@@ -3,8 +3,6 @@ using System;
 
 using NUnit.Framework;
 
-using harlam357.Core.ComponentModel;
-
 namespace harlam357.Core.Threading.Tasks
 {
    [TestFixture]
@@ -15,7 +13,7 @@ namespace harlam357.Core.Threading.Tasks
       public void TaskSchedulerProgress_ArgumentNullException_Test()
       {
          // ReSharper disable once ObjectCreationAsStatement
-         new TaskSchedulerProgress<ProgressChangedEventArgs>(new CurrentThreadTaskScheduler(), null);
+         new TaskSchedulerProgress<ProgressInfo>(new CurrentThreadTaskScheduler(), null);
       }
 
       [Test]
@@ -25,15 +23,15 @@ namespace harlam357.Core.Threading.Tasks
          string message = null;
          object userState = null;
 
-         Action<ProgressChangedEventArgs> action = args =>
+         Action<ProgressInfo> action = args =>
          {
             progressPercentage = args.ProgressPercentage;
             message = args.Message;
             userState = args.UserState;
          };
-         IProgress<ProgressChangedEventArgs> progress = new TaskSchedulerProgress<ProgressChangedEventArgs>(new CurrentThreadTaskScheduler(), action);
+         IProgress<ProgressInfo> progress = new TaskSchedulerProgress<ProgressInfo>(new CurrentThreadTaskScheduler(), action);
          var progressState = new object();
-         progress.Report(new ProgressChangedEventArgs(50, "Message", progressState));
+         progress.Report(new ProgressInfo(50, "Message", progressState));
 
          Assert.AreEqual(50, progressPercentage);
          Assert.AreEqual("Message", message);
@@ -47,8 +45,8 @@ namespace harlam357.Core.Threading.Tasks
          string message = null;
          object userState = null;
 
-         var progress = new TaskSchedulerProgress<ProgressChangedEventArgs>(new CurrentThreadTaskScheduler());
-         ((IProgress<ProgressChangedEventArgs>)progress).Report(new ProgressChangedEventArgs(50, "Message", new object()));
+         var progress = new TaskSchedulerProgress<ProgressInfo>(new CurrentThreadTaskScheduler());
+         ((IProgress<ProgressInfo>)progress).Report(new ProgressInfo(50, "Message", new object()));
 
          Assert.AreEqual(0, progressPercentage);
          Assert.IsNull(message);
@@ -63,19 +61,19 @@ namespace harlam357.Core.Threading.Tasks
          object userState = null;
 
 #if NET40
-         ProgressHandler<ProgressChangedEventArgs> handler = (sender, args) =>
+         ProgressHandler<ProgressInfo> handler = (sender, args) =>
 #else
-         EventHandler<ProgressChangedEventArgs> handler = (sender, args) =>
+         EventHandler<ProgressInfo> handler = (sender, args) =>
 #endif
          {
             progressPercentage = args.ProgressPercentage;
             message = args.Message;
             userState = args.UserState;
          };
-         var progress = new TaskSchedulerProgress<ProgressChangedEventArgs>(new CurrentThreadTaskScheduler());
+         var progress = new TaskSchedulerProgress<ProgressInfo>(new CurrentThreadTaskScheduler());
          progress.ProgressChanged += handler;
          var progressState = new object();
-         ((IProgress<ProgressChangedEventArgs>)progress).Report(new ProgressChangedEventArgs(50, "Message", progressState));
+         ((IProgress<ProgressInfo>)progress).Report(new ProgressInfo(50, "Message", progressState));
 
          Assert.AreEqual(50, progressPercentage);
          Assert.AreEqual("Message", message);

@@ -1,5 +1,6 @@
 ﻿namespace harlam357.Windows.Forms
 {
+#if NET45
    partial class ProgressDialogAsync
    {
       /// <summary>
@@ -20,7 +21,7 @@
          base.Dispose(disposing);
       }
 
-      #region Windows Form Designer generated code
+#region Windows Form Designer generated code
 
       /// <summary>
       /// Required method for Designer support - do not modify
@@ -77,10 +78,11 @@
 
       }
 
-      #endregion
+#endregion
 
       private System.Windows.Forms.ProgressBar progressBar;
       private System.Windows.Forms.Label messageLabel;
       private System.Windows.Forms.Button ProcessCancelButton;
    }
+#endif
 }
